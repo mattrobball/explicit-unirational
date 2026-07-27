@@ -12,6 +12,7 @@ public import ExplicitUnirational.Cert.Rabin
 public import ExplicitUnirational.Cert.SexticF5
 public import ExplicitUnirational.CubicPencil.Incidence
 public import ExplicitUnirational.DelPezzo.Surface
+public import ExplicitUnirational.Divisors.Bridge
 public import ExplicitUnirational.Divisors.ClassGroup
 public import ExplicitUnirational.Divisors.NSLattice
 public import ExplicitUnirational.Foundation
