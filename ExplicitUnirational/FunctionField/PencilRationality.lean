@@ -80,7 +80,8 @@ private theorem range_coords_eq (k : Type*) [Field k] :
           algebraMap (MvPolynomial (Fin 2) k) (planeField k)
             (X (1 : Fin 2) : MvPolynomial (Fin 2) k)} : Set (planeField k)) := by
   ext z
-  simp only [Set.mem_range, Set.mem_insert_iff, Set.mem_singleton_iff, Fin.exists_fin_two]
+  simp only [Set.mem_range, Set.mem_insert_iff, Set.mem_singleton_iff, Fin.exists_fin_two,
+    eq_comm]
 
 private theorem algebraMap_mem_adjoin_coords (f : MvPolynomial (Fin 2) k) :
     algebraMap (MvPolynomial (Fin 2) k) (planeField k) f ∈
@@ -167,7 +168,7 @@ public theorem adjoin_pencil_parameter_eq_top
       have hf₀_mem := algebraMap_mem_adjoin_coords f₀
       have hf₁_mem := algebraMap_mem_adjoin_coords f₁
       dsimp only [z, pencilParameter, x, y] at hf₀_mem hf₁_mem ⊢
-      exact IntermediateField.div_mem (IntermediateField.neg_mem _ hf₀_mem) hf₁_mem
+      exact div_mem (neg_mem hf₀_mem) hf₁_mem
     have hset : ({x, y, z} : Set K) = insert z {x, y} := by
       ext w
       simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
@@ -175,7 +176,7 @@ public theorem adjoin_pencil_parameter_eq_top
     change IntermediateField.adjoin k ({x, y, z} : Set K) =
       IntermediateField.adjoin k ({x, y} : Set K)
     rw [hset]
-    refine le_antisymm ?_ (IntermediateField.adjoin.mono k _ (Set.subset_insert z {x, y}))
+    refine le_antisymm ?_ (IntermediateField.adjoin.mono k _ _ (Set.subset_insert z {x, y}))
     rw [IntermediateField.adjoin_le_iff, Set.insert_subset_iff]
     exact ⟨hz, IntermediateField.subset_adjoin k {x, y}⟩
 
