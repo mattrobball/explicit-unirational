@@ -22,13 +22,15 @@ denominators as `D = z⁴ · q₈(z)²`, and checked as an identity in `MvPolyno
 by `ring`. Since `ΨSq 3 = Ψ₃²`, coprimality with `Ψ₃` plus `IsCoprime.pow_right` yields the
 claim for `ΨSq 3`.
 
-The companion model (5.6) over `ℚ(t)(λ)` is not included here: the same method applies
-(cleared witnesses are small — `U` of degree 3 and `V` of degree 8 in `X`, with common
-denominator `5184 λ⁴ q₋² q₊²`), but was deprioritized after the degree-nine corollary for
-(3.7) was obtained.
+Also discharges the same coprimality for the companion model (5.6) over `ℚ(t)(λ)`,
+yielding the unconditional `finrank_mulThreeX_noteCurveCt = 9`. The Bézout pair (degrees 3 and 8
+in the elliptic variable) is cleared over `ℚ[t, λ]` and checked by `ring` in
+`MvPolynomial (Fin 3) ℚ`; nonvanishing of the denominator follows by injectivity of
+`ℚ(t)[λ] → ℚ(t)(λ)`.
 -/
 
-set_option maxHeartbeats 800000
+set_option maxHeartbeats 8000000
+set_option maxRecDepth 10000
 
 noncomputable section
 
@@ -414,9 +416,365 @@ public theorem finrank_mulThreeX_noteCurveQ :
     Module.finrank KQ⟮mulThreeX noteCurveQ⟯ (RatFunc KQ) = 9 :=
   finrank_mulThreeX noteCurveQ three_ne_zero_KQ isCoprime_Φ_ΨSq_noteCurveQ
 
+
+
+
+
+/-! ## Arithmetic surface over `ℚ(t)(λ)` (note (5.6)) -/
+
+/-- Base field `ℚ(t)` for the model (5.6). -/
+public abbrev Kt : Type := RatFunc ℚ
+
+/-- Base field `ℚ(t)(λ)` for the model (5.6). Nested `RatFunc` elaborates cleanly and
+keeps the parameter `t` and the pencil coordinate `λ` as separate indeterminates. -/
+public abbrev KCt : Type := RatFunc Kt
+
+/-- The parameter `t ∈ ℚ(t)` lifted to `ℚ(t)(λ)`. -/
+public noncomputable def noteT : KCt :=
+  algebraMap Kt KCt (RatFunc.X : Kt)
+
+/-- The short Weierstrass model of note eq. (5.6) over `ℚ(t)(λ)`.
+`y² = x³ - 3 λ² x - λ⁵ - 27 t² λ⁴ - λ`. -/
+public noncomputable def noteCurveCt : WeierstrassCurve KCt where
+  a₁ := 0
+  a₂ := 0
+  a₃ := 0
+  a₄ := -3 * RatFunc.X ^ 2
+  a₆ := -RatFunc.X ^ 5 - 27 * noteT ^ 2 * RatFunc.X ^ 4 - RatFunc.X
+
+/-! ### Bézout certificate (`X 0 = t`, `X 1 = λ`, `X 2 =` elliptic `X`)
+
+The cleared denominator is `5184 · λ⁴ · q₋(λ)² · q₊(λ)²` (note (5.8)). -/
+
+private noncomputable def psi3MvCt : MvPolynomial (Fin 3) ℚ :=
+  3 * (X 2) ^4
+    - 18 * (X 1) ^2 * (X 2) ^2
+    - 12 * (X 1) ^5 * (X 2)
+    - 324 * (X 0) ^2 * (X 1) ^4 * (X 2)
+    - 12 * (X 1) * (X 2)
+    - 9 * (X 1) ^4
+private noncomputable def phi3MvCt : MvPolynomial (Fin 3) ℚ :=
+  (X 2) ^9
+    + 36 * (X 1) ^2 * (X 2) ^7
+    + 96 * (X 1) ^5 * (X 2) ^6
+    + 2592 * (X 0) ^2 * (X 1) ^4 * (X 2) ^6
+    + 96 * (X 1) * (X 2) ^6
+    + 270 * (X 1) ^4 * (X 2) ^5
+    - 72 * (X 1) ^7 * (X 2) ^4
+    - 1944 * (X 0) ^2 * (X 1) ^6 * (X 2) ^4
+    - 72 * (X 1) ^3 * (X 2) ^4
+    + 48 * (X 1) ^10 * (X 2) ^3
+    + 2592 * (X 0) ^2 * (X 1) ^9 * (X 2) ^3
+    + 34992 * (X 0) ^4 * (X 1) ^8 * (X 2) ^3
+    - 876 * (X 1) ^6 * (X 2) ^3
+    + 2592 * (X 0) ^2 * (X 1) ^5 * (X 2) ^3
+    + 48 * (X 1) ^2 * (X 2) ^3
+    - 432 * (X 1) ^9 * (X 2) ^2
+    - 11664 * (X 0) ^2 * (X 1) ^8 * (X 2) ^2
+    - 432 * (X 1) ^5 * (X 2) ^2
+    - 288 * (X 1) ^12 * (X 2)
+    - 15552 * (X 0) ^2 * (X 1) ^11 * (X 2)
+    - 209952 * (X 0) ^4 * (X 1) ^10 * (X 2)
+    + 153 * (X 1) ^8 * (X 2)
+    - 15552 * (X 0) ^2 * (X 1) ^7 * (X 2)
+    - 288 * (X 1) ^4 * (X 2)
+    - 64 * (X 1) ^15
+    - 5184 * (X 0) ^2 * (X 1) ^14
+    - 139968 * (X 0) ^4 * (X 1) ^13
+    - 1259712 * (X 0) ^6 * (X 1) ^12
+    + 24 * (X 1) ^11
+    - 4536 * (X 0) ^2 * (X 1) ^10
+    - 139968 * (X 0) ^4 * (X 1) ^9
+    + 24 * (X 1) ^7
+    - 5184 * (X 0) ^2 * (X 1) ^6
+    - 64 * (X 1) ^3
+private noncomputable def prePsi4MvCt : MvPolynomial (Fin 3) ℚ :=
+  2 * (X 2) ^6
+    - 30 * (X 1) ^2 * (X 2) ^4
+    - 40 * (X 1) ^5 * (X 2) ^3
+    - 1080 * (X 0) ^2 * (X 1) ^4 * (X 2) ^3
+    - 40 * (X 1) * (X 2) ^3
+    - 90 * (X 1) ^4 * (X 2) ^2
+    - 24 * (X 1) ^7 * (X 2)
+    - 648 * (X 0) ^2 * (X 1) ^6 * (X 2)
+    - 24 * (X 1) ^3 * (X 2)
+    - 16 * (X 1) ^10
+    - 864 * (X 0) ^2 * (X 1) ^9
+    - 11664 * (X 0) ^4 * (X 1) ^8
+    + 22 * (X 1) ^6
+    - 864 * (X 0) ^2 * (X 1) ^5
+    - 16 * (X 1) ^2
+private noncomputable def psi2SqMvCt : MvPolynomial (Fin 3) ℚ :=
+  4 * (X 2) ^3
+    - 12 * (X 1) ^2 * (X 2)
+    - 4 * (X 1) ^5
+    - 108 * (X 0) ^2 * (X 1) ^4
+    - 4 * (X 1)
+private noncomputable def bezoutUMvCt : MvPolynomial (Fin 3) ℚ :=
+  21 * (X 2) ^3
+    - 135 * (X 1) ^2 * (X 2)
+    - 81 * (X 1) ^5
+    - 2187 * (X 0) ^2 * (X 1) ^4
+    - 81 * (X 1)
+private noncomputable def bezoutVMvCt : MvPolynomial (Fin 3) ℚ :=
+  - 7 * (X 2) ^8
+    - 249 * (X 1) ^2 * (X 2) ^6
+    - 673 * (X 1) ^5 * (X 2) ^5
+    - 18171 * (X 0) ^2 * (X 1) ^4 * (X 2) ^5
+    - 673 * (X 1) * (X 2) ^5
+    - 1785 * (X 1) ^4 * (X 2) ^4
+    + 762 * (X 1) ^7 * (X 2) ^3
+    + 20574 * (X 0) ^2 * (X 1) ^6 * (X 2) ^3
+    + 762 * (X 1) ^3 * (X 2) ^3
+    - 436 * (X 1) ^10 * (X 2) ^2
+    - 23544 * (X 0) ^2 * (X 1) ^9 * (X 2) ^2
+    - 317844 * (X 0) ^4 * (X 1) ^8 * (X 2) ^2
+    + 6625 * (X 1) ^6 * (X 2) ^2
+    - 23544 * (X 0) ^2 * (X 1) ^5 * (X 2) ^2
+    - 436 * (X 1) ^2 * (X 2) ^2
+    + 2487 * (X 1) ^9 * (X 2)
+    + 67149 * (X 0) ^2 * (X 1) ^8 * (X 2)
+    + 2487 * (X 1) ^5 * (X 2)
+    + 2664 * (X 1) ^12
+    + 143856 * (X 0) ^2 * (X 1) ^11
+    + 1942056 * (X 0) ^4 * (X 1) ^10
+    - 3888 * (X 1) ^8
+    + 143856 * (X 0) ^2 * (X 1) ^7
+    + 2664 * (X 1) ^4
+private noncomputable def bezoutDMvCt : MvPolynomial (Fin 3) ℚ :=
+  5184 * (X 1) ^20
+    + 559872 * (X 0) ^2 * (X 1) ^19
+    + 22674816 * (X 0) ^4 * (X 1) ^18
+    + 408146688 * (X 0) ^6 * (X 1) ^17
+    + 2754990144 * (X 0) ^8 * (X 1) ^16
+    - 20736 * (X 1) ^16
+    - 559872 * (X 0) ^2 * (X 1) ^15
+    + 15116544 * (X 0) ^4 * (X 1) ^14
+    + 408146688 * (X 0) ^6 * (X 1) ^13
+    + 31104 * (X 1) ^12
+    - 559872 * (X 0) ^2 * (X 1) ^11
+    + 22674816 * (X 0) ^4 * (X 1) ^10
+    - 20736 * (X 1) ^8
+    + 559872 * (X 0) ^2 * (X 1) ^7
+    + 5184 * (X 1) ^4
+
+/-- Abstract short-Weierstrass formula for `Φ₃` as a multivariate identity (model (5.6)). -/
+private theorem phi3MvCt_formula :
+    phi3MvCt = (X 2) * psi3MvCt ^ 2 - prePsi4MvCt * psi2SqMvCt := by
+  unfold phi3MvCt psi3MvCt prePsi4MvCt psi2SqMvCt
+  ring
+
+private theorem bezout_identity_mv_ct :
+    bezoutUMvCt * phi3MvCt + bezoutVMvCt * psi3MvCt = bezoutDMvCt := by
+  unfold bezoutUMvCt phi3MvCt bezoutVMvCt psi3MvCt bezoutDMvCt
+  ring
+
+private theorem bezoutDMvCt_ne_zero : bezoutDMvCt ≠ 0 := by
+  intro h
+  have h1 := congrArg (eval (![0, 2, 0] : Fin 3 → ℚ)) h
+  rw [map_zero, bezoutDMvCt] at h1
+  simp [eval_add, eval_mul, eval_pow, eval_X] at h1
+  norm_num at h1
+
+/-- Lower-degree part of the cleared Bézout denominator (degrees `≤ 19` in `λ`). -/
+private noncomputable def bezoutD_polyCt_rest : Polynomial Kt :=
+  Polynomial.C ((559872 : Kt) * (RatFunc.X : Kt) ^2) * Polynomial.X ^19
+    + Polynomial.C ((22674816 : Kt) * (RatFunc.X : Kt) ^4) * Polynomial.X ^18
+    + Polynomial.C ((408146688 : Kt) * (RatFunc.X : Kt) ^6) * Polynomial.X ^17
+    + Polynomial.C ((2754990144 : Kt) * (RatFunc.X : Kt) ^8 + (-20736 : Kt)) * Polynomial.X ^16
+    + Polynomial.C ((-559872 : Kt) * (RatFunc.X : Kt) ^2) * Polynomial.X ^15
+    + Polynomial.C ((15116544 : Kt) * (RatFunc.X : Kt) ^4) * Polynomial.X ^14
+    + Polynomial.C ((408146688 : Kt) * (RatFunc.X : Kt) ^6) * Polynomial.X ^13
+    + Polynomial.C ((31104 : Kt)) * Polynomial.X ^12
+    + Polynomial.C ((-559872 : Kt) * (RatFunc.X : Kt) ^2) * Polynomial.X ^11
+    + Polynomial.C ((22674816 : Kt) * (RatFunc.X : Kt) ^4) * Polynomial.X ^10
+    + Polynomial.C ((-20736 : Kt)) * Polynomial.X ^8
+    + Polynomial.C ((559872 : Kt) * (RatFunc.X : Kt) ^2) * Polynomial.X ^7
+    + Polynomial.C ((5184 : Kt)) * Polynomial.X ^4
+
+/-- The cleared Bézout denominator as a polynomial in `λ` over `ℚ(t)`.
+Leading term `5184 λ²⁰`. -/
+private noncomputable def bezoutD_polyCt : Polynomial Kt :=
+  Polynomial.C (5184 : Kt) * Polynomial.X ^ 20 + bezoutD_polyCt_rest
+
+/-- The cleared Bézout denominator in `ℚ(t)(λ)`. -/
+private noncomputable def bezoutDCt : KCt :=
+  algebraMap (Polynomial Kt) KCt bezoutD_polyCt
+
+/-- Substitution `X 0 ↦ C t`, `X 1 ↦ C λ`, `X 2 ↦ X` into `ℚ(t)(λ)[X]`. -/
+private noncomputable def sigmaCt : Fin 3 → Polynomial KCt :=
+  ![Polynomial.C noteT, Polynomial.C (RatFunc.X : KCt), Polynomial.X]
+
+private noncomputable def evalCt : MvPolynomial (Fin 3) ℚ →ₐ[ℚ] Polynomial KCt :=
+  aeval sigmaCt
+
+private theorem noteCurveCt_b₂ : noteCurveCt.b₂ = 0 := by
+  simp [WeierstrassCurve.b₂, noteCurveCt]
+
+private theorem noteCurveCt_b₄ : noteCurveCt.b₄ = 2 * noteCurveCt.a₄ := by
+  simp [WeierstrassCurve.b₄, noteCurveCt]
+
+private theorem noteCurveCt_b₆ : noteCurveCt.b₆ = 4 * noteCurveCt.a₆ := by
+  simp [WeierstrassCurve.b₆, noteCurveCt]
+
+private theorem noteCurveCt_b₈ : noteCurveCt.b₈ = -noteCurveCt.a₄ ^ 2 := by
+  simp only [WeierstrassCurve.b₈, noteCurveCt]
+  ring
+
+private theorem sigmaCt_zero : sigmaCt 0 = Polynomial.C noteT := rfl
+private theorem sigmaCt_one : sigmaCt 1 = Polynomial.C (RatFunc.X : KCt) := rfl
+private theorem sigmaCt_two : sigmaCt 2 = Polynomial.X := rfl
+
+private theorem noteCurveCt_Ψ₂Sq_eq : noteCurveCt.Ψ₂Sq = evalCt psi2SqMvCt := by
+  have hrhs :
+      evalCt psi2SqMvCt =
+        4 * Polynomial.X ^ 3
+          + Polynomial.C (-(12 : KCt) * RatFunc.X ^ 2) * Polynomial.X
+          + Polynomial.C (-(4 : KCt) * RatFunc.X ^ 5 - 108 * noteT ^ 2 * RatFunc.X ^ 4
+              - 4 * RatFunc.X) := by
+    unfold psi2SqMvCt evalCt
+    simp only [map_sub, map_mul, map_pow, map_neg, aeval_X, map_ofNat,
+      sigmaCt_zero, sigmaCt_one, sigmaCt_two, noteT]
+    ring
+  rw [hrhs, WeierstrassCurve.Ψ₂Sq, noteCurveCt_b₂, noteCurveCt_b₄, noteCurveCt_b₆]
+  simp only [noteCurveCt]
+  ring_nf
+  simp only [map_ofNat, map_neg, map_mul, map_pow, map_sub, noteT, Polynomial.C_0,
+    mul_zero, add_zero]
+  ring
+
+private theorem noteCurveCt_Ψ₃_eq : noteCurveCt.Ψ₃ = evalCt psi3MvCt := by
+  have hrhs :
+      evalCt psi3MvCt =
+        (3 : Polynomial KCt) * Polynomial.X ^ 4
+          + Polynomial.C (-(18 : KCt) * RatFunc.X ^ 2) * Polynomial.X ^ 2
+          + Polynomial.C (-(12 : KCt) * RatFunc.X ^ 5 - 324 * noteT ^ 2 * RatFunc.X ^ 4
+              - 12 * RatFunc.X) * Polynomial.X
+          + Polynomial.C (-(9 : KCt) * RatFunc.X ^ 4) := by
+    unfold psi3MvCt evalCt
+    simp only [map_sub, map_mul, map_pow, map_neg, aeval_X, map_ofNat,
+      sigmaCt_zero, sigmaCt_one, sigmaCt_two, noteT]
+    ring
+  rw [hrhs, WeierstrassCurve.Ψ₃, noteCurveCt_b₂, noteCurveCt_b₄, noteCurveCt_b₆, noteCurveCt_b₈]
+  simp only [noteCurveCt]
+  ring_nf
+  simp only [map_ofNat, map_neg, map_mul, map_pow, map_sub, noteT, Polynomial.C_0,
+    mul_zero, add_zero]
+  ring
+
+private theorem noteCurveCt_preΨ₄_eq : noteCurveCt.preΨ₄ = evalCt prePsi4MvCt := by
+  have hrhs :
+      evalCt prePsi4MvCt =
+        2 * Polynomial.X ^ 6
+          + Polynomial.C (-(30 : KCt) * RatFunc.X ^ 2) * Polynomial.X ^ 4
+          + Polynomial.C (-(40 : KCt) * RatFunc.X ^ 5 - 1080 * noteT ^ 2 * RatFunc.X ^ 4
+              - 40 * RatFunc.X) * Polynomial.X ^ 3
+          + Polynomial.C (-(90 : KCt) * RatFunc.X ^ 4) * Polynomial.X ^ 2
+          + Polynomial.C (-(24 : KCt) * RatFunc.X ^ 7 - 648 * noteT ^ 2 * RatFunc.X ^ 6
+              - 24 * RatFunc.X ^ 3) * Polynomial.X
+          + Polynomial.C (-(16 : KCt) * RatFunc.X ^ 10 - 864 * noteT ^ 2 * RatFunc.X ^ 9
+              - 11664 * noteT ^ 4 * RatFunc.X ^ 8 + 22 * RatFunc.X ^ 6
+              - 864 * noteT ^ 2 * RatFunc.X ^ 5 - 16 * RatFunc.X ^ 2) := by
+    unfold prePsi4MvCt evalCt
+    simp only [map_add, map_sub, map_mul, map_pow, map_neg, aeval_X, map_ofNat,
+      sigmaCt_zero, sigmaCt_one, sigmaCt_two, noteT]
+    ring
+  rw [hrhs, WeierstrassCurve.preΨ₄, noteCurveCt_b₂, noteCurveCt_b₄, noteCurveCt_b₆, noteCurveCt_b₈]
+  simp only [noteCurveCt]
+  ring_nf
+  simp only [map_ofNat, map_neg, map_mul, map_pow, map_sub, noteT, Polynomial.C_0,
+    mul_zero, add_zero]
+  ring
+
+private theorem evalCt_X2 : evalCt (X 2) = Polynomial.X := by
+  simp [evalCt, aeval_X, sigmaCt_two]
+
+private theorem noteCurveCt_Φ_eq : noteCurveCt.Φ 3 = evalCt phi3MvCt := by
+  have hΦ : noteCurveCt.Φ 3 =
+      Polynomial.X * noteCurveCt.Ψ₃ ^ 2 - noteCurveCt.preΨ₄ * noteCurveCt.Ψ₂Sq :=
+    WeierstrassCurve.Φ_three (W := noteCurveCt)
+  rw [hΦ, noteCurveCt_Ψ₃_eq, noteCurveCt_preΨ₄_eq, noteCurveCt_Ψ₂Sq_eq, phi3MvCt_formula]
+  simp only [map_sub, map_mul, map_pow, evalCt_X2]
+
+private theorem evalCt_bezoutD : (evalCt bezoutDMvCt : Polynomial KCt) = Polynomial.C bezoutDCt := by
+  unfold evalCt bezoutDMvCt bezoutDCt bezoutD_polyCt bezoutD_polyCt_rest
+  simp only [map_add, map_sub, map_mul, map_pow, map_neg, aeval_X, map_ofNat,
+    sigmaCt_zero, sigmaCt_one, noteT]
+  -- Identify `algebraMap (Polynomial Kt) KCt (C t)` with `noteT = algebraMap Kt KCt t`,
+  -- and `algebraMap (Polynomial Kt) KCt X` with `RatFunc.X`.
+  simp only [RatFunc.algebraMap_C, RatFunc.algebraMap_eq_C, RatFunc.algebraMap_X]
+  ring_nf
+
+private theorem bezoutD_polyCt_rest_natDegree_lt :
+    bezoutD_polyCt_rest.natDegree < 20 := by
+  unfold bezoutD_polyCt_rest
+  compute_degree!
+
+private theorem bezoutDCt_ne_zero : bezoutDCt ≠ 0 := by
+  have h20 : bezoutD_polyCt.coeff 20 = (5184 : Kt) := by
+    unfold bezoutD_polyCt
+    rw [Polynomial.coeff_add, Polynomial.coeff_C_mul, Polynomial.coeff_X_pow,
+      if_pos rfl, mul_one,
+      Polynomial.coeff_eq_zero_of_natDegree_lt bezoutD_polyCt_rest_natDegree_lt, add_zero]
+  have hp : bezoutD_polyCt ≠ 0 := fun hp0 => by
+    have hKt : (5184 : Kt) = 0 := by
+      have h := congrArg (fun q : Polynomial Kt => q.coeff 20) hp0
+      rw [h20, Polynomial.coeff_zero] at h
+      exact h
+    have hQ : (5184 : ℚ) = 0 := by
+      have h' : algebraMap ℚ Kt (5184 : ℚ) = algebraMap ℚ Kt (0 : ℚ) := by
+        convert hKt <;> simp
+      exact (FaithfulSMul.algebraMap_injective ℚ Kt).eq_iff.mp h'
+    norm_num at hQ
+  simpa [bezoutDCt, map_zero] using
+    (FaithfulSMul.algebraMap_injective (Polynomial Kt) KCt).ne hp
+
+private theorem isCoprime_Φ_Ψ₃_noteCurveCt :
+    IsCoprime (noteCurveCt.Φ 3) noteCurveCt.Ψ₃ := by
+  rw [noteCurveCt_Φ_eq, noteCurveCt_Ψ₃_eq]
+  refine ⟨(evalCt bezoutUMvCt) * Polynomial.C bezoutDCt⁻¹,
+    (evalCt bezoutVMvCt) * Polynomial.C bezoutDCt⁻¹, ?_⟩
+  have hid :
+      (evalCt bezoutUMvCt) * (evalCt phi3MvCt) + (evalCt bezoutVMvCt) * (evalCt psi3MvCt)
+        = evalCt bezoutDMvCt := by
+    simpa [← map_mul, ← map_add] using
+      congrArg (AlgHom.toRingHom evalCt) bezout_identity_mv_ct
+  have hD : bezoutDCt ≠ 0 := bezoutDCt_ne_zero
+  calc
+    (evalCt bezoutUMvCt) * Polynomial.C bezoutDCt⁻¹ * (evalCt phi3MvCt)
+        + (evalCt bezoutVMvCt) * Polynomial.C bezoutDCt⁻¹ * (evalCt psi3MvCt)
+      = Polynomial.C bezoutDCt⁻¹
+          * ((evalCt bezoutUMvCt) * (evalCt phi3MvCt)
+              + (evalCt bezoutVMvCt) * (evalCt psi3MvCt)) := by
+        ring
+    _ = Polynomial.C bezoutDCt⁻¹ * evalCt bezoutDMvCt := by rw [hid]
+    _ = Polynomial.C bezoutDCt⁻¹ * Polynomial.C bezoutDCt := by rw [evalCt_bezoutD]
+    _ = Polynomial.C (bezoutDCt⁻¹ * bezoutDCt) := by rw [← Polynomial.C_mul]
+    _ = Polynomial.C 1 := by rw [inv_mul_cancel₀ hD]
+    _ = 1 := by simp
+
+/-- **Coprimality of `Φ₃` and `ΨSq₃` for the model (5.6).** -/
+public theorem isCoprime_Φ_ΨSq_noteCurveCt :
+    IsCoprime (noteCurveCt.Φ 3) (noteCurveCt.ΨSq 3) := by
+  simpa [WeierstrassCurve.ΨSq_three] using
+    (isCoprime_Φ_Ψ₃_noteCurveCt.pow_right (n := 2))
+
+private theorem three_ne_zero_KCt : (3 : KCt) ≠ 0 := by
+  exact_mod_cast (three_ne_zero : (3 : ℚ) ≠ 0)
+
+/-- **Unconditional degree-nine statement for the model (5.6).**
+
+The `x`-line over `ℚ(t)(λ)` is a degree-exactly-`9` extension of the subfield generated by
+`x ∘ [3]`. -/
+public theorem finrank_mulThreeX_noteCurveCt :
+    Module.finrank KCt⟮mulThreeX noteCurveCt⟯ (RatFunc KCt) = 9 :=
+  finrank_mulThreeX noteCurveCt three_ne_zero_KCt isCoprime_Φ_ΨSq_noteCurveCt
+
 /-! ## Axiom audit -/
 
 #print axioms isCoprime_Φ_ΨSq_noteCurveQ
 #print axioms finrank_mulThreeX_noteCurveQ
+#print axioms isCoprime_Φ_ΨSq_noteCurveCt
+#print axioms finrank_mulThreeX_noteCurveCt
 
 end ExplicitUnirational
