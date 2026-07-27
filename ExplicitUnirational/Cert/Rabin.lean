@@ -6,6 +6,7 @@ Authors: Matthew R. Ballard
 module
 
 public import Mathlib.Algebra.CharP.Defs
+public import Mathlib.Algebra.Polynomial.Expand
 public import Mathlib.Algebra.Ring.GeomSum
 public import Mathlib.Data.ZMod.Basic
 public import Mathlib.FieldTheory.Finite.Basic
@@ -145,6 +146,20 @@ public theorem irreducible_of_rabin {f : F[X]} (hf : f.Monic) (hdeg : 0 < f.natD
   rwa [eq_of_monic_of_dvd_of_natDegree_le hg_monic hf hg_dvd (le_of_eq hd_eq.symm)]
 
 end Rabin
+
+/-! ## Freshman's dream: the `q`-th power map on `(ZMod p)[X]` -/
+
+/-- Over `ZMod p`, raising a polynomial to the `p`-th power is substitution `X ↦ X ^ p`.
+
+This is what makes the ladder of §Ladder computationally feasible. A ladder step
+`r_k ^ p = f * s_k + r_(k+1)` expanded naively produces a dense polynomial of degree
+`p * deg r_k` with coefficients as large as `(p-1)^p`; via `expand` the left side stays as
+sparse as `r_k` itself, and the residual certificate has small coefficients. -/
+public theorem pow_card_eq_expand (p : ℕ) [Fact p.Prime] (r : (ZMod p)[X]) :
+    r ^ p = expand (ZMod p) p r := by
+  have h := map_frobenius_expand (R := ZMod p) (p := p) r
+  rw [ZMod.frobenius_zmod, map_id] at h
+  exact h.symm
 
 /-! ## Smoke test: `X² + 2` over `F₅`
 
