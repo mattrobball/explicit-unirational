@@ -18,6 +18,7 @@ public import ExplicitUnirational.FunctionField.PencilRationality
 public import ExplicitUnirational.FunctionField.TorsorDescent
 public import ExplicitUnirational.FunctionField.Trivialization
 public import ExplicitUnirational.GenericDegree
+public import ExplicitUnirational.Weierstrass.Fibres
 public import ExplicitUnirational.WeightedProjective.Basic
 public import ExplicitUnirational.WeightedProjective.Integrality
 /-!
