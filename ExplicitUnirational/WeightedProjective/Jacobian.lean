@@ -54,14 +54,19 @@ hypersurface presentation (`AffineHypersurfaceJacobian.smooth_of_jacobianIdeal_e
 * Weighted packaging: charts cover, Zariski locality, chart dehomogenisation, Euler.
 * Weighted evaluation scaling; chart-point evaluation of dehomogenised equations.
 * Algebraic input for `surfaceEquation` / Proposition 3.3 (partials, `u = v = 0`, `q₈`).
-* Status of Mathlib `Smooth (S_Q ⟶ Spec ℚ)`: affine criterion ready; scheme glue open.
+* **Smooth-locus reframing:** weight-one open `D₊(u) ∪ D₊(v)`, free generators of weight-one
+  chart rings, residual locus `u = v = 0` / base point `[0:0:1:1]` with cone nonsingularity,
+  ambient singular ideals miss `S_Q`.
+* Status of Mathlib `Smooth (S_Q ⟶ Spec ℚ)`: honest intermediate; full `Smooth` not closed
+  (scheme glue + weight-one free presentation bijectivity + full chart Jacobian still open).
 
 ## Smoothness notion
 
 Target (not yet closed): Mathlib `AlgebraicGeometry.Smooth` for the structure morphism
 `S_Q ⟶ Spec ℚ` (i.e. `HasRingHomProperty` associated to `RingHom.Smooth`:
 formally smooth + finite presentation, checked affine-locally on source and target).
-This is **not** a bespoke “Jacobian-smooth” predicate.
+This is **not** a bespoke “Jacobian-smooth” predicate, and residual cone nonsingularity is
+**not** claimed to be global smoothness of `S_Q`.
 -/
 
 @[expose] public section
@@ -937,33 +942,214 @@ public theorem eval_chartEquation_chartPoint
   funext j
   simpa [φ, aeval_eq_eval] using eval_chartSubst i a j
 
+/-! ### Weight-one open and free chart generators
+
+For a weight-1 coordinate `X i` (`i ∈ {0,1}`), the degree-zero homogeneous localisation
+`A_(X i)₀` is classically the free polynomial ring on the three generators
+`X j / X i^{w_j}` (`j ≠ i`).  We package those generators and the weight-one open
+`D₊(u) ∪ D₊(v)`.  Full `≃ₐ` bijectivity (needed to conclude `Algebra.Smooth` of the chart
+rings) is not closed here.
+
+Weights 2 and 3 do **not** admit free presentations (cyclic quotients).  The residual
+locus `u = v = 0` is handled by cone Jacobian nonvanishing below. -/
+
+open HomogeneousLocalization
+
+/-- `R`-algebra structure on a standard chart ring, via the degree-zero piece. -/
+public noncomputable instance standardChartRing_algebra (R : Type u) [CommRing R] (i : Fin 4) :
+    Algebra R (StandardChartRing R i) :=
+  ((algebraMap (delPezzoGraded R 0) (StandardChartRing R i)).comp
+    (algebraMap R (delPezzoGraded R 0))).toAlgebra
+
+/-- Free generators of a weight-one chart: `X_j / X_i^{w_j}` for `j = i.succAbove r`. -/
+public noncomputable def weightOneChartGen (R : Type u) [CommRing R]
+    (i : Fin 4) (hi : weights i = 1) (r : Fin 3) :
+    StandardChartRing R i :=
+  let j : Fin 4 := i.succAbove r
+  Away.mk (delPezzoGraded R) (mem_delPezzoGraded_X R i) (weights j) (X j) <| by
+    have hmem := mem_delPezzoGraded_X R j
+    -- `weights j • weights i = weights j * 1 = weights j`
+    convert hmem
+    simp [hi, mul_one]
+
+/-- The free polynomial map into a weight-one chart ring. -/
+public noncomputable def weightOneChartToAway (R : Type u) [CommRing R]
+    (i : Fin 4) (hi : weights i = 1) :
+    MvPolynomial (Fin 3) R →ₐ[R] StandardChartRing R i :=
+  aeval (weightOneChartGen R i hi)
+
+/-- Chart dehomogenisation as an `R`-algebra map: set the chart coordinate to `1`. -/
+public noncomputable def chartDehomogenize (R : Type u) [CommRing R] (i : Fin 4) :
+    MvPolynomial (Fin 4) R →ₐ[R] MvPolynomial (Fin 3) R :=
+  aeval (chartSubst (R := R) i)
+
+@[simp] public theorem chartDehomogenize_X_self (R : Type u) [CommRing R] (i : Fin 4) :
+    chartDehomogenize R i (X i) = 1 := by
+  simp [chartDehomogenize, chartSubst, Fin.insertNth_apply_same]
+
+@[simp] public theorem chartDehomogenize_X_succAbove
+    (R : Type u) [CommRing R] (i : Fin 4) (r : Fin 3) :
+    chartDehomogenize R i (X (i.succAbove r)) = X r := by
+  simp [chartDehomogenize, chartSubst, Fin.insertNth_apply_succAbove]
+
+/-- `val` of a free generator is the ordinary localisation fraction `X_j / X_i^{w_j}`. -/
+public theorem val_weightOneChartGen (R : Type u) [CommRing R]
+    (i : Fin 4) (hi : weights i = 1) (r : Fin 3) :
+    (weightOneChartGen R i hi r).val =
+      Localization.mk (X (i.succAbove r))
+        ⟨(X i) ^ weights (i.succAbove r), by use weights (i.succAbove r)⟩ := by
+  simp only [weightOneChartGen, Away.val_mk]
+
+/-- Weight-one indices: `u = X 0` and `v = X 1`. -/
+public theorem weights_weightOne (i : Fin 4) (hi : i = 0 ∨ i = 1) : weights i = 1 := by
+  rcases hi with rfl | rfl <;> simp
+
+/-- The weight-one open `D₊(u) ∪ D₊(v)` of ambient weighted projective space. -/
+public noncomputable def weightOneOpen (R : Type u) [CommRing R] :
+    (WeightedProjectiveSpace R).Opens :=
+  standardBasicOpen R 0 ⊔ standardBasicOpen R 1
+
+/-- A point lies in the weight-one open iff `u` or `v` is nonvanishing there. -/
+public theorem mem_weightOneOpen_iff (R : Type u) [CommRing R]
+    (x : WeightedProjectiveSpace R) :
+    x ∈ weightOneOpen R ↔
+      (X (0 : Fin 4) : MvPolynomial (Fin 4) R) ∉ x.asHomogeneousIdeal ∨
+      (X (1 : Fin 4) : MvPolynomial (Fin 4) R) ∉ x.asHomogeneousIdeal := by
+  simp only [weightOneOpen, TopologicalSpace.Opens.mem_sup, Proj.mem_basicOpen,
+    standardBasicOpen]
+
+/-- Outside the weight-one open, both weight-one coordinates vanish. -/
+public theorem not_mem_weightOneOpen_iff (R : Type u) [CommRing R]
+    (x : WeightedProjectiveSpace R) :
+    x ∉ weightOneOpen R ↔
+      (X (0 : Fin 4) : MvPolynomial (Fin 4) R) ∈ x.asHomogeneousIdeal ∧
+      (X (1 : Fin 4) : MvPolynomial (Fin 4) R) ∈ x.asHomogeneousIdeal := by
+  rw [mem_weightOneOpen_iff, not_or]
+  tauto
+
+/-! ### Residual locus `u = v = 0` and the anticanonical base point
+
+Note Prop. 3.3: on `u = v = 0` the equation becomes `y² = x³`, defining the single
+projective point `p = [0:0:1:1]`.  The ambient singularities `[0:0:1:0]` and `[0:0:0:1]`
+are excluded by `ambient_singular_miss_S_Q`.  Cone nonsingularity at residual points is
+`uv0_singular_implies_origin` / the geometric form below. -/
+
+/-- On `u = v = 0`, the only candidate singular cone point is the origin, which is not a
+projective point.  Packaged for the residual base point `[0:0:1:1]` of note Prop. 3.3:
+
+if `y² = x³` and `(x, y) ≠ (0, 0)` over a char-0 field, then the cone partials
+`∂F/∂x = -3x²` and `∂F/∂y = 2y` cannot both vanish. -/
+public theorem residual_basepoint_cone_nonsingular
+    {L : Type u} [Field L] [CharZero L]
+    (x y : L) (hx0 : x ≠ 0 ∨ y ≠ 0)
+    (heq : y ^ 2 = x ^ 3) :
+    (-3 : L) * x ^ 2 ≠ 0 ∨ (2 : L) * y ≠ 0 := by
+  by_contra h
+  simp only [not_or, not_not] at h
+  have horig := uv0_singular_implies_origin_of_charZero (L := L) x y heq h.1 h.2
+  rcases hx0 with hx | hy
+  · exact hx horig.1
+  · exact hy horig.2
+
+/-- Cone Jacobian nonvanishing on the residual locus `u = v = 0` over `ℚ`.
+
+Any `ℚ`-point of the affine cone of `S_Q` with `u = v = 0` that is not the origin has a
+nonvanishing partial of `surfaceEquation` (among `∂/∂x`, `∂/∂y`). -/
+public theorem cone_nonsingular_at_uv0
+    (p : Fin 4 → ℚ)
+    (hu : p 0 = 0) (hv : p 1 = 0)
+    (heq : aeval p surfaceEquation = 0)
+    (hnz : p 2 ≠ 0 ∨ p 3 ≠ 0) :
+    ∃ i : Fin 4, aeval p (pderiv i surfaceEquation) ≠ 0 := by
+  -- From the equation and `u = v = 0`: `p 3 ^ 2 = p 2 ^ 3`.
+  have hA : aeval p A_poly = 0 := by
+    unfold A_poly
+    simp [hu, hv]
+  have hB : aeval p B_poly = 0 := by
+    unfold B_poly P4_uv
+    simp [hu, hv]
+  have heq' : p 3 ^ 2 - p 2 ^ 3 = 0 := by
+    have : aeval p surfaceEquation =
+        p 3 ^ 2 - p 2 ^ 3 - aeval p A_poly * p 2 - aeval p B_poly := by
+      unfold surfaceEquation
+      simp
+    rw [this, hA, hB] at heq
+    simpa using heq
+  have hy2 : p 3 ^ 2 = p 2 ^ 3 := by linear_combination heq'
+  -- Evaluate the two cone partials at `p`.
+  have hx_eval : aeval p (pderiv (2 : Fin 4) surfaceEquation) = (-3 : ℚ) * p 2 ^ 2 := by
+    rw [pderiv_surfaceEquation_x, map_sub, map_mul, map_pow, map_neg, map_ofNat, aeval_X, hA]
+    ring
+  have hy_eval : aeval p (pderiv (3 : Fin 4) surfaceEquation) = (2 : ℚ) * p 3 := by
+    rw [pderiv_surfaceEquation_y, map_mul, map_ofNat, aeval_X]
+  -- If both vanish, residual nonsingularity forces the origin, contradicting `hnz`.
+  by_cases hx0 : aeval p (pderiv (2 : Fin 4) surfaceEquation) = 0
+  · by_cases hy0 : aeval p (pderiv (3 : Fin 4) surfaceEquation) = 0
+    · have hx' : (-3 : ℚ) * p 2 ^ 2 = 0 := by rw [← hx_eval]; exact hx0
+      have hy' : (2 : ℚ) * p 3 = 0 := by rw [← hy_eval]; exact hy0
+      have horig := uv0_singular_implies_origin (p 2) (p 3) hy2 hx' hy'
+      rcases hnz with h2 | h3
+      · exact absurd horig.1 h2
+      · exact absurd horig.2 h3
+    · exact ⟨3, hy0⟩
+  · exact ⟨2, hx0⟩
+
+/-- Residual locus of the surface outside the weight-one open: both `u` and `v` vanish, so
+the defining equation specialises to `y² − x³` (via `aeval_uv0_surfaceEquation`).
+
+What remains for full `Smooth (S_Q_toSpec)` at this locus is scheme-theoretic glue of the
+weight-2/3 charts of the *reduced induced* subscheme `S_Q` to the affine cone Jacobian data
+above — free polynomial presentations of those chart rings are unavailable. -/
+public theorem residual_locus_equation_specialises :
+    uv0Eval surfaceEquation = (X 1 : MvPolynomial (Fin 2) ℚ) ^ 2 - (X 0) ^ 3 :=
+  aeval_uv0_surfaceEquation
+
+/-- Points of `S_Q` outside the weight-one open have both `u` and `v` in their homogeneous
+ideal (so they lie on the residual locus `u = v = 0`). -/
+public theorem S_Q_outside_weightOneOpen_implies_uv_vanish
+    (x : S_Q) (hx : S_Q_ι x ∉ weightOneOpen ℚ) :
+    (X (0 : Fin 4) : MvPolynomial (Fin 4) ℚ) ∈ (S_Q_ι x).asHomogeneousIdeal ∧
+    (X (1 : Fin 4) : MvPolynomial (Fin 4) ℚ) ∈ (S_Q_ι x).asHomogeneousIdeal :=
+  (not_mem_weightOneOpen_iff ℚ (S_Q_ι x)).mp hx
+
 /-!
-### Status of `Smooth (S_Q ⟶ Spec ℚ)`
+### Status of `Smooth (S_Q ⟶ Spec ℚ)`  (smooth-locus reframing)
 
-**Affine criterion: complete** (vendored Nullstellensatz + standard-smooth localisation).
+**Smoothness notion targeted.** Mathlib `AlgebraicGeometry.Smooth` for `S_Q ⟶ Spec ℚ`
+(formally smooth + finite presentation, Zariski-local on source and target).  **Not** a
+bespoke Jacobian-only predicate, and **not** “smooth on weight-one charts” mislabelled as
+global smoothness.
 
-**Chartwise packaging: available**
-(`smooth_chartEquation_of_exists_pderiv_ne_zero_of_geometric`, chart evaluation, weighted
-Euler, Zariski locality, four-chart cover, weighted scaling identity).
+**What this module proves (honest intermediate).**
 
-**Algebraic input for Proposition 3.3: partial**
-(partials of `surfaceEquation`, `u = v = 0` specialisation, square-free `q₈`, discriminant
-factorisation, ambient singular ideals miss `S_Q`, chart evaluation).
-Full cone-gradient nonvanishing (singular fibres; cusps at `u = 0` / `v = 0`) is not closed.
+1. **Affine Jacobian criterion** — complete (vendored Nullstellensatz + standard-smooth
+   localisation of a naive hypersurface presentation).
+2. **Weight-one open** `D₊(u) ∪ D₊(v)` — defined (`weightOneOpen`); membership characterised
+   by nonvanishing of `u` or `v`.  Points of `S_Q` outside it have `u = v = 0` in their
+   homogeneous ideal (`S_Q_outside_weightOneOpen_implies_uv_vanish`).
+3. **Weight-one free generators** — `weightOneChartGen` / `weightOneChartToAway` /
+   `chartDehomogenize` package the classical generators `X_j / X_i^{w_j}` of `A_(X i)₀` for
+   `weights i = 1`.  Full `≃ₐ` bijectivity of `weightOneChartToAway` is **not** closed.
+4. **Ambient singular ideals miss `S_Q`** — `ambient_singular_miss_S_Q` (re-export of
+   Prop. 3.3 ideal form from `DelPezzo/Surface.lean`).
+5. **Residual locus `u = v = 0` / base point `[0:0:1:1]`** — equation specialises to
+   `y² − x³`; cone partials `∂/∂x = −3x²`, `∂/∂y = 2y` cannot vanish simultaneously at a
+   non-origin point (`cone_nonsingular_at_uv0`, `residual_basepoint_cone_nonsingular`).
+   This is the algebraic content of note Prop. 3.3 at the anticanonical base point.
 
-**Scheme-theoretic glue: still open.** Identifying the reduced induced chart opens of
-`S_Q = vanishingIdeal.subscheme` with `Spec` of the dehomogenised quotients needs:
-1. the weight-1 chart ring equivalence `StandardChartRing ≃ₐ MvPolynomial (Fin 3)` for
-   `D₊(u)`, `D₊(v)` (route 2; free polynomial presentation of degree-zero localisation), and
-2. a residual comparison at `[0:0:1:1] ∈ D₊(x) ∩ D₊(y)` (weights 2 and 3; free presentation
-   fails).
+**What remains for `Smooth (S_Q_toSpec)`.**
 
-Until that lands, Mathlib `Smooth (S_Q_toSpec)` is **not** proved.  We refuse a bespoke
-smoothness predicate.
+| Gap | Why it blocks |
+| --- | --- |
+| Bijective free presentation `StandardChartRing ≃ₐ MvPolynomial (Fin 3)` for weight 1 | Needed to promote chart rings to `Algebra.Smooth` over `ℚ` and identify `D₊(u)`, `D₊(v)` with `𝔸³` |
+| Full cone-gradient nonvanishing on weight-one charts (singular fibres of `Δ = 0`, cusps at `u = 0` / `v = 0`) | Algebraic input for the chartwise Jacobian criterion on `D₊(u) ∪ D₊(v)` |
+| Scheme glue: reduced-induced chart opens of `S_Q = vanishingIdeal.subscheme` ≅ `Spec` of dehomogenised quotients | `S_Q` is **not** `Proj(A/⟨f⟩)` (no graded-quotient instance); without this iso the affine criterion does not transfer to `Smooth S_Q_toSpec` |
+| Weight-2/3 charts away from the origin | Free presentation fails (cyclic quotients); residual point `[0:0:1:1]` is covered algebraically above, but scheme-level smoothness there needs either cyclic-quotient smoothness or glue from weight-one charts |
 
-**Smoothness notion (when it lands):** Mathlib `AlgebraicGeometry.Smooth` for the structure
-morphism `S_Q ⟶ Spec ℚ` (formally smooth + finite presentation of the structure sheaf maps),
-not a weaker Jacobian-only predicate.
+Until those land, **`Smooth S_Q_toSpec` is not proved**.  The residual base point is under
+algebraic control; the obstruction is scheme glue and weight-one free presentation
+bijectivity / full Jacobian nonvanishing on `D₊(u) ∪ D₊(v)`, not a missing cone
+computation at `[0:0:1:1]`.
 -/
 
 end DelPezzo
@@ -992,3 +1178,15 @@ end ExplicitUnirational
 #print axioms ExplicitUnirational.DelPezzo.squarefree_q8_for_smoothness
 #print axioms ExplicitUnirational.DelPezzo.surfaceEquation_weighted_euler
 #print axioms ExplicitUnirational.DelPezzo.eval_chartEquation_chartPoint
+#print axioms ExplicitUnirational.DelPezzo.weightOneChartGen
+#print axioms ExplicitUnirational.DelPezzo.weightOneChartToAway
+#print axioms ExplicitUnirational.DelPezzo.chartDehomogenize
+#print axioms ExplicitUnirational.DelPezzo.val_weightOneChartGen
+#print axioms ExplicitUnirational.DelPezzo.weightOneOpen
+#print axioms ExplicitUnirational.DelPezzo.mem_weightOneOpen_iff
+#print axioms ExplicitUnirational.DelPezzo.not_mem_weightOneOpen_iff
+#print axioms ExplicitUnirational.DelPezzo.cone_nonsingular_at_uv0
+#print axioms ExplicitUnirational.DelPezzo.residual_basepoint_cone_nonsingular
+#print axioms ExplicitUnirational.DelPezzo.residual_locus_equation_specialises
+#print axioms ExplicitUnirational.DelPezzo.S_Q_outside_weightOneOpen_implies_uv_vanish
+#print axioms ExplicitUnirational.DelPezzo.ambient_singular_miss_S_Q
