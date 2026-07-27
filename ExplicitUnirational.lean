@@ -20,6 +20,7 @@ public import ExplicitUnirational.FunctionField.MonodromyS9
 public import ExplicitUnirational.FunctionField.MulThree
 public import ExplicitUnirational.FunctionField.MulThreeCert
 public import ExplicitUnirational.FunctionField.PencilRationality
+public import ExplicitUnirational.FunctionField.ResidualDegree
 public import ExplicitUnirational.FunctionField.TangentResidual
 public import ExplicitUnirational.FunctionField.TorsorDescent
 public import ExplicitUnirational.FunctionField.Trivialization
