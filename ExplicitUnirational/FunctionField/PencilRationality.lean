@@ -37,7 +37,7 @@ are the affine cubics in `x = X/Z`, `y = Y/Z`, and the third variable is the pen
 `z`. Variables of the result are indexed `0 ↦ x`, `1 ↦ y`, `2 ↦ z`. -/
 public noncomputable def pencilRelation (f₀ f₁ : MvPolynomial (Fin 2) k) :
     MvPolynomial (Fin 3) k :=
-  rename Fin.castSucc f₀ + X (2 : Fin 3) * rename Fin.castSucc f₁
+  rename Fin.castSucc f₀ + (X (2 : Fin 3) : MvPolynomial (Fin 3) k) * rename Fin.castSucc f₁
 
 /-- The rational function field of the affine plane: `Frac(k[x, y])`. -/
 public abbrev planeField (k : Type*) [Field k] : Type _ :=
@@ -57,40 +57,60 @@ private theorem isScalarTower_planeField :
 
 private theorem algebraMap_eq_aeval_coords (f : MvPolynomial (Fin 2) k) :
     algebraMap (MvPolynomial (Fin 2) k) (planeField k) f =
-      aeval (fun i : Fin 2 => algebraMap _ (planeField k) (X i)) f := by
+      aeval (fun i : Fin 2 =>
+        algebraMap (MvPolynomial (Fin 2) k) (planeField k)
+          (X i : MvPolynomial (Fin 2) k)) f := by
   letI := isScalarTower_planeField (k := k)
   let φ : MvPolynomial (Fin 2) k →ₐ[k] planeField k :=
     IsScalarTower.toAlgHom k (MvPolynomial (Fin 2) k) (planeField k)
-  have hφ : φ = aeval (fun i : Fin 2 => algebraMap _ (planeField k) (X i)) := aeval_unique φ
-  simpa [φ, IsScalarTower.toAlgHom_apply] using congrArg (fun g : MvPolynomial (Fin 2) k →ₐ[k] planeField k =>
-    g f) hφ
+  have hφ : φ =
+      aeval (fun i : Fin 2 =>
+        algebraMap (MvPolynomial (Fin 2) k) (planeField k)
+          (X i : MvPolynomial (Fin 2) k)) :=
+    aeval_unique φ
+  simpa [φ, IsScalarTower.toAlgHom_apply] using
+    congrArg (fun g : MvPolynomial (Fin 2) k →ₐ[k] planeField k => g f) hφ
 
 private theorem range_coords_eq (k : Type*) [Field k] :
-    Set.range (fun i : Fin 2 => algebraMap (MvPolynomial (Fin 2) k) (planeField k) (X i)) =
-      ({algebraMap _ (planeField k) (X (0 : Fin 2)),
-          algebraMap _ (planeField k) (X (1 : Fin 2))} : Set (planeField k)) := by
+    Set.range (fun i : Fin 2 =>
+        algebraMap (MvPolynomial (Fin 2) k) (planeField k)
+          (X i : MvPolynomial (Fin 2) k)) =
+      ({algebraMap (MvPolynomial (Fin 2) k) (planeField k)
+            (X (0 : Fin 2) : MvPolynomial (Fin 2) k),
+          algebraMap (MvPolynomial (Fin 2) k) (planeField k)
+            (X (1 : Fin 2) : MvPolynomial (Fin 2) k)} : Set (planeField k)) := by
   ext z
   simp only [Set.mem_range, Set.mem_insert_iff, Set.mem_singleton_iff, Fin.exists_fin_two]
 
 private theorem algebraMap_mem_adjoin_coords (f : MvPolynomial (Fin 2) k) :
     algebraMap (MvPolynomial (Fin 2) k) (planeField k) f ∈
       IntermediateField.adjoin k
-        ({algebraMap _ (planeField k) (X (0 : Fin 2)),
-            algebraMap _ (planeField k) (X (1 : Fin 2))} : Set (planeField k)) := by
+        ({algebraMap (MvPolynomial (Fin 2) k) (planeField k)
+              (X (0 : Fin 2) : MvPolynomial (Fin 2) k),
+            algebraMap (MvPolynomial (Fin 2) k) (planeField k)
+              (X (1 : Fin 2) : MvPolynomial (Fin 2) k)} : Set (planeField k)) := by
   let K := planeField k
-  let x : K := algebraMap _ K (X (0 : Fin 2))
-  let y : K := algebraMap _ K (X (1 : Fin 2))
-  have h_aeval : algebraMap _ K f = aeval (fun i : Fin 2 => algebraMap _ K (X i)) f :=
+  let x : K :=
+    algebraMap (MvPolynomial (Fin 2) k) K (X (0 : Fin 2) : MvPolynomial (Fin 2) k)
+  let y : K :=
+    algebraMap (MvPolynomial (Fin 2) k) K (X (1 : Fin 2) : MvPolynomial (Fin 2) k)
+  have h_aeval :
+      algebraMap (MvPolynomial (Fin 2) k) K f =
+        aeval (fun i : Fin 2 =>
+          algebraMap (MvPolynomial (Fin 2) k) K (X i : MvPolynomial (Fin 2) k)) f :=
     algebraMap_eq_aeval_coords f
-  have h_mem : algebraMap _ K f ∈
-      Algebra.adjoin k (Set.range fun i : Fin 2 => algebraMap _ K (X i)) := by
+  have h_mem :
+      algebraMap (MvPolynomial (Fin 2) k) K f ∈
+        Algebra.adjoin k
+          (Set.range fun i : Fin 2 =>
+            algebraMap (MvPolynomial (Fin 2) k) K (X i : MvPolynomial (Fin 2) k)) := by
     rw [h_aeval, ← aeval_range]
     exact ⟨f, rfl⟩
   have h_le :
       Algebra.adjoin k ({x, y} : Set K) ≤
         (IntermediateField.adjoin k ({x, y} : Set K)).toSubalgebra :=
     Algebra.adjoin_le fun _ hz => IntermediateField.subset_adjoin k _ hz
-  rw [range_coords_eq] at h_mem
+  rw [range_coords_eq k] at h_mem
   exact h_le h_mem
 
 private theorem algebraMap_ne_zero_of_ne_zero {f : MvPolynomial (Fin 2) k} (hf : f ≠ 0) :
@@ -112,26 +132,34 @@ public theorem adjoin_pencil_parameter_eq_top
           algebraMap (MvPolynomial (Fin 2) k) (planeField k) f₁ =
         (0 : planeField k)) ∧
       IntermediateField.adjoin k
-          ({algebraMap _ (planeField k) (X (0 : Fin 2)),
-              algebraMap _ (planeField k) (X (1 : Fin 2)),
+          ({algebraMap (MvPolynomial (Fin 2) k) (planeField k)
+                (X (0 : Fin 2) : MvPolynomial (Fin 2) k),
+              algebraMap (MvPolynomial (Fin 2) k) (planeField k)
+                (X (1 : Fin 2) : MvPolynomial (Fin 2) k),
               pencilParameter f₀ f₁} : Set (planeField k)) =
         IntermediateField.adjoin k
-          ({algebraMap _ (planeField k) (X (0 : Fin 2)),
-              algebraMap _ (planeField k) (X (1 : Fin 2))} : Set (planeField k)) := by
+          ({algebraMap (MvPolynomial (Fin 2) k) (planeField k)
+                (X (0 : Fin 2) : MvPolynomial (Fin 2) k),
+              algebraMap (MvPolynomial (Fin 2) k) (planeField k)
+                (X (1 : Fin 2) : MvPolynomial (Fin 2) k)} : Set (planeField k)) := by
   let K := planeField k
-  let x : K := algebraMap _ K (X (0 : Fin 2))
-  let y : K := algebraMap _ K (X (1 : Fin 2))
+  let x : K :=
+    algebraMap (MvPolynomial (Fin 2) k) K (X (0 : Fin 2) : MvPolynomial (Fin 2) k)
+  let y : K :=
+    algebraMap (MvPolynomial (Fin 2) k) K (X (1 : Fin 2) : MvPolynomial (Fin 2) k)
   let z : K := pencilParameter f₀ f₁
-  let f₀K : K := algebraMap _ K f₀
-  let f₁K : K := algebraMap _ K f₁
+  let f₀K : K := algebraMap (MvPolynomial (Fin 2) k) K f₀
+  let f₁K : K := algebraMap (MvPolynomial (Fin 2) k) K f₁
   have hf₁K : f₁K ≠ 0 := algebraMap_ne_zero_of_ne_zero hf₁
   refine ⟨?_root, ?_adjoin⟩
   · -- `f₀ + z * f₁ = 0`
     change f₀K + z * f₁K = 0
     dsimp only [z, pencilParameter, f₀K, f₁K]
     have hcancel :
-        (-(algebraMap _ K f₀) / algebraMap _ K f₁) * algebraMap _ K f₁ =
-          -(algebraMap _ K f₀) :=
+        (-(algebraMap (MvPolynomial (Fin 2) k) K f₀) /
+            algebraMap (MvPolynomial (Fin 2) k) K f₁) *
+            algebraMap (MvPolynomial (Fin 2) k) K f₁ =
+          -(algebraMap (MvPolynomial (Fin 2) k) K f₀) :=
       div_mul_cancel₀ _ hf₁K
     linear_combination hcancel
   · -- `k(x,y,z) = k(x,y)`
@@ -156,21 +184,28 @@ public theorem adjoin_pencil_parameter_eq_top
 /-- Homogeneous forms of the rational pencil (3.1). Indices `0,1,2` correspond to `X,Y,Z`:
 `F₀ = Y Z² - X³`. -/
 public noncomputable def F₀_rat : MvPolynomial (Fin 3) ℚ :=
-  X 1 * X 2 ^ 2 - X 0 ^ 3
+  (X 1 : MvPolynomial (Fin 3) ℚ) * (X 2 : MvPolynomial (Fin 3) ℚ) ^ 2 -
+    (X 0 : MvPolynomial (Fin 3) ℚ) ^ 3
 
 /-- Homogeneous forms of the rational pencil (3.1):
 `F₁ = X Z² + Y³ + Y² Z - Z³`. -/
 public noncomputable def F₁_rat : MvPolynomial (Fin 3) ℚ :=
-  X 0 * X 2 ^ 2 + X 1 ^ 3 + X 1 ^ 2 * X 2 - X 2 ^ 3
+  (X 0 : MvPolynomial (Fin 3) ℚ) * (X 2 : MvPolynomial (Fin 3) ℚ) ^ 2 +
+    (X 1 : MvPolynomial (Fin 3) ℚ) ^ 3 +
+    (X 1 : MvPolynomial (Fin 3) ℚ) ^ 2 * (X 2 : MvPolynomial (Fin 3) ℚ) -
+    (X 2 : MvPolynomial (Fin 3) ℚ) ^ 3
 
 /-- Homogeneous forms of the `C(t)` pencil (5.1). Indices `0,1,2` correspond to `X,Y,Z`:
 `F₀ = Y Z² - X³` (independent of the base parameter `t`). -/
 public noncomputable def F₀_t {R : Type*} [CommRing R] : MvPolynomial (Fin 3) R :=
-  X 1 * X 2 ^ 2 - X 0 ^ 3
+  (X 1 : MvPolynomial (Fin 3) R) * (X 2 : MvPolynomial (Fin 3) R) ^ 2 -
+    (X 0 : MvPolynomial (Fin 3) R) ^ 3
 
 /-- Homogeneous forms of the `C(t)` pencil (5.1):
 `F₁ = Y³ - X Z² - 2 t Z³`, with base parameter `t : R`. -/
 public noncomputable def F₁_t {R : Type*} [CommRing R] (t : R) : MvPolynomial (Fin 3) R :=
-  X 1 ^ 3 - X 0 * X 2 ^ 2 - C (2 * t) * X 2 ^ 3
+  (X 1 : MvPolynomial (Fin 3) R) ^ 3 -
+    (X 0 : MvPolynomial (Fin 3) R) * (X 2 : MvPolynomial (Fin 3) R) ^ 2 -
+    (C (2 * t) : MvPolynomial (Fin 3) R) * (X 2 : MvPolynomial (Fin 3) R) ^ 3
 
 end ExplicitUnirational.FunctionField
