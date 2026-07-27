@@ -1,5 +1,9 @@
 module
 
+public import ExplicitUnirational.Cert.AxiomAudit
+public import ExplicitUnirational.Cert.NonicF5
+public import ExplicitUnirational.Cert.SexticF5
+public import ExplicitUnirational.Cert.OcticF7
 public import ExplicitUnirational.Cert.Rabin
 public import ExplicitUnirational.Foundation
 
