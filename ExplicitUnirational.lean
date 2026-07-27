@@ -1,26 +1,25 @@
 module
 
-public import ExplicitUnirational.Cert.NineCycle
 public import ExplicitUnirational.Cert.AxiomAudit
 public import ExplicitUnirational.Cert.Discriminant
+public import ExplicitUnirational.Cert.Invariants
+public import ExplicitUnirational.Cert.NineCycle
+public import ExplicitUnirational.Cert.NonicF5
+public import ExplicitUnirational.Cert.OcticF7
 public import ExplicitUnirational.Cert.QuarticDiscriminants
+public import ExplicitUnirational.Cert.Rabin
+public import ExplicitUnirational.Cert.SexticF5
+public import ExplicitUnirational.CubicPencil.Incidence
+public import ExplicitUnirational.Foundation
+public import ExplicitUnirational.FunctionField.GeometricIntegrality
 public import ExplicitUnirational.FunctionField.MulThree
 public import ExplicitUnirational.FunctionField.MulThreeCert
 public import ExplicitUnirational.FunctionField.PencilRationality
 public import ExplicitUnirational.FunctionField.TorsorDescent
-public import ExplicitUnirational.FunctionField.GeometricIntegrality
-public import ExplicitUnirational.CubicPencil.Incidence
-public import ExplicitUnirational.Cert.NonicF5
-public import ExplicitUnirational.Cert.SexticF5
-public import ExplicitUnirational.Cert.OcticF7
-public import ExplicitUnirational.Cert.Rabin
-public import ExplicitUnirational.Cert.Invariants
-public import ExplicitUnirational.Foundation
+public import ExplicitUnirational.FunctionField.Trivialization
 public import ExplicitUnirational.GenericDegree
 public import ExplicitUnirational.WeightedProjective.Basic
-
 /-!
 # ExplicitUnirational
-
 Formalization of explicit unirational degree-one del Pezzo surfaces of arithmetic Picard rank one.
 -/
