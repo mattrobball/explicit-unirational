@@ -30,9 +30,10 @@ the degree of the induced function-field extension is
   [K(C) : K(ξ, η)] = 9.
 ```
 
-A monolithic eliminant for this identity has total degree 18 with thousands of terms. This
-module attacks the claim by a **field tower**, reusing the staged `Y`-reductions of
-`TangentResidual` only as orientation (not as a single ring goal).
+A monolithic eliminant for this identity has total degree 18 with **1055** expanded terms
+(sympy); the first Euclidean product alone is already 794–921 terms — past the house `ring`
+timeout. This module therefore attacks the claim by a **field tower**, with items (1)–(2)
+proved and (3)–(4) conditional on a future resultant route.
 
 ## Tower
 
@@ -50,12 +51,69 @@ so the residual claim is equivalent to `[K(C) : K(ξ)] = 18`.
 | --- | --- | --- |
 | (1) | `[K(ξ, η) : K(ξ)] = 2` | **proved** abstractly for any short Weierstrass model |
 | (2) | `[K(C) : K(X)] = 3` | **proved** for the monic model of the rational pencil |
-| (3) | `[K(C) : K(ξ)] = 18` | **open** — offline sympy: resultant of `redTheta − ξ·redH2` vs `g` is degree 3 in `ξ` and 18 in `X`; square-free at specializations of `z`. Lean certificate not yet installed |
+| (3) | `[K(C) : K(ξ)] = 18` | **open** — sympy orientation confirmed; Lean resultant certificate **impractical** (see size report) |
 | (4) | `[K(C) : K(ξ, η)] = 9` | **conditional** on (3), via the tower identity below |
 
 Coordinates of `ξ` on the affine chart: after `Y`-reduction one has
 `ξ ≡ redTheta / redH2 (mod gAff)` (Fisher/Sage normal form of `Θ/H²`). The reduced forms live
 in `TangentResidual`.
+
+## Resultant certificate — measured sizes (Attack 2, 2026-07-27)
+
+Offline sympy on `f ≔ redTheta − ξ·redH2` and `g ≔ gAff` (variables `X,Y,z,ξ`):
+
+| Object | terms | notes |
+| --- | ---: | --- |
+| `gAff` | 6 | `Y`-deg 3, LC `z` |
+| `redH2` | 46 | `Y`-deg 2 |
+| `redTheta` | 84 | `Y`-deg 2 |
+| `f` | 130 | `Y`-deg 2 |
+| `Res_Y(g,f)` | **1055** | **deg_X = 18**, **deg_ξ = 3**, deg_z = 26, content 1 |
+| PRS last (= Res) | 1055 | matches `sp.resultant` exactly |
+
+Square-free specializations (as univariate in `X` over `ℚ(ξ)`):
+
+| `z` | terms of `Res` | deg_X | gcd(`R`, `∂R/∂X`) |
+| ---: | ---: | ---: | --- |
+| 2 | 76 | 18 | 1 (square-free) |
+| 3 | 38 | 18 | 1 (square-free) |
+| 5 | 76 | 18 | 1 (square-free) |
+
+### Euclidean / Bézout intermediates (generic, integer pseudo-division)
+
+| Stage | deg | `Q` terms | rem terms | `α` terms | expanded products |
+| --- | --- | ---: | ---: | ---: | --- |
+| 0 (`g` ÷ `f`) | 3→2→1 | 75 | 579 | 175 | `α·g` = **794**, `Q·f` = **921** |
+| 1 | 2→1→0 | 1527 | 3572 | 1790 | content-inflated |
+| single `Q`-monomial · `f` | — | 1 | — | — | **130** |
+
+True (content-cleared) division at the first step still leaves a remainder of **579** terms.
+
+### Comparison with the proved `TangentResidual` ladder
+
+| Stage in `TangentResidual` | product size | Lean |
+| --- | ---: | --- |
+| `hessAff²` | ~41 | proved (`ring`, seconds) |
+| `thetaAff` | ~119 | proved |
+| `redH2·hessAff` | ~149 | proved |
+| `jAff` | ~368 | **timeout > 30 min** |
+
+Worst checked combined build of the three proved stages: ≈ **306 s**.
+
+### Chunking verdict
+
+- A monolithic `ring` goal for `A·g + B·f = Res` is far past the known 368-term timeout
+  (products already 794–921 at stage 0 alone; full `Res` is 1055 terms).
+- Chunking stage 0 into monoms gives ~75 lemmas of size ~130 (borderline, like `H³`) **plus**
+  an assembly identity whose right-hand side is the 579-term remainder — that assembly is
+  itself past the timeout threshold and does not cancel into sparse pieces.
+- Later Euclidean stages inflate further (rem 3572), so the full Bézout cofactors are worse.
+- Specializations `z ∈ {2,3,5}` shrink `Res` to 38–76 terms and admit true Bézout with
+  products ~148–164, i.e. at the edge of what `ring` has closed elsewhere — but a
+  specialization does **not** yield `[K(C) : K(ξ)] = 18` over `K = ℚ(z)`.
+
+**Conclusion (measured negative):** the generic resultant certificate is impractical even
+chunked under the house `ring` idiom. Items (3) and (4) remain open; no `sorry` stubs.
 -/
 
 set_option maxHeartbeats 8000000
@@ -267,9 +325,15 @@ specializations `z ∈ {2,3,5}`. Combined with item (2) this suggests
 * `[K(X, ξ) : K(X)] = 3` (so `K(C) = K(X, ξ)`),
 * `[K(X, ξ) : K(ξ)] = 18` (so `[K(C) : K(ξ)] = 18`),
 
-which is exactly the missing step. Installing the resultant as a Lean `ring` certificate
-(chunked, as in `TangentResidual`) is the remaining Attack-2 work package; Attack 1 does not
-collapse further because `ξ ∉ K(X)` (the cubic factor in `ξ` is nontrivial).
+which is exactly the missing step.
+
+**Measured negative (see module docstring).** The generic elimination identity has
+`Res` of **1055** terms; the first Euclidean product alone expands to **794–921** terms,
+past the house `ring` timeout established on `jAff` (~368 terms, >30 min). Chunking does not
+rescue the assembly of the 579-term first remainder. Items (3)–(4) therefore stay conditional
+on a future route (different normal form, modular certificates, or a Mathlib resultant API
+that avoids expanding the eliminant). Attack 1 does not collapse: `ξ ∉ K(X)` because the
+cubic factor in `ξ` is nontrivial.
 -/
 
 /-! ## Axiom audit -/
