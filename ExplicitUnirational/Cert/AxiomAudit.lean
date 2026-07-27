@@ -5,6 +5,7 @@ Authors: Matthew R. Ballard
 -/
 module
 
+public import ExplicitUnirational.Cert.Invariants
 public import ExplicitUnirational.Cert.NonicF5
 public import ExplicitUnirational.Cert.OcticF7
 public import ExplicitUnirational.Cert.SexticF5
@@ -20,3 +21,7 @@ Each of the three irreducibility claims of note Appendix A must depend only on `
 #print axioms ExplicitUnirational.Cert.irreducible_f8
 #print axioms ExplicitUnirational.Cert.irreducible_R
 #print axioms ExplicitUnirational.Cert.irreducible_d6
+#print axioms ExplicitUnirational.Invariants.hessian_identity_rat
+#print axioms ExplicitUnirational.Invariants.c4_c6_rat
+#print axioms ExplicitUnirational.Invariants.c4_c6_lambda
+#print axioms ExplicitUnirational.Invariants.hessian_lambda
