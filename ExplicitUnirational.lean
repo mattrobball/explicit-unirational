@@ -10,6 +10,7 @@ public import ExplicitUnirational.Cert.QuarticDiscriminants
 public import ExplicitUnirational.Cert.Rabin
 public import ExplicitUnirational.Cert.SexticF5
 public import ExplicitUnirational.CubicPencil.Incidence
+public import ExplicitUnirational.DelPezzo.Surface
 public import ExplicitUnirational.Foundation
 public import ExplicitUnirational.FunctionField.GeometricIntegrality
 public import ExplicitUnirational.FunctionField.MulThree
