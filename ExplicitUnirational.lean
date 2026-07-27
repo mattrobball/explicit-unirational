@@ -1,5 +1,6 @@
 module
 
+public import ExplicitUnirational.Cert.Rabin
 public import ExplicitUnirational.Foundation
 
 /-!
