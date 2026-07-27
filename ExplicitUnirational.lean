@@ -16,6 +16,7 @@ public import ExplicitUnirational.Cert.Rabin
 public import ExplicitUnirational.Cert.Invariants
 public import ExplicitUnirational.Foundation
 public import ExplicitUnirational.GenericDegree
+public import ExplicitUnirational.WeightedProjective.Basic
 
 /-!
 # ExplicitUnirational
