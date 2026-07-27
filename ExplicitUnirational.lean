@@ -6,6 +6,7 @@ public import ExplicitUnirational.Cert.Invariants
 public import ExplicitUnirational.Cert.NineCycle
 public import ExplicitUnirational.Cert.NonicF5
 public import ExplicitUnirational.Cert.OcticF7
+public import ExplicitUnirational.Cert.OcticQ
 public import ExplicitUnirational.Cert.QuarticDiscriminants
 public import ExplicitUnirational.Cert.Rabin
 public import ExplicitUnirational.Cert.SexticF5
