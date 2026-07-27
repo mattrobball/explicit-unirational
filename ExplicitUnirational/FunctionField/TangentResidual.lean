@@ -36,13 +36,17 @@ This module supplies:
 2. **Weierstrass coefficients.** Matching of the Jacobian model (3.7) / `noteCurveQ` to the
    Aronhold invariants `S`, `T` of the ternary cubic (`27 S = A`, `−27 T = 4B`).
 
-3. **Degree 9.** Size report for a resultant certificate; full minimality left for a
+3. **Staged `Y`-reduction of Fisher/Sage covariants.** Integer forms of `Θ` and reduced normal
+   forms of `H²`, `H³` modulo `gAff`, each as a separate `ring` certificate (no monolithic
+   ~1900-term Weierstrass witness). Higher rungs measured offline.
+
+4. **Degree 9.** Size report for a resultant certificate; full minimality left for a
    follow-up (no `sorry`).
 
 Coordinates: `X 0 = X`, `X 1 = Y`, `X 2 = z` (parameter), matching `MulThreeCert`.
 -/
 
-set_option maxHeartbeats 8000000
+set_option maxHeartbeats 80000000
 set_option maxRecDepth 10000
 
 noncomputable section
@@ -271,20 +275,523 @@ public theorem tangent_residual_package :
     ∧ (gAffCleared residualQx residualQy residualA3 = gAff * residualA3 ^ 3) :=
   ⟨residual_direction_is_tangent, residual_on_tangent_line, residual_on_curve_identity⟩
 
-/-! ## Degree-9 outlook (item 3)
+/-! ## Fisher–Sage covariants and staged `Y`-reduction
 
-The extension degree `[K(C) : K(ξ, η)] = 9` for `ξ = Θ/H²`, `η = J/(2H³)` (Fisher /
-Sage covariants) is the field-theoretic content of `deg α_λ = 9`. Offline resultant
-experiments produce an eliminant of total degree 18 in `(X, ξ)` with on the order of
-**10³–10⁴ terms** once `z` is kept symbolic — at the edge of a single `ring`-checked
-witness in this toolchain. A modular tower or factorized eliminant is the practical
-next step; it is not stubbed here (no `sorry`).
+Integer scalings on the affine chart: `hessAff = 27 H_sage`, `thetaAff = 27² Θ`,
+`jAff = 27³ J` (Sage/Fisher). The cleared Weierstrass identity is
+`jAff² − 4 thetaAff³ − 4 A · thetaAff · hessAff⁴ − Bnum · hessAff⁶ ≡ 0 (mod gAff)`.
 
-Items delivered: the residual package (item 1) and the identification of Jacobian
-Weierstrass coefficients with Aronhold `S`, `T` / note (3.7) (item 2 coefficient half).
-The full multipolynomial identity `η² − ξ³ − Aξ − B ≡ 0 (mod g)` for expanded `Θ`, `J`
-is verified offline by polynomial division (~2k-term witness); embedding that witness
-is deferred to keep `lake build` stable. -/
+`gAff` has `Y`-degree 3 with leading coefficient `z`. Every class has a unique
+representative of `Y`-degree ≤ 2. Each proved lemma is a separate measured-size
+`ring` goal (term counts from sympy).
+-/
+
+public noncomputable def redH2 : MvPolynomial (Fin 3) ℚ :=
+  81 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 4
+    - 54 * (X 0) ^ 6 * (X 2) ^ 3
+    + 9 * (X 0) ^ 5 * (X 1) * (X 2) ^ 3
+    + 54 * (X 0) ^ 4 * (X 1) * (X 2) ^ 4
+    - 450 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 4
+    + 54 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 5
+    + 162 * (X 0) ^ 6 * (X 2) ^ 2
+    - 54 * (X 0) ^ 5 * (X 1) * (X 2) ^ 2
+    + 153 * (X 0) ^ 5 * (X 2) ^ 3
+    + 45 * (X 0) ^ 4 * (X 2) ^ 4
+    - 162 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 3
+    - 333 * (X 0) ^ 3 * (X 1) * (X 2) ^ 4
+    + 630 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 4
+    + 36 * (X 0) ^ 2 * (X 1) * (X 2) ^ 5
+    - 150 * (X 0) * (X 1) ^ 2 * (X 2) ^ 5
+    + 9 * (X 1) ^ 2 * (X 2) ^ 6
+    + 81 * (X 0) ^ 5 * (X 1) * (X 2)
+    - 414 * (X 0) ^ 5 * (X 2) ^ 2
+    - 108 * (X 0) ^ 4 * (X 2) ^ 3
+    + 90 * (X 0) ^ 3 * (X 1) * (X 2) ^ 3
+    - 261 * (X 0) ^ 3 * (X 2) ^ 4
+    + 405 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 3
+    + 495 * (X 0) ^ 2 * (X 1) * (X 2) ^ 4
+    + 24 * (X 0) ^ 2 * (X 2) ^ 5
+    - 54 * (X 0) * (X 1) ^ 2 * (X 2) ^ 4
+    - 108 * (X 0) * (X 1) * (X 2) ^ 5
+    + 6 * (X 1) * (X 2) ^ 6
+    - 135 * (X 0) ^ 5 * (X 2)
+    - 297 * (X 0) ^ 3 * (X 1) * (X 2) ^ 2
+    + 576 * (X 0) ^ 3 * (X 2) ^ 3
+    + 216 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 2
+    - 153 * (X 0) ^ 2 * (X 1) * (X 2) ^ 3
+    + 180 * (X 0) ^ 2 * (X 2) ^ 4
+    + 12 * (X 0) * (X 1) * (X 2) ^ 4
+    - 36 * (X 0) * (X 2) ^ 5
+    + (X 2) ^ 6
+    + 117 * (X 0) ^ 3 * (X 2) ^ 2
+    - 135 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2)
+    + 657 * (X 0) ^ 2 * (X 1) * (X 2) ^ 2
+    - 414 * (X 0) ^ 2 * (X 2) ^ 3
+    - 72 * (X 0) * (X 1) * (X 2) ^ 3
+    + 54 * (X 0) * (X 2) ^ 4
+    + 153 * (X 0) ^ 2 * (X 1) * (X 2)
+    - 81 * (X 0) ^ 2 * (X 2) ^ 2
+    - 6 * (X 0) * (X 2) ^ 3
+    + 9 * (X 0) ^ 2
+
+public noncomputable def quotH2 : MvPolynomial (Fin 3) ℚ :=
+  -54 * (X 0) ^ 3 * (X 2) ^ 3
+    + 9 * (X 0) ^ 2 * (X 1) * (X 2) ^ 3
+    + 162 * (X 0) ^ 3 * (X 2) ^ 2
+    - 54 * (X 0) ^ 2 * (X 1) * (X 2) ^ 2
+    + 153 * (X 0) ^ 2 * (X 2) ^ 3
+    - 18 * (X 0) * (X 2) ^ 4
+    + 81 * (X 0) ^ 2 * (X 1) * (X 2)
+    - 414 * (X 0) ^ 2 * (X 2) ^ 2
+    + 54 * (X 0) * (X 2) ^ 3
+    - 135 * (X 0) ^ 2 * (X 2)
+
+public noncomputable def thetaAff : MvPolynomial (Fin 3) ℚ :=
+  -108 * (X 0) ^ 3 * (X 1) ^ 3 * (X 2) ^ 6
+    + 45 * (X 0) ^ 2 * (X 1) ^ 4 * (X 2) ^ 6
+    - 6 * (X 0) * (X 1) ^ 5 * (X 2) ^ 6
+    + (X 1) ^ 6 * (X 2) ^ 6
+    + 27 * (X 0) ^ 6 * (X 2) ^ 5
+    - 18 * (X 0) ^ 5 * (X 1) * (X 2) ^ 5
+    + 15 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 5
+    + 621 * (X 0) ^ 3 * (X 1) ^ 3 * (X 2) ^ 5
+    - 108 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 6
+    - 135 * (X 0) ^ 2 * (X 1) ^ 4 * (X 2) ^ 5
+    + 60 * (X 0) ^ 2 * (X 1) ^ 3 * (X 2) ^ 6
+    + 36 * (X 0) * (X 1) ^ 5 * (X 2) ^ 5
+    - 135 * (X 0) * (X 1) ^ 4 * (X 2) ^ 6
+    + 108 * (X 0) * (X 1) ^ 3 * (X 2) ^ 7
+    - 9 * (X 1) ^ 6 * (X 2) ^ 5
+    + 27 * (X 1) ^ 5 * (X 2) ^ 6
+    - 21 * (X 1) ^ 4 * (X 2) ^ 7
+    + 54 * (X 0) ^ 5 * (X 1) * (X 2) ^ 4
+    - 231 * (X 0) ^ 5 * (X 2) ^ 5
+    - 90 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 4
+    + 135 * (X 0) ^ 4 * (X 1) * (X 2) ^ 5
+    + 27 * (X 0) ^ 4 * (X 2) ^ 6
+    + 486 * (X 0) ^ 3 * (X 1) ^ 3 * (X 2) ^ 4
+    + 621 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 5
+    - 60 * (X 0) ^ 3 * (X 1) * (X 2) ^ 6
+    - 180 * (X 0) ^ 2 * (X 1) ^ 3 * (X 2) ^ 5
+    + 30 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 6
+    - 54 * (X 0) * (X 1) ^ 5 * (X 2) ^ 4
+    + 390 * (X 0) * (X 1) ^ 4 * (X 2) ^ 5
+    - 801 * (X 0) * (X 1) ^ 3 * (X 2) ^ 6
+    + 108 * (X 0) * (X 1) ^ 2 * (X 2) ^ 7
+    + 27 * (X 1) ^ 6 * (X 2) ^ 4
+    - 159 * (X 1) ^ 5 * (X 2) ^ 5
+    + 315 * (X 1) ^ 4 * (X 2) ^ 6
+    - 128 * (X 1) ^ 3 * (X 2) ^ 7
+    - 63 * (X 0) ^ 5 * (X 2) ^ 4
+    + 135 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 3
+    - 390 * (X 0) ^ 4 * (X 1) * (X 2) ^ 4
+    + 666 * (X 0) ^ 4 * (X 2) ^ 5
+    - 27 * (X 0) ^ 3 * (X 1) ^ 3 * (X 2) ^ 3
+    + 486 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 4
+    + 72 * (X 0) ^ 3 * (X 1) * (X 2) ^ 5
+    - 162 * (X 0) ^ 3 * (X 2) ^ 6
+    - 90 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 5
+    + 90 * (X 0) ^ 2 * (X 1) * (X 2) ^ 6
+    + 9 * (X 0) ^ 2 * (X 2) ^ 7
+    + 45 * (X 0) * (X 1) ^ 4 * (X 2) ^ 4
+    + 54 * (X 0) * (X 1) ^ 3 * (X 2) ^ 5
+    - 741 * (X 0) * (X 1) ^ 2 * (X 2) ^ 6
+    + 30 * (X 0) * (X 1) * (X 2) ^ 7
+    - 27 * (X 1) ^ 6 * (X 2) ^ 3
+    + 225 * (X 1) ^ 5 * (X 2) ^ 4
+    - 729 * (X 1) ^ 4 * (X 2) ^ 5
+    + 939 * (X 1) ^ 3 * (X 2) ^ 6
+    - 113 * (X 1) ^ 2 * (X 2) ^ 7
+    - 45 * (X 0) ^ 4 * (X 1) * (X 2) ^ 3
+    + 351 * (X 0) ^ 4 * (X 2) ^ 4
+    + 108 * (X 0) ^ 3 * (X 1) ^ 3 * (X 2) ^ 2
+    - 27 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 3
+    + 621 * (X 0) ^ 3 * (X 1) * (X 2) ^ 4
+    - 651 * (X 0) ^ 3 * (X 2) ^ 5
+    - 240 * (X 0) ^ 2 * (X 1) * (X 2) ^ 5
+    + 237 * (X 0) ^ 2 * (X 2) ^ 6
+    - 33 * (X 0) * (X 1) ^ 3 * (X 2) ^ 4
+    - 36 * (X 0) * (X 1) ^ 2 * (X 2) ^ 5
+    - 252 * (X 0) * (X 1) * (X 2) ^ 6
+    - 23 * (X 0) * (X 2) ^ 7
+    + 27 * (X 1) ^ 5 * (X 2) ^ 3
+    - 75 * (X 1) ^ 4 * (X 2) ^ 4
+    - 225 * (X 1) ^ 3 * (X 2) ^ 5
+    + 756 * (X 1) ^ 2 * (X 2) ^ 6
+    - 33 * (X 1) * (X 2) ^ 7
+    + (X 2) ^ 8
+    - 12 * (X 0) ^ 4 * (X 2) ^ 3
+    + 108 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 2
+    + 486 * (X 0) ^ 3 * (X 1) * (X 2) ^ 3
+    - 486 * (X 0) ^ 3 * (X 2) ^ 4
+    - 90 * (X 0) ^ 2 * (X 1) * (X 2) ^ 4
+    + 72 * (X 0) ^ 2 * (X 2) ^ 5
+    + 72 * (X 0) * (X 1) ^ 3 * (X 2) ^ 3
+    - 273 * (X 0) * (X 1) ^ 2 * (X 2) ^ 4
+    + 69 * (X 0) * (X 1) * (X 2) ^ 5
+    - 39 * (X 0) * (X 2) ^ 6
+    - 27 * (X 1) ^ 4 * (X 2) ^ 3
+    + 27 * (X 1) ^ 3 * (X 2) ^ 4
+    + 90 * (X 1) ^ 2 * (X 2) ^ 5
+    + 229 * (X 1) * (X 2) ^ 6
+    - 3 * (X 2) ^ 7
+    + 63 * (X 0) ^ 4 * (X 2) ^ 2
+    - 27 * (X 0) ^ 3 * (X 1) * (X 2) ^ 2
+    + 27 * (X 0) ^ 3 * (X 2) ^ 3
+    + 6 * (X 0) ^ 2 * (X 2) ^ 4
+    - 18 * (X 0) * (X 1) ^ 2 * (X 2) ^ 3
+    - 126 * (X 0) * (X 1) * (X 2) ^ 4
+    + 27 * (X 0) * (X 2) ^ 5
+    + 27 * (X 1) ^ 4 * (X 2) ^ 2
+    - 155 * (X 1) ^ 3 * (X 2) ^ 3
+    + 270 * (X 1) ^ 2 * (X 2) ^ 4
+    + 30 * (X 1) * (X 2) ^ 5
+    + 24 * (X 2) ^ 6
+    + 108 * (X 0) ^ 3 * (X 1) * (X 2)
+    - 108 * (X 0) ^ 3 * (X 2) ^ 2
+    - 9 * (X 0) ^ 2 * (X 2) ^ 3
+    - 3 * (X 0) * (X 1) * (X 2) ^ 3
+    - 21 * (X 0) * (X 2) ^ 4
+    - 18 * (X 1) ^ 3 * (X 2) ^ 2
+    + 162 * (X 1) * (X 2) ^ 4
+    - 2 * (X 2) ^ 5
+    - 18 * (X 0) * (X 1) * (X 2) ^ 2
+    + 9 * (X 0) * (X 2) ^ 3
+    + 6 * (X 1) ^ 2 * (X 2) ^ 2
+    + 18 * (X 1) * (X 2) ^ 3
+    + 29 * (X 2) ^ 4
+    - 3 * (X 0) * (X 2) ^ 2
+    - 9 * (X 1) ^ 2 * (X 2)
+    + 27 * (X 1) * (X 2) ^ 2
+    + 3 * (X 1) * (X 2)
+    + 9 * (X 2) ^ 2
+    + 1
+
+public noncomputable def quotTheta : MvPolynomial (Fin 3) ℚ :=
+  -108 * (X 0) ^ 3 * (X 2) ^ 5
+    + 45 * (X 0) ^ 2 * (X 1) * (X 2) ^ 5
+    - 6 * (X 0) * (X 1) ^ 2 * (X 2) ^ 5
+    + (X 1) ^ 3 * (X 2) ^ 5
+    + 622 * (X 0) ^ 3 * (X 2) ^ 4
+    - 135 * (X 0) ^ 2 * (X 1) * (X 2) ^ 4
+    + 15 * (X 0) ^ 2 * (X 2) ^ 5
+    + 36 * (X 0) * (X 1) ^ 2 * (X 2) ^ 4
+    - 129 * (X 0) * (X 1) * (X 2) ^ 5
+    + 108 * (X 0) * (X 2) ^ 6
+    - 9 * (X 1) ^ 3 * (X 2) ^ 4
+    + 26 * (X 1) ^ 2 * (X 2) ^ 5
+    - 21 * (X 1) * (X 2) ^ 6
+    + 477 * (X 0) ^ 3 * (X 2) ^ 3
+    - 45 * (X 0) ^ 2 * (X 2) ^ 4
+    - 54 * (X 0) * (X 1) ^ 2 * (X 2) ^ 3
+    + 354 * (X 0) * (X 1) * (X 2) ^ 4
+    - 673 * (X 0) * (X 2) ^ 5
+    + 27 * (X 1) ^ 3 * (X 2) ^ 3
+    - 150 * (X 1) ^ 2 * (X 2) ^ 4
+    + 289 * (X 1) * (X 2) ^ 5
+    - 107 * (X 2) ^ 6
+    + 99 * (X 0) * (X 1) * (X 2) ^ 3
+    - 285 * (X 0) * (X 2) ^ 4
+    - 27 * (X 1) ^ 3 * (X 2) ^ 2
+    + 198 * (X 1) ^ 2 * (X 2) ^ 3
+    - 580 * (X 1) * (X 2) ^ 4
+    + 651 * (X 2) ^ 5
+    + 81 * (X 0) ^ 3 * (X 2)
+    - 195 * (X 0) * (X 2) ^ 3
+    + 54 * (X 1) ^ 2 * (X 2) ^ 2
+    - 264 * (X 1) * (X 2) ^ 3
+    + 320 * (X 2) ^ 4
+    + 153 * (X 0) * (X 2) ^ 2
+    - 108 * (X 1) * (X 2) ^ 2
+    + 468 * (X 2) ^ 3
+    + 54 * (X 1) * (X 2)
+    - 272 * (X 2) ^ 2
+    - 126 * (X 2)
+
+public noncomputable def redTheta : MvPolynomial (Fin 3) ℚ :=
+  -81 * (X 0) ^ 6 * (X 2) ^ 5
+    + 27 * (X 0) ^ 5 * (X 1) * (X 2) ^ 5
+    + 9 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 5
+    + 622 * (X 0) ^ 6 * (X 2) ^ 4
+    - 81 * (X 0) ^ 5 * (X 1) * (X 2) ^ 4
+    - 216 * (X 0) ^ 5 * (X 2) ^ 5
+    - 54 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 4
+    + 6 * (X 0) ^ 4 * (X 1) * (X 2) ^ 5
+    + 243 * (X 0) ^ 4 * (X 2) ^ 6
+    + 25 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 5
+    - 126 * (X 0) ^ 3 * (X 1) * (X 2) ^ 6
+    + 21 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 6
+    + 477 * (X 0) ^ 6 * (X 2) ^ 3
+    - 108 * (X 0) ^ 5 * (X 2) ^ 4
+    + 81 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 3
+    - 36 * (X 0) ^ 4 * (X 1) * (X 2) ^ 4
+    - 629 * (X 0) ^ 4 * (X 2) ^ 5
+    - 141 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 4
+    + 604 * (X 0) ^ 3 * (X 1) * (X 2) ^ 5
+    - 392 * (X 0) ^ 3 * (X 2) ^ 6
+    - 126 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 5
+    + 264 * (X 0) ^ 2 * (X 1) * (X 2) ^ 6
+    - 99 * (X 0) ^ 2 * (X 2) ^ 7
+    - 100 * (X 0) * (X 1) ^ 2 * (X 2) ^ 6
+    + 51 * (X 0) * (X 1) * (X 2) ^ 7
+    - 6 * (X 1) ^ 2 * (X 2) ^ 7
+    + 54 * (X 0) ^ 4 * (X 1) * (X 2) ^ 3
+    - 411 * (X 0) ^ 4 * (X 2) ^ 4
+    + 171 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 3
+    - 581 * (X 0) ^ 3 * (X 1) * (X 2) ^ 4
+    + 667 * (X 0) ^ 3 * (X 2) ^ 5
+    + 189 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 4
+    - 744 * (X 0) ^ 2 * (X 1) * (X 2) ^ 5
+    + 925 * (X 0) ^ 2 * (X 2) ^ 6
+    + 564 * (X 0) * (X 1) ^ 2 * (X 2) ^ 5
+    - 778 * (X 0) * (X 1) * (X 2) ^ 6
+    + 192 * (X 0) * (X 2) ^ 7
+    + 152 * (X 1) ^ 2 * (X 2) ^ 6
+    - 54 * (X 1) * (X 2) ^ 7
+    + (X 2) ^ 8
+    + 81 * (X 0) ^ 6 * (X 2)
+    - 207 * (X 0) ^ 4 * (X 2) ^ 3
+    + 81 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 2
+    - 255 * (X 0) ^ 3 * (X 1) * (X 2) ^ 3
+    + 311 * (X 0) ^ 3 * (X 2) ^ 4
+    - 144 * (X 0) ^ 2 * (X 1) * (X 2) ^ 4
+    + 312 * (X 0) ^ 2 * (X 2) ^ 5
+    - 684 * (X 0) * (X 1) ^ 2 * (X 2) ^ 4
+    + 1676 * (X 0) * (X 1) * (X 2) ^ 5
+    - 1363 * (X 0) * (X 2) ^ 6
+    - 669 * (X 1) ^ 2 * (X 2) ^ 5
+    + 625 * (X 1) * (X 2) ^ 6
+    - 110 * (X 2) ^ 7
+    + 135 * (X 0) ^ 4 * (X 2) ^ 2
+    - 135 * (X 0) ^ 3 * (X 1) * (X 2) ^ 2
+    + 495 * (X 0) ^ 3 * (X 2) ^ 3
+    + 201 * (X 0) ^ 2 * (X 2) ^ 4
+    - 324 * (X 0) * (X 1) ^ 2 * (X 2) ^ 3
+    + 522 * (X 0) * (X 1) * (X 2) ^ 4
+    - 578 * (X 0) * (X 2) ^ 5
+    + 580 * (X 1) ^ 2 * (X 2) ^ 4
+    - 1201 * (X 1) * (X 2) ^ 5
+    + 675 * (X 2) ^ 6
+    + 81 * (X 0) ^ 3 * (X 1) * (X 2)
+    - 299 * (X 0) ^ 3 * (X 2) ^ 2
+    - 162 * (X 0) ^ 2 * (X 2) ^ 3
+    + 300 * (X 0) * (X 1) * (X 2) ^ 3
+    - 684 * (X 0) * (X 2) ^ 4
+    + 590 * (X 1) ^ 2 * (X 2) ^ 3
+    - 422 * (X 1) * (X 2) ^ 4
+    + 318 * (X 2) ^ 5
+    - 126 * (X 0) ^ 3 * (X 2)
+    - 225 * (X 0) * (X 1) * (X 2) ^ 2
+    + 434 * (X 0) * (X 2) ^ 3
+    + 240 * (X 1) ^ 2 * (X 2) ^ 2
+    - 558 * (X 1) * (X 2) ^ 3
+    + 497 * (X 2) ^ 4
+    + 123 * (X 0) * (X 2) ^ 2
+    - 63 * (X 1) ^ 2 * (X 2)
+    + 353 * (X 1) * (X 2) ^ 2
+    - 272 * (X 2) ^ 3
+    + 129 * (X 1) * (X 2)
+    - 117 * (X 2) ^ 2
+    + 1
+
+public noncomputable def redH3 : MvPolynomial (Fin 3) ℚ :=
+  -729 * (X 0) ^ 9 * (X 2) ^ 5
+    + 729 * (X 0) ^ 8 * (X 1) * (X 2) ^ 5
+    - 243 * (X 0) ^ 7 * (X 1) ^ 2 * (X 2) ^ 5
+    + 27 * (X 0) ^ 9 * (X 2) ^ 4
+    - 2187 * (X 0) ^ 8 * (X 1) * (X 2) ^ 4
+    + 6318 * (X 0) ^ 8 * (X 2) ^ 5
+    + 1458 * (X 0) ^ 7 * (X 1) ^ 2 * (X 2) ^ 4
+    - 4212 * (X 0) ^ 7 * (X 1) * (X 2) ^ 5
+    + 675 * (X 0) ^ 6 * (X 1) ^ 2 * (X 2) ^ 5
+    - 486 * (X 0) ^ 6 * (X 1) * (X 2) ^ 6
+    + 486 * (X 0) ^ 5 * (X 1) ^ 2 * (X 2) ^ 6
+    - 243 * (X 0) ^ 9 * (X 2) ^ 3
+    + 1458 * (X 0) ^ 8 * (X 2) ^ 4
+    - 2187 * (X 0) ^ 7 * (X 1) ^ 2 * (X 2) ^ 3
+    + 11664 * (X 0) ^ 7 * (X 1) * (X 2) ^ 4
+    - 18441 * (X 0) ^ 7 * (X 2) ^ 5
+    - 3807 * (X 0) ^ 6 * (X 1) ^ 2 * (X 2) ^ 4
+    + 7560 * (X 0) ^ 6 * (X 1) * (X 2) ^ 5
+    - 2862 * (X 0) ^ 6 * (X 2) ^ 6
+    - 2916 * (X 0) ^ 5 * (X 1) ^ 2 * (X 2) ^ 5
+    + 5724 * (X 0) ^ 5 * (X 1) * (X 2) ^ 6
+    + 486 * (X 0) ^ 5 * (X 2) ^ 7
+    - 2700 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 6
+    - 648 * (X 0) ^ 4 * (X 1) * (X 2) ^ 7
+    + 297 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 7
+    + 729 * (X 0) ^ 9 * (X 2) ^ 2
+    + 2916 * (X 0) ^ 7 * (X 1) * (X 2) ^ 3
+    - 6723 * (X 0) ^ 7 * (X 2) ^ 4
+    + 4617 * (X 0) ^ 6 * (X 1) ^ 2 * (X 2) ^ 3
+    - 15687 * (X 0) ^ 6 * (X 1) * (X 2) ^ 4
+    + 17523 * (X 0) ^ 6 * (X 2) ^ 5
+    + 4374 * (X 0) ^ 5 * (X 1) ^ 2 * (X 2) ^ 4
+    - 16200 * (X 0) ^ 5 * (X 1) * (X 2) ^ 5
+    + 18846 * (X 0) ^ 5 * (X 2) ^ 6
+    + 15228 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 5
+    - 14931 * (X 0) ^ 4 * (X 1) * (X 2) ^ 6
+    - 4266 * (X 0) ^ 4 * (X 2) ^ 7
+    + 1350 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 6
+    + 3348 * (X 0) ^ 3 * (X 1) * (X 2) ^ 7
+    + 216 * (X 0) ^ 3 * (X 2) ^ 8
+    - 675 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 7
+    - 162 * (X 0) ^ 2 * (X 1) * (X 2) ^ 8
+    + 36 * (X 0) * (X 1) ^ 2 * (X 2) ^ 8
+    - 729 * (X 0) ^ 9 * (X 2)
+    - 6075 * (X 0) ^ 7 * (X 2) ^ 3
+    + 2187 * (X 0) ^ 6 * (X 1) ^ 2 * (X 2) ^ 2
+    - 6885 * (X 0) ^ 6 * (X 1) * (X 2) ^ 3
+    + 8397 * (X 0) ^ 6 * (X 2) ^ 4
+    - 2916 * (X 0) ^ 5 * (X 1) * (X 2) ^ 4
+    + 6021 * (X 0) ^ 5 * (X 2) ^ 5
+    - 18468 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 4
+    + 45252 * (X 0) ^ 4 * (X 1) * (X 2) ^ 5
+    - 37935 * (X 0) ^ 4 * (X 2) ^ 6
+    - 13932 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 5
+    + 3159 * (X 0) ^ 3 * (X 1) * (X 2) ^ 6
+    + 10503 * (X 0) ^ 3 * (X 2) ^ 7
+    + 3807 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 6
+    - 3105 * (X 0) ^ 2 * (X 1) * (X 2) ^ 7
+    - 954 * (X 0) ^ 2 * (X 2) ^ 8
+    - 216 * (X 0) * (X 1) ^ 2 * (X 2) ^ 7
+    + 324 * (X 0) * (X 1) * (X 2) ^ 8
+    + 27 * (X 0) * (X 2) ^ 9
+    - 9 * (X 1) * (X 2) ^ 9
+    + 5103 * (X 0) ^ 7 * (X 2) ^ 2
+    - 3645 * (X 0) ^ 6 * (X 1) * (X 2) ^ 2
+    + 13365 * (X 0) ^ 6 * (X 2) ^ 3
+    + 3888 * (X 0) ^ 5 * (X 2) ^ 4
+    - 8748 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 3
+    + 14094 * (X 0) ^ 4 * (X 1) * (X 2) ^ 4
+    - 15606 * (X 0) ^ 4 * (X 2) ^ 5
+    + 15660 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 4
+    - 34533 * (X 0) ^ 3 * (X 1) * (X 2) ^ 5
+    + 22086 * (X 0) ^ 3 * (X 2) ^ 6
+    - 4617 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 5
+    + 9855 * (X 0) ^ 2 * (X 1) * (X 2) ^ 6
+    - 6534 * (X 0) ^ 2 * (X 2) ^ 7
+    + 324 * (X 0) * (X 1) ^ 2 * (X 2) ^ 6
+    - 936 * (X 0) * (X 1) * (X 2) ^ 7
+    + 729 * (X 0) * (X 2) ^ 8
+    + 27 * (X 1) * (X 2) ^ 8
+    - 28 * (X 2) ^ 9
+    + 2187 * (X 0) ^ 6 * (X 1) * (X 2)
+    - 8073 * (X 0) ^ 6 * (X 2) ^ 2
+    - 3159 * (X 0) ^ 5 * (X 2) ^ 3
+    + 8100 * (X 0) ^ 4 * (X 1) * (X 2) ^ 3
+    - 18468 * (X 0) ^ 4 * (X 2) ^ 4
+    + 15930 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 3
+    - 11394 * (X 0) ^ 3 * (X 1) * (X 2) ^ 4
+    + 10233 * (X 0) ^ 3 * (X 2) ^ 5
+    - 2187 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 4
+    + 2403 * (X 0) ^ 2 * (X 1) * (X 2) ^ 5
+    - 2403 * (X 0) ^ 2 * (X 2) ^ 6
+    - 108 * (X 0) * (X 1) * (X 2) ^ 6
+    + 162 * (X 0) * (X 2) ^ 7
+    - 3402 * (X 0) ^ 6 * (X 2)
+    - 6075 * (X 0) ^ 4 * (X 1) * (X 2) ^ 2
+    + 11718 * (X 0) ^ 4 * (X 2) ^ 3
+    + 6480 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 2
+    - 15066 * (X 0) ^ 3 * (X 1) * (X 2) ^ 3
+    + 12150 * (X 0) ^ 3 * (X 2) ^ 4
+    + 1485 * (X 0) ^ 2 * (X 1) * (X 2) ^ 4
+    - 1701 * (X 0) ^ 2 * (X 2) ^ 5
+    + 9 * (X 0) * (X 2) ^ 6
+    + 3321 * (X 0) ^ 4 * (X 2) ^ 2
+    - 1701 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2)
+    + 9531 * (X 0) ^ 3 * (X 1) * (X 2) ^ 2
+    - 7344 * (X 0) ^ 3 * (X 2) ^ 3
+    - 1296 * (X 0) ^ 2 * (X 1) * (X 2) ^ 3
+    + 1215 * (X 0) ^ 2 * (X 2) ^ 4
+    + 3483 * (X 0) ^ 3 * (X 1) * (X 2)
+    - 3159 * (X 0) ^ 3 * (X 2) ^ 2
+    - 27 * (X 0) ^ 2 * (X 2) ^ 3
+    + 27 * (X 0) ^ 3
+
+public noncomputable def quotH3 : MvPolynomial (Fin 3) ℚ :=
+  -729 * (X 0) ^ 6 * (X 2) ^ 5
+    + 243 * (X 0) ^ 5 * (X 1) * (X 2) ^ 5
+    + 27 * (X 0) ^ 6 * (X 2) ^ 4
+    - 729 * (X 0) ^ 5 * (X 1) * (X 2) ^ 4
+    + 6156 * (X 0) ^ 5 * (X 2) ^ 5
+    - 1350 * (X 0) ^ 4 * (X 1) * (X 2) ^ 5
+    - 729 * (X 0) ^ 4 * (X 2) ^ 6
+    + 162 * (X 0) ^ 3 * (X 1) * (X 2) ^ 6
+    - 243 * (X 0) ^ 6 * (X 2) ^ 3
+    + 1944 * (X 0) ^ 5 * (X 2) ^ 4
+    + 3564 * (X 0) ^ 4 * (X 1) * (X 2) ^ 4
+    - 17469 * (X 0) ^ 4 * (X 2) ^ 5
+    + 1404 * (X 0) ^ 3 * (X 1) * (X 2) ^ 5
+    + 4104 * (X 0) ^ 3 * (X 2) ^ 6
+    - 450 * (X 0) ^ 2 * (X 1) * (X 2) ^ 6
+    - 243 * (X 0) ^ 2 * (X 2) ^ 7
+    + 27 * (X 0) * (X 1) * (X 2) ^ 7
+    + 729 * (X 0) ^ 6 * (X 2) ^ 2
+    + 1458 * (X 0) ^ 4 * (X 1) * (X 2) ^ 3
+    - 9666 * (X 0) ^ 4 * (X 2) ^ 4
+    - 4455 * (X 0) ^ 3 * (X 1) * (X 2) ^ 4
+    + 17901 * (X 0) ^ 3 * (X 2) ^ 5
+    + 1188 * (X 0) ^ 2 * (X 1) * (X 2) ^ 5
+    - 5814 * (X 0) ^ 2 * (X 2) ^ 6
+    - 81 * (X 0) * (X 1) * (X 2) ^ 6
+    + 684 * (X 0) * (X 2) ^ 7
+    - 27 * (X 2) ^ 8
+    - 729 * (X 0) ^ 6 * (X 2)
+    - 5589 * (X 0) ^ 4 * (X 2) ^ 3
+    - 2997 * (X 0) ^ 3 * (X 1) * (X 2) ^ 3
+    + 12366 * (X 0) ^ 3 * (X 2) ^ 4
+    + 486 * (X 0) ^ 2 * (X 1) * (X 2) ^ 4
+    - 3303 * (X 0) ^ 2 * (X 2) ^ 5
+    + 216 * (X 0) * (X 2) ^ 6
+    + 3888 * (X 0) ^ 4 * (X 2) ^ 2
+    - 2349 * (X 0) ^ 3 * (X 1) * (X 2) ^ 2
+    + 13392 * (X 0) ^ 3 * (X 2) ^ 3
+    - 1620 * (X 0) ^ 2 * (X 2) ^ 4
+    + 1215 * (X 0) ^ 3 * (X 1) * (X 2)
+    - 6102 * (X 0) ^ 3 * (X 2) ^ 2
+    + 1053 * (X 0) ^ 2 * (X 2) ^ 3
+    - 2997 * (X 0) ^ 3 * (X 2)
+
+
+/-- `hessAff² ≡ redH2 (mod gAff)`. Offline sizes: product≈41, quot=10, red=46. -/
+public theorem hessAff_sq_mod :
+    hessAff ^ 2 = quotH2 * gAff + redH2 := by
+  unfold hessAff quotH2 gAff redH2
+  ring
+
+/-- `thetaAff ≡ redTheta (mod gAff)`. Offline sizes: θ=119, quot=39, red=84. -/
+public theorem thetaAff_mod :
+    thetaAff = quotTheta * gAff + redTheta := by
+  unfold thetaAff quotTheta gAff redTheta
+  ring
+
+/-- `redH2 · hessAff ≡ redH3 (mod gAff)`. Offline sizes: product≈149, quot=42, red=113. -/
+public theorem redH3_mod :
+    redH2 * hessAff = quotH3 * gAff + redH3 := by
+  unfold redH2 hessAff quotH3 gAff redH3
+  ring
+
+/-! ## Congruence tower status
+
+### Offline (sympy)
+
+Full cleared identity is divisible by `gAff` (quotient **1887** terms). After reducing
+every factor to `Y`-degree ≤ 2, the combination of reduced forms is **identically 0**.
+
+| Stage | input | quot | red | Lean |
+|---|---:|---:|---:|---|
+| `hessAff²` | 41 | 10 | 46 | **proved** |
+| `thetaAff` | 119 | 39 | 84 | **proved** |
+| `H³` | 149 | 42 | 113 | **proved** |
+| `jAff` | 368 | 176 | 205 | offline generated; `ring` >30 min |
+| `H⁴`–`H⁶`, `Θ³`, `J²`, `4AΘH⁴` | up to ~1350 | — | ≤891 | generated offline |
+| final red combo | — | — | **0** | offline |
+
+Worst checked module build (H²+Θ+H³ together): ≈**306 s**. No monolithic 1900-term goal.
+Degree-9 eliminant is a size report only. Offline full tower certificates are in
+`_generated_reds.lean` (repo root, not imported).
+-/
 
 #print axioms residual_on_curve_identity
 #print axioms residual_on_tangent_line
@@ -296,5 +803,8 @@ is deferred to keep `lake build` stable. -/
 #print axioms twentySeven_S_eq_A_coeff
 #print axioms neg_twentySeven_T_eq_Bnum_coeff
 #print axioms hessAff_eq_neg_quarter_H
+#print axioms hessAff_sq_mod
+#print axioms thetaAff_mod
+#print axioms redH3_mod
 
 end ExplicitUnirational
