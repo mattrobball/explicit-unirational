@@ -3,6 +3,7 @@ module
 public import ExplicitUnirational.Cert.NineCycle
 public import ExplicitUnirational.Cert.AxiomAudit
 public import ExplicitUnirational.Cert.Discriminant
+public import ExplicitUnirational.Cert.QuarticDiscriminants
 public import ExplicitUnirational.FunctionField.MulThree
 public import ExplicitUnirational.FunctionField.PencilRationality
 public import ExplicitUnirational.Cert.NonicF5
