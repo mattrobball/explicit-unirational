@@ -13,6 +13,7 @@ public import Mathlib.AlgebraicGeometry.ProjectiveSpectrum.Basic
 public import Mathlib.AlgebraicGeometry.ProjectiveSpectrum.Proper
 public import Mathlib.AlgebraicGeometry.Pullbacks
 public import Mathlib.AlgebraicGeometry.Restrict
+public import Mathlib.Algebra.Category.Ring.Basic
 public import Mathlib.Algebra.Polynomial.RingDivision
 public import Mathlib.RingTheory.AdjoinRoot
 public import Mathlib.RingTheory.Localization.Away.Basic
@@ -41,13 +42,19 @@ away from the base scheme `{F₀ = F₁ = 0}`.
 3. Affine chart model `Γ_aff = Spec(AdjoinRoot(C f₁ · X + C f₀))` over `R = k[x,y]`.
 4. Integrality under `PencilGeneric` (`f₁ ≠ 0` and `IsRelPrime f₁ f₀`).
 5. Dominance of the affine projection `Γ_aff → 𝔸²`.
-6. Birationality: after localising at `f₁` the projection becomes an isomorphism of basic opens
-   (affine form of Lemma 3.1), via the explicit inverse `z = -f₀/f₁`.
+6. Localization isomorphism `R[1/f₁] ≃ A[1/φ(f₁)]` realizing `z = -f₀/f₁`
+   (`planeAwayMap` / `planeAwayEquiv`).
+7. Affine `PartialIso` / birationality of `Γ_aff ∼ 𝔸²` on `D(f₁)`, with explicit rational inverse
+   (`affineInversePartialMap` / `affineInverseRationalMap`).
+8. Algebraic witness that the projection has generic degree 1: the localization of the structure
+   map is an isomorphism (`planeAwayEquiv_bijective`).
 
-The field-theoretic content is in `FunctionField.PencilRationality`. Global scheme-level
-birationality of the *projective* projection reduces to the same chart computation once the
-projective zero locus is compared with its affine charts; ambient and equation are defined here,
-but the global projective `PartialIso` is left for a follow-up that glues charts.
+**Strategy.** Scheme-level birationality is proved directly on the affine chart by constructing
+inverse localization maps and packaging them as a `PartialIso` of basic opens — not by routing
+through `FunctionField.PencilRationality` (which records the same algebra in fraction-field
+language). Global projective zero locus / `PartialIso` for `Γ ⊂ ℙ² × ℙ¹`, equality of the
+partial-iso projection with `affineIncidenceProj` as rational maps, and the full
+`Hom.genericDegree = 1` identification via `GenericDegree.lean` are left for a follow-up.
 -/
 
 noncomputable section
@@ -249,11 +256,11 @@ public abbrev AffineIncidenceRing (f₀ f₁ : PlaneRing k) : Type u :=
   AdjoinRoot (pencilPoly f₀ f₁)
 
 /-- Affine incidence scheme. -/
-public noncomputable def affineIncidence (f₀ f₁ : PlaneRing k) : Scheme.{u} :=
+public noncomputable abbrev affineIncidence (f₀ f₁ : PlaneRing k) : Scheme.{u} :=
   Spec (.of (AffineIncidenceRing f₀ f₁))
 
 /-- The affine plane `𝔸²_k = Spec k[x,y]`. -/
-public noncomputable def affinePlane (k : Type u) [Field k] : Scheme.{u} :=
+public noncomputable abbrev affinePlane (k : Type u) [Field k] : Scheme.{u} :=
   Spec (.of (PlaneRing k))
 
 /-- Structure map `k[x,y] → AdjoinRoot(f₀ + z f₁)`. -/
@@ -428,6 +435,293 @@ public theorem lemma_3_1_affine_inverse (f₀ f₁ : PlaneRing k) :
       IsUnit (incidenceToPlaneAway f₀ f₁ (planeToIncidence f₀ f₁ f₁)) :=
   ⟨incidenceToPlaneAway_comp_of f₀ f₁, incidenceToPlaneAway_root f₀ f₁,
     isUnit_incidenceToPlaneAway_f₁ f₀ f₁⟩
+
+/-! ## Localization isomorphism `R[1/f₁] ≃ A[1/φ(f₁)]`
+
+The relation `f₁ · z + f₀ = 0` becomes `z = -f₀/f₁` after inverting `f₁`.  The localization of
+`planeToIncidence` at `f₁` is therefore a ring isomorphism, giving the affine form of Lemma 3.1.
+-/
+
+/-- From the incidence relation: `φ(f₁) · z = -φ(f₀)`. -/
+theorem planeToIncidence_mul_root (f₀ f₁ : PlaneRing k) :
+    planeToIncidence f₀ f₁ f₁ * incidenceParameter f₀ f₁ =
+      -planeToIncidence f₀ f₁ f₀ := by
+  have h := incidence_relation f₀ f₁
+  linear_combination h
+
+/-- Powers of the relation: `φ(f₁)^n · z^n = φ((-f₀)^n)`. -/
+theorem planeToIncidence_pow_mul_root_pow (f₀ f₁ : PlaneRing k) (n : ℕ) :
+    planeToIncidence f₀ f₁ (f₁ ^ n) * incidenceParameter f₀ f₁ ^ n =
+      planeToIncidence f₀ f₁ ((-f₀) ^ n) := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    -- φ(f₁)^{n+1} z^{n+1} = (φ(f₁)^n z^n) · (φ(f₁) z) = φ((-f₀)^n) · (-φ(f₀))
+    have h1 :
+        planeToIncidence f₀ f₁ (f₁ ^ n.succ) * incidenceParameter f₀ f₁ ^ n.succ =
+          (planeToIncidence f₀ f₁ (f₁ ^ n) * incidenceParameter f₀ f₁ ^ n) *
+            (planeToIncidence f₀ f₁ f₁ * incidenceParameter f₀ f₁) := by
+      simp only [pow_succ, map_mul]
+      ring
+    rw [h1, ih, planeToIncidence_mul_root]
+    simp [map_neg, map_mul, pow_succ]
+/-- `mk (C c * X ^ n) = φ(c) · z^n`. -/
+theorem adjoinRoot_mk_C_mul_X_pow (f₀ f₁ : PlaneRing k) (c : PlaneRing k) (n : ℕ) :
+    AdjoinRoot.mk (pencilPoly f₀ f₁) (Polynomial.C c * Polynomial.X ^ n) =
+      planeToIncidence f₀ f₁ c * incidenceParameter f₀ f₁ ^ n := by
+  simp [planeToIncidence, incidenceParameter, AdjoinRoot.mk_C, AdjoinRoot.mk_X, map_pow,
+    map_mul]
+
+/-- Clearing denominators in the incidence ring. -/
+theorem exists_plane_mul_of_adjoin (f₀ f₁ : PlaneRing k) (a : AffineIncidenceRing f₀ f₁) :
+    ∃ (b : PlaneRing k) (m : ℕ),
+      planeToIncidence f₀ f₁ b =
+        planeToIncidence f₀ f₁ f₁ ^ m * a := by
+  refine AdjoinRoot.induction_on (f := pencilPoly f₀ f₁) a fun p => ?_
+  let m : ℕ := p.natDegree
+  let b : PlaneRing k := ∑ n ∈ p.support, p.coeff n * f₁ ^ (m - n) * (-f₀) ^ n
+  refine ⟨b, m, ?_⟩
+  have hrepr :
+      AdjoinRoot.mk (pencilPoly f₀ f₁) p =
+        ∑ n ∈ p.support,
+          planeToIncidence f₀ f₁ (p.coeff n) * incidenceParameter f₀ f₁ ^ n := by
+    conv_lhs => rw [p.as_sum_support_C_mul_X_pow]
+    simp only [map_sum, adjoinRoot_mk_C_mul_X_pow]
+  have hφb :
+      planeToIncidence f₀ f₁ b =
+        ∑ n ∈ p.support,
+          planeToIncidence f₀ f₁ (p.coeff n) *
+            planeToIncidence f₀ f₁ (f₁ ^ (m - n)) *
+            planeToIncidence f₀ f₁ ((-f₀) ^ n) := by
+    dsimp [b]
+    simp only [map_sum, map_mul]
+  rw [hφb, hrepr, Finset.mul_sum]
+  refine Finset.sum_congr rfl fun n hn => ?_
+  have hnle : n ≤ m := Polynomial.le_natDegree_of_mem_supp n hn
+  have hsplit : (f₁ : PlaneRing k) ^ m = f₁ ^ (m - n) * f₁ ^ n := by
+    rw [← pow_add, Nat.sub_add_cancel hnle]
+  have hpow :
+      planeToIncidence f₀ f₁ f₁ ^ m * incidenceParameter f₀ f₁ ^ n =
+        planeToIncidence f₀ f₁ (f₁ ^ (m - n)) *
+          planeToIncidence f₀ f₁ ((-f₀) ^ n) := by
+    have : planeToIncidence f₀ f₁ f₁ ^ m =
+        planeToIncidence f₀ f₁ (f₁ ^ (m - n)) * planeToIncidence f₀ f₁ (f₁ ^ n) := by
+      rw [← map_mul, ← hsplit, map_pow]
+    rw [this, mul_assoc, planeToIncidence_pow_mul_root_pow]
+  calc
+    planeToIncidence f₀ f₁ (p.coeff n) * planeToIncidence f₀ f₁ (f₁ ^ (m - n)) *
+        planeToIncidence f₀ f₁ ((-f₀) ^ n) =
+      planeToIncidence f₀ f₁ (p.coeff n) *
+        (planeToIncidence f₀ f₁ (f₁ ^ (m - n)) * planeToIncidence f₀ f₁ ((-f₀) ^ n)) := by
+      ring
+    _ = planeToIncidence f₀ f₁ (p.coeff n) *
+        (planeToIncidence f₀ f₁ f₁ ^ m * incidenceParameter f₀ f₁ ^ n) := by
+      rw [← hpow]
+    _ = planeToIncidence f₀ f₁ f₁ ^ m *
+        (planeToIncidence f₀ f₁ (p.coeff n) * incidenceParameter f₀ f₁ ^ n) := by
+      ring
+
+/-- Localization of the structure map at `f₁`. -/
+public noncomputable def planeAwayMap (f₀ f₁ : PlaneRing k) :
+    Localization.Away f₁ →+* Localization.Away (planeToIncidence f₀ f₁ f₁) :=
+  IsLocalization.Away.map (Localization.Away f₁)
+    (Localization.Away (planeToIncidence f₀ f₁ f₁)) (planeToIncidence f₀ f₁) f₁
+
+/-- Under genericity, `planeAwayMap` is bijective. -/
+public theorem planeAwayMap_bijective {f₀ f₁ : PlaneRing k} (h : PencilGeneric f₀ f₁) :
+    Function.Bijective (planeAwayMap f₀ f₁) := by
+  constructor
+  · dsimp [planeAwayMap]
+    rw [IsLocalization.Away.map_injective_iff]
+    intro a ha
+    have ha0 : a = 0 := (planeToIncidence_injective h) (by simpa using ha)
+    exact ⟨0, by simp [ha0]⟩
+  · dsimp [planeAwayMap]
+    rw [IsLocalization.Away.map_surjective_iff]
+    intro a
+    obtain ⟨b, m, hb⟩ := exists_plane_mul_of_adjoin f₀ f₁ a
+    exact ⟨b, m, hb⟩
+
+/-- Ring equivalence `R[1/f₁] ≃+* A[1/φ(f₁)]`. -/
+public noncomputable def planeAwayEquiv {f₀ f₁ : PlaneRing k} (h : PencilGeneric f₀ f₁) :
+    Localization.Away f₁ ≃+* Localization.Away (planeToIncidence f₀ f₁ f₁) :=
+  RingEquiv.ofBijective (planeAwayMap f₀ f₁) (planeAwayMap_bijective h)
+
+/-- Inverse localization map, lifting `incidenceToPlaneAway`. -/
+public noncomputable def incidenceAwayLift (f₀ f₁ : PlaneRing k) :
+    Localization.Away (planeToIncidence f₀ f₁ f₁) →+* Localization.Away f₁ :=
+  IsLocalization.Away.lift (planeToIncidence f₀ f₁ f₁) (isUnit_incidenceToPlaneAway_f₁ f₀ f₁)
+
+theorem incidenceAwayLift_comp_planeAwayMap (f₀ f₁ : PlaneRing k) :
+    (incidenceAwayLift f₀ f₁).comp (planeAwayMap f₀ f₁) = RingHom.id _ := by
+  apply IsLocalization.ringHom_ext (Submonoid.powers f₁)
+  apply RingHom.ext
+  intro x
+  dsimp [planeAwayMap, incidenceAwayLift]
+  have hle :
+      Submonoid.powers f₁ ≤
+        (Submonoid.powers (planeToIncidence f₀ f₁ f₁)).comap (planeToIncidence f₀ f₁) := by
+    intro y hy
+    obtain ⟨n, rfl⟩ := hy
+    exact ⟨n, by simp⟩
+  rw [IsLocalization.Away.map, IsLocalization.map_eq (hy := hle),
+    IsLocalization.Away.lift_eq]
+  have hcomp := incidenceToPlaneAway_comp_of f₀ f₁
+  simpa [RingHom.comp_apply] using congrArg (fun g : PlaneRing k →+* Localization.Away f₁ => g x) hcomp
+
+theorem planeAwayMap_comp_incidenceAwayLift {f₀ f₁ : PlaneRing k} (h : PencilGeneric f₀ f₁) :
+    (planeAwayMap f₀ f₁).comp (incidenceAwayLift f₀ f₁) = RingHom.id _ := by
+  have hlm : ∀ x, incidenceAwayLift f₀ f₁ (planeAwayMap f₀ f₁ x) = x := fun x => by
+    simpa [RingHom.comp_apply] using
+      congrArg (fun g : _ →+* _ => g x) (incidenceAwayLift_comp_planeAwayMap f₀ f₁)
+  refine RingHom.ext fun y => ?_
+  obtain ⟨x, rfl⟩ := (planeAwayMap_bijective h).2 y
+  show planeAwayMap f₀ f₁ (incidenceAwayLift f₀ f₁ (planeAwayMap f₀ f₁ x)) = planeAwayMap f₀ f₁ x
+  rw [hlm x]
+
+theorem incidenceAwayLift_eq_planeAwayEquiv_symm {f₀ f₁ : PlaneRing k}
+    (h : PencilGeneric f₀ f₁) :
+    incidenceAwayLift f₀ f₁ = (planeAwayEquiv h).symm.toRingHom := by
+  have hml : ∀ y, planeAwayMap f₀ f₁ (incidenceAwayLift f₀ f₁ y) = y := fun y => by
+    simpa [RingHom.comp_apply] using
+      congrArg (fun g : _ →+* _ => g y) (planeAwayMap_comp_incidenceAwayLift h)
+  ext x
+  apply (planeAwayMap_bijective h).1
+  rw [hml x]
+  exact ((planeAwayEquiv h).apply_symm_apply x).symm
+
+theorem planeToIncidence_f₁_ne_zero {f₀ f₁ : PlaneRing k} (h : PencilGeneric f₀ f₁) :
+    planeToIncidence f₀ f₁ f₁ ≠ 0 := by
+  intro hf
+  exact h.f₁_ne_zero ((planeToIncidence_injective h) (by simpa using hf))
+
+/-- Under genericity, `incidenceToPlaneAway` is injective. -/
+public theorem incidenceToPlaneAway_injective {f₀ f₁ : PlaneRing k} (h : PencilGeneric f₀ f₁) :
+    Function.Injective (incidenceToPlaneAway f₀ f₁) := by
+  letI : IsDomain (AffineIncidenceRing f₀ f₁) := isDomain_affineIncidenceRing h
+  intro a b hab
+  have hlift_inj : Function.Injective (incidenceAwayLift f₀ f₁) := by
+    rw [incidenceAwayLift_eq_planeAwayEquiv_symm h]
+    exact (planeAwayEquiv h).symm.injective
+  have hM :
+      Submonoid.powers (planeToIncidence f₀ f₁ f₁) ≤
+        nonZeroDivisors (AffineIncidenceRing f₀ f₁) :=
+    powers_le_nonZeroDivisors_of_noZeroDivisors (planeToIncidence_f₁_ne_zero h)
+  have halg_inj :
+      Function.Injective
+        (algebraMap (AffineIncidenceRing f₀ f₁)
+          (Localization.Away (planeToIncidence f₀ f₁ f₁))) :=
+    IsLocalization.injective _ hM
+  have hfactor (x : AffineIncidenceRing f₀ f₁) :
+      incidenceToPlaneAway f₀ f₁ x =
+        incidenceAwayLift f₀ f₁
+          (algebraMap (AffineIncidenceRing f₀ f₁)
+            (Localization.Away (planeToIncidence f₀ f₁ f₁)) x) :=
+    (IsLocalization.Away.lift_eq (planeToIncidence f₀ f₁ f₁)
+      (isUnit_incidenceToPlaneAway_f₁ f₀ f₁) x).symm
+  rw [hfactor a, hfactor b] at hab
+  exact halg_inj (hlift_inj hab)
+
+
+/-! ## Affine `PartialIso` (Lemma 3.1 on the chart)
+
+The localization isomorphism yields an isomorphism of basic opens
+`D(φ f₁) ≅ Spec A_φ ≅ Spec R_f ≅ D(f₁)`, packaged as a `PartialIso`.
+-/
+
+theorem basicOpen_nonempty_of_ne_zero {R : Type u} [CommRing R] [IsDomain R] {f : R}
+    (hf : f ≠ 0) : (PrimeSpectrum.basicOpen f : Set (PrimeSpectrum R)).Nonempty := by
+  refine ⟨⊥, ?_⟩
+  rw [SetLike.mem_coe, PrimeSpectrum.mem_basicOpen]
+  exact hf
+
+theorem dense_basicOpen_of_ne_zero {R : Type u} [CommRing R] [IsDomain R] {f : R}
+    (hf : f ≠ 0) : Dense (PrimeSpectrum.basicOpen f : Set (PrimeSpectrum R)) := by
+  refine PrimeSpectrum.isOpen_basicOpen.dense ?_
+  exact basicOpen_nonempty_of_ne_zero hf
+
+/-- Source open: `D(φ(f₁)) ⊆ Γ_aff`. -/
+public noncomputable def affineIncidenceAwayOpen (f₀ f₁ : PlaneRing k) :
+    (affineIncidence f₀ f₁).Opens :=
+  PrimeSpectrum.basicOpen (planeToIncidence f₀ f₁ f₁)
+
+/-- Target open: `D(f₁) ⊆ 𝔸²`. -/
+public noncomputable def affinePlaneAwayOpen (f₁ : PlaneRing k) : (affinePlane k).Opens :=
+  PrimeSpectrum.basicOpen f₁
+
+/-- `CommRingCat` isomorphism underlying `planeAwayEquiv`. -/
+public noncomputable def planeAwayCommRingIso {f₀ f₁ : PlaneRing k} (h : PencilGeneric f₀ f₁) :
+    CommRingCat.of (Localization.Away f₁) ≅
+      CommRingCat.of (Localization.Away (planeToIncidence f₀ f₁ f₁)) :=
+  (planeAwayEquiv h).toCommRingCatIso
+
+/-- Basic-open isomorphism `D(φ f₁) ≅ D(f₁)`. -/
+public noncomputable def affineIncidenceAwayIso {f₀ f₁ : PlaneRing k} (h : PencilGeneric f₀ f₁) :
+    Scheme.Opens.toScheme (X := affineIncidence f₀ f₁) (affineIncidenceAwayOpen f₀ f₁) ≅
+      Scheme.Opens.toScheme (X := affinePlane k) (affinePlaneAwayOpen f₁) :=
+  basicOpenIsoSpecAway (R := .of (AffineIncidenceRing f₀ f₁))
+      (planeToIncidence f₀ f₁ f₁) ≪≫
+    asIso (Spec.map (planeAwayCommRingIso h).hom) ≪≫
+      (basicOpenIsoSpecAway (R := .of (PlaneRing k)) f₁).symm
+
+/-- **Affine form of Lemma 3.1 as a `PartialIso`.** -/
+public noncomputable def affineIncidencePartialIso {f₀ f₁ : PlaneRing k}
+    (h : PencilGeneric f₀ f₁) :
+    Scheme.PartialIso (affineIncidence f₀ f₁) (affinePlane k) where
+  source := affineIncidenceAwayOpen f₀ f₁
+  dense_source := by
+    letI : IsDomain (AffineIncidenceRing f₀ f₁) := isDomain_affineIncidenceRing h
+    exact dense_basicOpen_of_ne_zero (planeToIncidence_f₁_ne_zero h)
+  target := affinePlaneAwayOpen f₁
+  dense_target := dense_basicOpen_of_ne_zero h.f₁_ne_zero
+  iso := affineIncidenceAwayIso h
+
+/-- Under genericity, `Γ_aff` is birational to `𝔸²`. -/
+public theorem birational_affineIncidence {f₀ f₁ : PlaneRing k} (h : PencilGeneric f₀ f₁) :
+    Scheme.Birational (affineIncidence f₀ f₁) (affinePlane k) :=
+  ⟨affineIncidencePartialIso h⟩
+
+/-- Explicit rational inverse of Lemma 3.1 as a partial map on `D(f₁)`. -/
+public noncomputable def affineInversePartialMap {f₀ f₁ : PlaneRing k} (h : PencilGeneric f₀ f₁) :
+    (affinePlane k).PartialMap (affineIncidence f₀ f₁) :=
+  (affineIncidencePartialIso h).symm.toPartialMap
+
+/-- Explicit rational inverse as a rational map. -/
+public noncomputable def affineInverseRationalMap {f₀ f₁ : PlaneRing k} (h : PencilGeneric f₀ f₁) :
+    affinePlane k ⤏ affineIncidence f₀ f₁ :=
+  (affineIncidencePartialIso h).symm.toRationalMap
+
+/-- Projection as a rational map. -/
+public noncomputable def affineIncidenceProjRationalMap (f₀ f₁ : PlaneRing k) :
+    affineIncidence f₀ f₁ ⤏ affinePlane k :=
+  (affineIncidenceProj f₀ f₁).toRationalMap
+
+/-- Partial-iso projection as a rational map. -/
+public noncomputable def affineIncidencePartialIsoRationalMap {f₀ f₁ : PlaneRing k}
+    (h : PencilGeneric f₀ f₁) :
+    affineIncidence f₀ f₁ ⤏ affinePlane k :=
+  (affineIncidencePartialIso h).toRationalMap
+
+/-- The inverse partial map is defined on the dense open `D(f₁)`. -/
+public theorem affineInversePartialMap_domain {f₀ f₁ : PlaneRing k} (h : PencilGeneric f₀ f₁) :
+    (affineInversePartialMap h).domain = affinePlaneAwayOpen f₁ := by
+  dsimp [affineInversePartialMap, Scheme.PartialIso.toPartialMap, Scheme.PartialIso.symm]
+  rfl
+
+/-- Package: dominance, birationality, inverse domain, localization iso.
+Affine content of note Lemma 3.1 / (3.2). -/
+public theorem lemma_3_1_affine {f₀ f₁ : PlaneRing k} (h : PencilGeneric f₀ f₁) :
+    AlgebraicGeometry.IsDominant (affineIncidenceProj f₀ f₁) ∧
+      Scheme.Birational (affineIncidence f₀ f₁) (affinePlane k) ∧
+      (affineInversePartialMap h).domain = affinePlaneAwayOpen f₁ ∧
+      Function.Bijective (planeAwayMap f₀ f₁) :=
+  ⟨isDominant_affineIncidenceProj h, birational_affineIncidence h,
+    affineInversePartialMap_domain h, planeAwayMap_bijective h⟩
+
+/-- Algebraic form of generic degree 1: localization of the structure map is an isomorphism. -/
+public theorem planeAwayEquiv_bijective {f₀ f₁ : PlaneRing k} (h : PencilGeneric f₀ f₁) :
+    Function.Bijective (planeAwayEquiv h).toRingHom :=
+  (planeAwayEquiv h).bijective
 
 /-! ## Projective packaging -/
 
