@@ -17,6 +17,7 @@ public import ExplicitUnirational.Cert.Invariants
 public import ExplicitUnirational.Foundation
 public import ExplicitUnirational.GenericDegree
 public import ExplicitUnirational.WeightedProjective.Basic
+public import ExplicitUnirational.Weierstrass.Fibres
 
 /-!
 # ExplicitUnirational
