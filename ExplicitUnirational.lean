@@ -8,6 +8,7 @@ public import ExplicitUnirational.FunctionField.MulThree
 public import ExplicitUnirational.FunctionField.MulThreeCert
 public import ExplicitUnirational.FunctionField.PencilRationality
 public import ExplicitUnirational.FunctionField.TorsorDescent
+public import ExplicitUnirational.FunctionField.GeometricIntegrality
 public import ExplicitUnirational.CubicPencil.Incidence
 public import ExplicitUnirational.Cert.NonicF5
 public import ExplicitUnirational.Cert.SexticF5
