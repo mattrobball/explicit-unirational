@@ -39,6 +39,8 @@ only) from that source:
 * `IdealDescent` ← `GeometricPointDescent.lean`
 * Nullstellensatz half of `Hypersurface` ← `BiprojectiveSmoothCriterion.lean`
   (`sup_span_pderiv_eq_top_of_exists_pderiv_ne_zero` and geometric variants)
+* Weighted evaluation scaling and chart-evaluation identities — patterned on
+  `MvPolynomialHomogeneousEvaluation.lean` / biprojective chart evaluation.
 
 The conversion “partials generate `(1)` ⇒ smooth algebra” is the conclusion of
 `Hypersurface.smooth_of_pderiv_span_eq_top` / `formallySmooth_of_pderiv_span_eq_top` in
@@ -50,9 +52,16 @@ hypersurface presentation (`AffineHypersurfaceJacobian.smooth_of_jacobianIdeal_e
 
 * Affine single-equation Jacobian criterion (standard-smooth + Nullstellensatz forms).
 * Weighted packaging: charts cover, Zariski locality, chart dehomogenisation, Euler.
-* Algebraic input for `surfaceEquation` / Proposition 3.3.
-* Status of `Smooth (S_Q ⟶ Spec ℚ)`: affine criterion and algebraic input land; scheme glue
-  identifying reduced induced chart opens with dehomogenised `Spec` quotients does not.
+* Weighted evaluation scaling; chart-point evaluation of dehomogenised equations.
+* Algebraic input for `surfaceEquation` / Proposition 3.3 (partials, `u = v = 0`, `q₈`).
+* Status of Mathlib `Smooth (S_Q ⟶ Spec ℚ)`: affine criterion ready; scheme glue open.
+
+## Smoothness notion
+
+Target (not yet closed): Mathlib `AlgebraicGeometry.Smooth` for the structure morphism
+`S_Q ⟶ Spec ℚ` (i.e. `HasRingHomProperty` associated to `RingHom.Smooth`:
+formally smooth + finite presentation, checked affine-locally on source and target).
+This is **not** a bespoke “Jacobian-smooth” predicate.
 -/
 
 @[expose] public section
@@ -665,6 +674,42 @@ public theorem weighted_euler (f : MvPolynomial (Fin 4) R) {d : ℕ}
     ∑ i : Fin 4, weights i • (X i * pderiv i f) = d • f :=
   hf.sum_weight_X_mul_pderiv
 
+/-! ### Weighted evaluation scaling
+
+If `f` is weighted-homogeneous of degree `d` and coordinates scale as
+`x j = u^(w j) * y j`, then `aeval x f = u^d * aeval y f`.
+Patterned on `BConicBundleMultisections.MvPolynomialHomogeneousEvaluation`. -/
+
+public theorem weighted_aeval_scaling
+    {S : Type u} [CommSemiring S] [Algebra R S]
+    {f : MvPolynomial (Fin 4) R} {d : ℕ}
+    (hf : IsWeightedHomogeneous weights f d)
+    (x y : Fin 4 → S) (u : S)
+    (hxy : ∀ j : Fin 4, x j = u ^ weights j * y j) :
+    aeval x f = u ^ d * aeval y f := by
+  classical
+  induction hf using IsWeightedHomogeneous.induction_on with
+  | zero => simp
+  | add f g _hf _hg ihf ihg =>
+      simp only [map_add, ihf, ihg, mul_add]
+  | monomial s a hs =>
+      rw [aeval_monomial, aeval_monomial]
+      simp_rw [hxy, mul_pow]
+      -- After `mul_pow`, the product splits as `∏ u^{w j·k} * ∏ y j^k`.
+      simp only [Finsupp.prod]
+      rw [Finset.prod_mul_distrib]
+      simp_rw [← pow_mul]
+      have hpow :
+          (∏ j ∈ s.support, u ^ (weights j * s j)) = u ^ d := by
+        rw [Finset.prod_pow_eq_pow_sum]
+        congr 1
+        -- `weight w s = ∑ s j • w j = ∑ w j * s j`
+        have : Finsupp.weight weights s = ∑ j ∈ s.support, weights j * s j := by
+          simp only [Finsupp.weight_apply, Finsupp.sum, smul_eq_mul, mul_comm]
+        exact this ▸ hs
+      rw [hpow]
+      ring
+
 end WeightedProjectiveSpace
 
 /-! ## Algebraic content of Proposition 3.3 for `surfaceEquation` -/
@@ -842,28 +887,83 @@ public theorem uv0_singular_implies_origin_of_charZero
     exact sq_eq_zero_iff.mp hx2
   exact ⟨hx0, hy0⟩
 
+/-! ### Chart evaluation and partials (dehomogenisation identities)
+
+Patterned on `BiprojectiveSpace` chart evaluation lemmas.  These identify the naive
+`chartEquation` (set chart coordinate to `1`) with evaluation of the homogeneous form at the
+normalised point, and transport partial derivatives across dehomogenisation. -/
+
+open WeightedProjectiveSpace
+
+/-- Homogeneous representative of a chart point: insert `1` at index `i`. -/
+public noncomputable def chartPoint (i : Fin 4) (a : Fin 3 → ℚ) : Fin 4 → ℚ :=
+  Fin.insertNth i (1 : ℚ) a
+
+@[simp] public theorem chartPoint_self (i : Fin 4) (a : Fin 3 → ℚ) :
+    chartPoint i a i = 1 :=
+  Fin.insertNth_apply_same (α := fun _ => ℚ) i 1 a
+
+@[simp] public theorem chartPoint_succAbove (i : Fin 4) (a : Fin 3 → ℚ) (r : Fin 3) :
+    chartPoint i a (i.succAbove r) = a r :=
+  Fin.insertNth_apply_succAbove (α := fun _ => ℚ) i 1 a r
+
+/-- The chart substitution, evaluated at an affine point `a`, is the chart point. -/
+private theorem eval_chartSubst (i : Fin 4) (a : Fin 3 → ℚ) (j : Fin 4) :
+    eval a (chartSubst (R := ℚ) i j) = chartPoint i a j := by
+  unfold chartSubst chartPoint
+  rcases Fin.eq_self_or_eq_succAbove i j with hji | ⟨r, hr⟩
+  · subst hji
+    simp [Fin.insertNth_apply_same]
+  · subst hr
+    simp [Fin.insertNth_apply_succAbove]
+
+/-- Evaluating the dehomogenised chart equation at `a` equals evaluating the homogeneous form
+at the chart point (with chart coordinate equal to `1`). -/
+public theorem eval_chartEquation_chartPoint
+    (i : Fin 4) (f : MvPolynomial (Fin 4) ℚ) (a : Fin 3 → ℚ) :
+    eval a (chartEquation (R := ℚ) i f) = eval (chartPoint i a) f := by
+  unfold chartEquation
+  -- `aeval a (aeval φ f) = aeval (fun j ↦ aeval a (φ j)) f`, and `aeval = eval` here.
+  simp only [← aeval_eq_eval]
+  -- Name the substitution so it is not confused with the polynomial `f`.
+  let φ : Fin 4 → MvPolynomial (Fin 3) ℚ := chartSubst (R := ℚ) i
+  change aeval a (aeval φ f) = aeval (chartPoint i a) f
+  have h :=
+    (comp_aeval_apply (R := ℚ) (σ := Fin 4) (S₁ := MvPolynomial (Fin 3) ℚ)
+      (f := φ) (aeval a) f)
+  -- h : aeval a (aeval φ f) = aeval (fun j => aeval a (φ j)) f
+  rw [h]
+  refine congrArg (fun x : Fin 4 → ℚ => aeval x f) ?_
+  funext j
+  simpa [φ, aeval_eq_eval] using eval_chartSubst i a j
+
 /-!
 ### Status of `Smooth (S_Q ⟶ Spec ℚ)`
 
-**Affine criterion: available** (vendored Nullstellensatz form + standard-smooth localisation).
+**Affine criterion: complete** (vendored Nullstellensatz + standard-smooth localisation).
 
 **Chartwise packaging: available**
-(`smooth_chartEquation_of_exists_pderiv_ne_zero_of_geometric`, Zariski locality,
-weighted Euler, four-chart cover).
+(`smooth_chartEquation_of_exists_pderiv_ne_zero_of_geometric`, chart evaluation, weighted
+Euler, Zariski locality, four-chart cover, weighted scaling identity).
 
-**Algebraic input for Proposition 3.3: available**
-(partials, `u = v = 0` specialisation, square-free `q₈`, discriminant factorisation,
-ambient singular ideals miss `S_Q`).
+**Algebraic input for Proposition 3.3: partial**
+(partials of `surfaceEquation`, `u = v = 0` specialisation, square-free `q₈`, discriminant
+factorisation, ambient singular ideals miss `S_Q`, chart evaluation).
+Full cone-gradient nonvanishing (singular fibres; cusps at `u = 0` / `v = 0`) is not closed.
 
-**Scheme-theoretic glue: still open.** The reduced induced structure
-`weightedHypersurface = vanishingIdeal.subscheme` is not yet identified on each standard chart
-with `Spec` of the dehomogenised hypersurface quotient. That comparison needs either an explicit
-isomorphism of the degree-zero homogeneous localisation with a free polynomial ring (true for
-weight-1 charts, delicate for weights 2 and 3), or a graded-quotient instance yielding
-`Proj(A/⟨f⟩)` (absent from Mathlib; see `WeightedProjective/Integrality`).
+**Scheme-theoretic glue: still open.** Identifying the reduced induced chart opens of
+`S_Q = vanishingIdeal.subscheme` with `Spec` of the dehomogenised quotients needs:
+1. the weight-1 chart ring equivalence `StandardChartRing ≃ₐ MvPolynomial (Fin 3)` for
+   `D₊(u)`, `D₊(v)` (route 2; free polynomial presentation of degree-zero localisation), and
+2. a residual comparison at `[0:0:1:1] ∈ D₊(x) ∩ D₊(y)` (weights 2 and 3; free presentation
+   fails).
 
-Until that comparison lands, `Smooth S_Q_toSpec` is not proved. We refuse a bespoke smoothness
-predicate.
+Until that lands, Mathlib `Smooth (S_Q_toSpec)` is **not** proved.  We refuse a bespoke
+smoothness predicate.
+
+**Smoothness notion (when it lands):** Mathlib `AlgebraicGeometry.Smooth` for the structure
+morphism `S_Q ⟶ Spec ℚ` (formally smooth + finite presentation of the structure sheaf maps),
+not a weaker Jacobian-only predicate.
 -/
 
 end DelPezzo
@@ -884,9 +984,11 @@ end ExplicitUnirational
 #print axioms ExplicitUnirational.WeightedProjectiveSpace.smooth_of_openCover_smooth
 #print axioms ExplicitUnirational.WeightedProjectiveSpace.smooth_chartEquation_of_exists_pderiv_ne_zero_of_geometric
 #print axioms ExplicitUnirational.WeightedProjectiveSpace.weighted_euler
+#print axioms ExplicitUnirational.WeightedProjectiveSpace.weighted_aeval_scaling
 #print axioms ExplicitUnirational.DelPezzo.pderiv_surfaceEquation_y
 #print axioms ExplicitUnirational.DelPezzo.pderiv_surfaceEquation_x
 #print axioms ExplicitUnirational.DelPezzo.uv0_singular_implies_origin
 #print axioms ExplicitUnirational.DelPezzo.uv0_singular_implies_origin_of_charZero
 #print axioms ExplicitUnirational.DelPezzo.squarefree_q8_for_smoothness
 #print axioms ExplicitUnirational.DelPezzo.surfaceEquation_weighted_euler
+#print axioms ExplicitUnirational.DelPezzo.eval_chartEquation_chartPoint
