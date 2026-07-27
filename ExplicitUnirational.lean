@@ -24,6 +24,7 @@ public import ExplicitUnirational.GenericDegree
 public import ExplicitUnirational.Weierstrass.Fibres
 public import ExplicitUnirational.WeightedProjective.Basic
 public import ExplicitUnirational.WeightedProjective.Integrality
+public import ExplicitUnirational.WeightedProjective.Jacobian
 /-!
 # ExplicitUnirational
 Formalization of explicit unirational degree-one del Pezzo surfaces of arithmetic Picard rank one.
