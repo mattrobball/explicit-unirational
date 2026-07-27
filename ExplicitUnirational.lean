@@ -11,6 +11,7 @@ public import ExplicitUnirational.Cert.OcticF7
 public import ExplicitUnirational.Cert.Rabin
 public import ExplicitUnirational.Cert.Invariants
 public import ExplicitUnirational.Foundation
+public import ExplicitUnirational.GenericDegree
 
 /-!
 # ExplicitUnirational
