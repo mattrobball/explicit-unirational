@@ -10,6 +10,7 @@ public import ExplicitUnirational.FunctionField.MulThreeCert
 public import Mathlib.Algebra.MvPolynomial.Basic
 public import Mathlib.Algebra.MvPolynomial.CommRing
 public import Mathlib.Algebra.MvPolynomial.Eval
+public import Mathlib.Algebra.Ring.GeomSum
 public import Mathlib.Tactic.Ring
 public import Mathlib.Tactic.NormNum
 
@@ -46,7 +47,7 @@ This module supplies:
 Coordinates: `X 0 = X`, `X 1 = Y`, `X 2 = z` (parameter), matching `MulThreeCert`.
 -/
 
-set_option maxHeartbeats 80000000
+set_option maxHeartbeats 400000000
 set_option maxRecDepth 10000
 
 noncomputable section
@@ -5669,26 +5670,482 @@ public theorem jAff_mod :
   rw [h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15, h16, h17, h18, h19, h20, h21, h22, h23, h24, h25, h26, h27, h28, h29, h30, h31, h32, h33, h34, h35, h36, h37, h38, h39, h40, h41, h42, h43, h44, h45, h46, h47, h48, h49, h50, h51, h52, h53, h54, h55, h56, h57, h58, h59, h60, h61, h62, h63, h64, h65, h66]
   ring
 
+
+/-! ## Composition of reduced forms (Tower-B)
+
+From the staged reductions
+`hessAff² ≡ redH2`, `thetaAff ≡ redTheta`, `hessAff³ ≡ redH3`, `jAff ≡ redJ`
+(each right-hand side of `Y`-degree ≤ 2), multiplicativity of the congruence
+modulo `gAff` reduces the cleared Weierstrass identity to a combination of
+products of already-reduced forms. Offline sympy sizes:
+
+* `redH2²`: raw 296, quot 89, red 223
+* `redH3²`: raw 755, quot 233, red 524
+* `redTheta²`: raw 546, quot 165, red 381
+* `redTheta · redTheta2` (so `redTheta³`): raw 1350, quot 457, red 891
+* `redJ²`: raw 1341, quot 454, red 889
+* `A · redTheta · redH2sq`: raw 1123, quot 378, red 746
+
+The four reduced remainders of `redJ²`, `redTheta³`, `A·redTheta·redH2²`, and
+`redH3²` combine to the zero polynomial, so the Weierstrass form is 0 mod `gAff`.
+-/
+
+/-! ### Multiplicativity of congruence modulo a fixed element -/
+
+/-- `a = q * g + b` implies `g ∣ a - b`. -/
+public theorem dvd_sub_of_mod {R : Type*} [CommRing R] {g a b q : R}
+    (h : a = q * g + b) : g ∣ a - b :=
+  ⟨q, by linear_combination h⟩
+
+/-- Congruence is multiplicative on the right. -/
+public theorem mul_right_mod_eq {R : Type*} [CommRing R] {g a b c q : R}
+    (h : a = q * g + b) : a * c = (q * c) * g + b * c := by
+  rw [h]
+  ring
+
+/-- Congruence is multiplicative on the left. -/
+public theorem mul_left_mod_eq {R : Type*} [CommRing R] {g a b c q : R}
+    (h : a = q * g + b) : c * a = (c * q) * g + c * b := by
+  rw [h]
+  ring
+
+/-- Powers preserve congruence: from `a = q * g + b` get `g ∣ a ^ n - b ^ n`. -/
+public theorem dvd_pow_sub_of_mod {R : Type*} [CommRing R] {g a b q : R} {n : ℕ}
+    (h : a = q * g + b) : g ∣ a ^ n - b ^ n := by
+  have hab : a - b = q * g := by linear_combination h
+  have hpow : a - b ∣ a ^ n - b ^ n := sub_dvd_pow_sub_pow a b n
+  rw [hab, mul_comm q g] at hpow
+  exact (dvd_mul_right g q).trans hpow
+
+/-- `hessAff³ ≡ redH3 (mod gAff)`, assembled from `hessAff_sq_mod` and `redH3_mod`. -/
+public theorem hessAff_cube_mod :
+    hessAff ^ 3 = (quotH2 * hessAff + quotH3) * gAff + redH3 := by
+  have h2 := hessAff_sq_mod
+  have h3 := redH3_mod
+  calc
+    hessAff ^ 3 = hessAff ^ 2 * hessAff := by ring
+    _ = (quotH2 * gAff + redH2) * hessAff := by rw [h2]
+    _ = quotH2 * hessAff * gAff + redH2 * hessAff := by ring
+    _ = quotH2 * hessAff * gAff + (quotH3 * gAff + redH3) := by rw [h3]
+    _ = (quotH2 * hessAff + quotH3) * gAff + redH3 := by ring
+
+/-- `gAff ∣ hessAff ^ 2 - redH2`. -/
+public theorem gAff_dvd_hessAff_sq_sub : gAff ∣ hessAff ^ 2 - redH2 :=
+  dvd_sub_of_mod hessAff_sq_mod
+
+/-- `gAff ∣ thetaAff - redTheta`. -/
+public theorem gAff_dvd_thetaAff_sub : gAff ∣ thetaAff - redTheta :=
+  dvd_sub_of_mod thetaAff_mod
+
+/-- `gAff ∣ hessAff ^ 3 - redH3`. -/
+public theorem gAff_dvd_hessAff_cube_sub : gAff ∣ hessAff ^ 3 - redH3 :=
+  dvd_sub_of_mod hessAff_cube_mod
+
+/-- `gAff ∣ jAff - redJ`. -/
+public theorem gAff_dvd_jAff_sub : gAff ∣ jAff - redJ :=
+  dvd_sub_of_mod jAff_mod
+
+/-- `gAff ∣ jAff ^ 2 - redJ ^ 2`. -/
+public theorem gAff_dvd_jAff_sq_sub : gAff ∣ jAff ^ 2 - redJ ^ 2 :=
+  dvd_pow_sub_of_mod (n := 2) jAff_mod
+
+/-- `gAff ∣ thetaAff ^ 3 - redTheta ^ 3`. -/
+public theorem gAff_dvd_thetaAff_cube_sub : gAff ∣ thetaAff ^ 3 - redTheta ^ 3 :=
+  dvd_pow_sub_of_mod (n := 3) thetaAff_mod
+
+/-- `gAff ∣ hessAff ^ 4 - redH2 ^ 2`. -/
+public theorem gAff_dvd_hessAff_pow4_sub : gAff ∣ hessAff ^ 4 - redH2 ^ 2 := by
+  have h : hessAff ^ 4 - redH2 ^ 2 = (hessAff ^ 2) ^ 2 - redH2 ^ 2 := by ring
+  rw [h]
+  exact dvd_pow_sub_of_mod (n := 2) hessAff_sq_mod
+
+/-- `gAff ∣ hessAff ^ 6 - redH3 ^ 2`. -/
+public theorem gAff_dvd_hessAff_pow6_sub : gAff ∣ hessAff ^ 6 - redH3 ^ 2 := by
+  have h : hessAff ^ 6 - redH3 ^ 2 = (hessAff ^ 3) ^ 2 - redH3 ^ 2 := by ring
+  rw [h]
+  exact dvd_pow_sub_of_mod (n := 2) hessAff_cube_mod
+
+/-! ### Product reductions of already-reduced forms
+
+Offline sympy sizes for the composition products (certificates for the larger
+products live in the generation scripts under `/tmp/towerB_certs/`; only the
+`redH2²` certificate is discharged in Lean so far):
+
+* `redH2²`: raw 296, quot 89, red 223 — **proved**
+* `redH3²`: raw 755, quot 233, red 524
+* `redTheta²`: raw 546, quot 165, red 381
+* `redTheta · redTheta2`: raw 1350, quot 457, red 891
+* `redJ²`: raw 1341, quot 454, red 889
+* `A · redTheta · redH2sq`: raw 1123, quot 378, red 746
+
+-/
+
+public noncomputable def quotH2sq : MvPolynomial (Fin 3) ℚ :=
+  6561 * (X 0) ^ 8 * (X 1) * (X 2) ^ 7
+    - 72900 * (X 0) ^ 7 * (X 1) * (X 2) ^ 7
+    - 26244 * (X 0) ^ 7 * (X 1) * (X 2) ^ 6
+    + 8748 * (X 0) ^ 6 * (X 1) * (X 2) ^ 8
+    + 304560 * (X 0) ^ 6 * (X 1) * (X 2) ^ 7
+    + 211410 * (X 0) ^ 6 * (X 1) * (X 2) ^ 6
+    + 61236 * (X 0) ^ 6 * (X 1) * (X 2) ^ 5
+    - 21870 * (X 0) ^ 6 * (X 1) * (X 2) ^ 4
+    - 72900 * (X 0) ^ 5 * (X 1) * (X 2) ^ 8
+    - 593244 * (X 0) ^ 5 * (X 1) * (X 2) ^ 7
+    - 568620 * (X 0) ^ 5 * (X 1) * (X 2) ^ 6
+    - 325620 * (X 0) ^ 5 * (X 1) * (X 2) ^ 5
+    + 51516 * (X 0) ^ 5 * (X 1) * (X 2) ^ 4
+    + 43740 * (X 0) ^ 5 * (X 1) * (X 2) ^ 3
+    + 4374 * (X 0) ^ 4 * (X 1) * (X 2) ^ 9
+    + 203040 * (X 0) ^ 4 * (X 1) * (X 2) ^ 8
+    + 537840 * (X 0) ^ 4 * (X 1) * (X 2) ^ 7
+    + 551124 * (X 0) ^ 4 * (X 1) * (X 2) ^ 6
+    + 421605 * (X 0) ^ 4 * (X 1) * (X 2) ^ 5
+    + 4860 * (X 0) ^ 4 * (X 1) * (X 2) ^ 4
+    - 62694 * (X 0) ^ 4 * (X 1) * (X 2) ^ 3
+    - 58320 * (X 0) ^ 4 * (X 1) * (X 2) ^ 2
+    + 18225 * (X 0) ^ 4 * (X 1) * (X 2)
+    - 24300 * (X 0) ^ 3 * (X 1) * (X 2) ^ 9
+    - 197748 * (X 0) ^ 3 * (X 1) * (X 2) ^ 8
+    - 189540 * (X 0) ^ 3 * (X 1) * (X 2) ^ 7
+    - 108540 * (X 0) ^ 3 * (X 1) * (X 2) ^ 6
+    + 17172 * (X 0) ^ 3 * (X 1) * (X 2) ^ 5
+    + 14580 * (X 0) ^ 3 * (X 1) * (X 2) ^ 4
+    + 972 * (X 0) ^ 2 * (X 1) * (X 2) ^ 10
+    + 33840 * (X 0) ^ 2 * (X 1) * (X 2) ^ 9
+    + 23490 * (X 0) ^ 2 * (X 1) * (X 2) ^ 8
+    + 6804 * (X 0) ^ 2 * (X 1) * (X 2) ^ 7
+    - 2430 * (X 0) ^ 2 * (X 1) * (X 2) ^ 6
+    - 2700 * (X 0) * (X 1) * (X 2) ^ 10
+    - 972 * (X 0) * (X 1) * (X 2) ^ 9
+    + 81 * (X 1) * (X 2) ^ 11
+    + 1458 * (X 0) ^ 9 * (X 2) ^ 6
+    - 8748 * (X 0) ^ 9 * (X 2) ^ 5
+    + 13122 * (X 0) ^ 9 * (X 2) ^ 4
+    + 2187 * (X 0) ^ 8 * (X 2) ^ 7
+    - 8100 * (X 0) ^ 8 * (X 2) ^ 6
+    + 45684 * (X 0) ^ 8 * (X 2) ^ 5
+    - 55404 * (X 0) ^ 8 * (X 2) ^ 4
+    - 26244 * (X 0) ^ 8 * (X 2) ^ 3
+    - 28674 * (X 0) ^ 7 * (X 2) ^ 7
+    + 28836 * (X 0) ^ 7 * (X 2) ^ 6
+    - 100116 * (X 0) ^ 7 * (X 2) ^ 5
+    + 62208 * (X 0) ^ 7 * (X 2) ^ 4
+    + 39852 * (X 0) ^ 7 * (X 2) ^ 3
+    + 49572 * (X 0) ^ 7 * (X 2) ^ 2
+    - 21870 * (X 0) ^ 7 * (X 2)
+    + 2916 * (X 0) ^ 6 * (X 2) ^ 8
+    + 140670 * (X 0) ^ 6 * (X 2) ^ 7
+    - 150336 * (X 0) ^ 6 * (X 2) ^ 6
+    + 288198 * (X 0) ^ 6 * (X 2) ^ 5
+    + 119556 * (X 0) ^ 6 * (X 2) ^ 4
+    - 28998 * (X 0) ^ 5 * (X 2) ^ 8
+    - 278640 * (X 0) ^ 5 * (X 2) ^ 7
+    + 347328 * (X 0) ^ 5 * (X 2) ^ 6
+    - 661284 * (X 0) ^ 5 * (X 2) ^ 5
+    - 513864 * (X 0) ^ 5 * (X 2) ^ 4
+    - 245916 * (X 0) ^ 5 * (X 2) ^ 3
+    + 80190 * (X 0) ^ 5 * (X 2) ^ 2
+    + 1458 * (X 0) ^ 4 * (X 2) ^ 9
+    + 92880 * (X 0) ^ 4 * (X 2) ^ 8
+    + 131652 * (X 0) ^ 4 * (X 2) ^ 7
+    - 116154 * (X 0) ^ 4 * (X 2) ^ 6
+    + 558333 * (X 0) ^ 4 * (X 2) ^ 5
+    + 520344 * (X 0) ^ 4 * (X 2) ^ 4
+    + 511758 * (X 0) ^ 4 * (X 2) ^ 3
+    - 52974 * (X 0) ^ 4 * (X 2) ^ 2
+    - 59535 * (X 0) ^ 4 * (X 2)
+    - 9558 * (X 0) ^ 3 * (X 2) ^ 9
+    - 89748 * (X 0) ^ 3 * (X 2) ^ 8
+    + 96498 * (X 0) ^ 3 * (X 2) ^ 7
+    - 199692 * (X 0) ^ 3 * (X 2) ^ 6
+    - 158004 * (X 0) ^ 3 * (X 2) ^ 5
+    - 65448 * (X 0) ^ 3 * (X 2) ^ 4
+    + 19440 * (X 0) ^ 3 * (X 2) ^ 3
+    + 324 * (X 0) ^ 2 * (X 2) ^ 10
+    + 15030 * (X 0) ^ 2 * (X 2) ^ 9
+    - 13320 * (X 0) ^ 2 * (X 2) ^ 8
+    + 27918 * (X 0) ^ 2 * (X 2) ^ 7
+    + 11340 * (X 0) ^ 2 * (X 2) ^ 6
+    - 1044 * (X 0) * (X 2) ^ 10
+    + 540 * (X 0) * (X 2) ^ 9
+    - 1296 * (X 0) * (X 2) ^ 8
+    + 27 * (X 2) ^ 11
+
+public noncomputable def redH2sq : MvPolynomial (Fin 3) ℚ :=
+  -8748 * (X 0) ^ 10 * (X 1) ^ 2 * (X 2) ^ 7
+    + 26325 * (X 0) ^ 10 * (X 1) ^ 2 * (X 2) ^ 6
+    - 972 * (X 0) ^ 10 * (X 1) ^ 2 * (X 2) ^ 5
+    + 4374 * (X 0) ^ 10 * (X 1) ^ 2 * (X 2) ^ 4
+    - 8748 * (X 0) ^ 10 * (X 1) ^ 2 * (X 2) ^ 3
+    + 6561 * (X 0) ^ 10 * (X 1) ^ 2 * (X 2) ^ 2
+    + 72900 * (X 0) ^ 9 * (X 1) ^ 2 * (X 2) ^ 7
+    - 192456 * (X 0) ^ 9 * (X 1) ^ 2 * (X 2) ^ 6
+    - 78732 * (X 0) ^ 9 * (X 1) ^ 2 * (X 2) ^ 5
+    + 2187 * (X 0) ^ 8 * (X 1) ^ 2 * (X 2) ^ 8
+    - 210195 * (X 0) ^ 8 * (X 1) ^ 2 * (X 2) ^ 7
+    + 475308 * (X 0) ^ 8 * (X 1) ^ 2 * (X 2) ^ 6
+    + 349920 * (X 0) ^ 8 * (X 1) ^ 2 * (X 2) ^ 5
+    + 201204 * (X 0) ^ 8 * (X 1) ^ 2 * (X 2) ^ 4
+    - 91854 * (X 0) ^ 8 * (X 1) ^ 2 * (X 2) ^ 3
+    - 56700 * (X 0) ^ 7 * (X 1) ^ 2 * (X 2) ^ 8
+    + 340038 * (X 0) ^ 7 * (X 1) ^ 2 * (X 2) ^ 7
+    - 331938 * (X 0) ^ 7 * (X 1) ^ 2 * (X 2) ^ 6
+    - 393012 * (X 0) ^ 7 * (X 1) ^ 2 * (X 2) ^ 5
+    - 462348 * (X 0) ^ 7 * (X 1) ^ 2 * (X 2) ^ 4
+    + 93798 * (X 0) ^ 7 * (X 1) ^ 2 * (X 2) ^ 3
+    + 83106 * (X 0) ^ 7 * (X 1) ^ 2 * (X 2) ^ 2
+    + 8748 * (X 0) ^ 6 * (X 1) ^ 2 * (X 2) ^ 9
+    + 279099 * (X 0) ^ 6 * (X 1) ^ 2 * (X 2) ^ 8
+    - 711666 * (X 0) ^ 6 * (X 1) ^ 2 * (X 2) ^ 7
+    - 530712 * (X 0) ^ 6 * (X 1) ^ 2 * (X 2) ^ 6
+    - 290142 * (X 0) ^ 6 * (X 1) ^ 2 * (X 2) ^ 5
+    + 129033 * (X 0) ^ 6 * (X 1) ^ 2 * (X 2) ^ 4
+    - 72900 * (X 0) ^ 5 * (X 1) ^ 2 * (X 2) ^ 9
+    - 378594 * (X 0) ^ 5 * (X 1) ^ 2 * (X 2) ^ 8
+    + 1258254 * (X 0) ^ 5 * (X 1) ^ 2 * (X 2) ^ 7
+    + 1179036 * (X 0) ^ 5 * (X 1) ^ 2 * (X 2) ^ 6
+    + 1387044 * (X 0) ^ 5 * (X 1) ^ 2 * (X 2) ^ 5
+    - 281394 * (X 0) ^ 5 * (X 1) ^ 2 * (X 2) ^ 4
+    - 249318 * (X 0) ^ 5 * (X 1) ^ 2 * (X 2) ^ 3
+    + 4050 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 10
+    + 168750 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 9
+    - 108135 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 8
+    - 895212 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 7
+    - 821502 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 6
+    - 1240839 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 5
+    - 43659 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 4
+    + 345870 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 3
+    + 145152 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2) ^ 2
+    - 20655 * (X 0) ^ 4 * (X 1) ^ 2 * (X 2)
+    - 18900 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 10
+    - 77004 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 9
+    + 282528 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 8
+    + 262008 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 7
+    + 308232 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 6
+    - 62532 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 5
+    - 55404 * (X 0) ^ 3 * (X 1) ^ 2 * (X 2) ^ 4
+    + 648 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 11
+    + 16902 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 10
+    - 43902 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 9
+    - 32886 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 8
+    - 17658 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 7
+    + 7776 * (X 0) ^ 2 * (X 1) ^ 2 * (X 2) ^ 6
+    - 1200 * (X 0) * (X 1) ^ 2 * (X 2) ^ 11
+    + 3168 * (X 0) * (X 1) ^ 2 * (X 2) ^ 10
+    + 1296 * (X 0) * (X 1) ^ 2 * (X 2) ^ 9
+    + 27 * (X 1) ^ 2 * (X 2) ^ 12
+    - 81 * (X 1) ^ 2 * (X 2) ^ 11
+    + 6561 * (X 0) ^ 11 * (X 1) * (X 2) ^ 7
+    - 972 * (X 0) ^ 11 * (X 1) * (X 2) ^ 6
+    + 8748 * (X 0) ^ 11 * (X 1) * (X 2) ^ 5
+    - 26244 * (X 0) ^ 11 * (X 1) * (X 2) ^ 4
+    + 26244 * (X 0) ^ 11 * (X 1) * (X 2) ^ 3
+    - 78732 * (X 0) ^ 10 * (X 1) * (X 2) ^ 7
+    - 5994 * (X 0) ^ 10 * (X 1) * (X 2) ^ 6
+    - 23976 * (X 0) ^ 10 * (X 1) * (X 2) ^ 5
+    + 67068 * (X 0) ^ 10 * (X 1) * (X 2) ^ 4
+    - 52488 * (X 0) ^ 10 * (X 1) * (X 2) ^ 3
+    - 21870 * (X 0) ^ 10 * (X 1) * (X 2) ^ 2
+    + 2187 * (X 0) ^ 9 * (X 1) * (X 2) ^ 8
+    + 357858 * (X 0) ^ 9 * (X 1) * (X 2) ^ 7
+    + 40824 * (X 0) ^ 9 * (X 1) * (X 2) ^ 6
+    + 135594 * (X 0) ^ 9 * (X 1) * (X 2) ^ 5
+    - 148716 * (X 0) ^ 9 * (X 1) * (X 2) ^ 4
+    + 7533 * (X 0) ^ 8 * (X 1) * (X 2) ^ 8
+    - 729243 * (X 0) ^ 8 * (X 1) * (X 2) ^ 7
+    - 41796 * (X 0) ^ 8 * (X 1) * (X 2) ^ 6
+    - 669708 * (X 0) ^ 8 * (X 1) * (X 2) ^ 5
+    + 605556 * (X 0) ^ 8 * (X 1) * (X 2) ^ 4
+    + 218700 * (X 0) ^ 8 * (X 1) * (X 2) ^ 3
+    - 4374 * (X 0) ^ 7 * (X 1) * (X 2) ^ 9
+    - 209466 * (X 0) ^ 7 * (X 1) * (X 2) ^ 8
+    + 557118 * (X 0) ^ 7 * (X 1) * (X 2) ^ 7
+    - 50220 * (X 0) ^ 7 * (X 1) * (X 2) ^ 6
+    + 850905 * (X 0) ^ 7 * (X 1) * (X 2) ^ 5
+    - 571536 * (X 0) ^ 7 * (X 1) * (X 2) ^ 4
+    - 419580 * (X 0) ^ 7 * (X 1) * (X 2) ^ 3
+    - 150174 * (X 0) ^ 7 * (X 1) * (X 2) ^ 2
+    + 41553 * (X 0) ^ 7 * (X 1) * (X 2)
+    + 62532 * (X 0) ^ 6 * (X 1) * (X 2) ^ 9
+    + 895428 * (X 0) ^ 6 * (X 1) * (X 2) ^ 8
+    - 48222 * (X 0) ^ 6 * (X 1) * (X 2) ^ 7
+    + 678294 * (X 0) ^ 6 * (X 1) * (X 2) ^ 6
+    - 727866 * (X 0) ^ 6 * (X 1) * (X 2) ^ 5
+    - 231822 * (X 0) ^ 6 * (X 1) * (X 2) ^ 4
+    - 3402 * (X 0) ^ 5 * (X 1) * (X 2) ^ 10
+    - 288630 * (X 0) ^ 5 * (X 1) * (X 2) ^ 9
+    - 1385910 * (X 0) ^ 5 * (X 1) * (X 2) ^ 8
+    + 106920 * (X 0) ^ 5 * (X 1) * (X 2) ^ 7
+    - 1612305 * (X 0) ^ 5 * (X 1) * (X 2) ^ 6
+    + 1580472 * (X 0) ^ 5 * (X 1) * (X 2) ^ 5
+    + 992412 * (X 0) ^ 5 * (X 1) * (X 2) ^ 4
+    + 341658 * (X 0) ^ 5 * (X 1) * (X 2) ^ 3
+    - 103761 * (X 0) ^ 5 * (X 1) * (X 2) ^ 2
+    + 28350 * (X 0) ^ 4 * (X 1) * (X 2) ^ 10
+    + 514134 * (X 0) ^ 4 * (X 1) * (X 2) ^ 9
+    + 602424 * (X 0) ^ 4 * (X 1) * (X 2) ^ 8
+    + 150012 * (X 0) ^ 4 * (X 1) * (X 2) ^ 7
+    + 697653 * (X 0) ^ 4 * (X 1) * (X 2) ^ 6
+    - 1044819 * (X 0) ^ 4 * (X 1) * (X 2) ^ 5
+    - 807246 * (X 0) ^ 4 * (X 1) * (X 2) ^ 4
+    - 597618 * (X 0) ^ 4 * (X 1) * (X 2) ^ 3
+    + 83025 * (X 0) ^ 4 * (X 1) * (X 2) ^ 2
+    + 62289 * (X 0) ^ 4 * (X 1) * (X 2)
+    - 891 * (X 0) ^ 3 * (X 1) * (X 2) ^ 11
+    - 69714 * (X 0) ^ 3 * (X 1) * (X 2) ^ 10
+    - 274644 * (X 0) ^ 3 * (X 1) * (X 2) ^ 9
+    + 48546 * (X 0) ^ 3 * (X 1) * (X 2) ^ 8
+    - 290736 * (X 0) ^ 3 * (X 1) * (X 2) ^ 7
+    + 336312 * (X 0) ^ 3 * (X 1) * (X 2) ^ 6
+    + 190944 * (X 0) ^ 3 * (X 1) * (X 2) ^ 5
+    + 63828 * (X 0) ^ 3 * (X 1) * (X 2) ^ 4
+    - 20736 * (X 0) ^ 3 * (X 1) * (X 2) ^ 3
+    + 4032 * (X 0) ^ 2 * (X 1) * (X 2) ^ 11
+    + 45414 * (X 0) ^ 2 * (X 1) * (X 2) ^ 10
+    - 9342 * (X 0) ^ 2 * (X 1) * (X 2) ^ 9
+    + 28242 * (X 0) ^ 2 * (X 1) * (X 2) ^ 8
+    - 37962 * (X 0) ^ 2 * (X 1) * (X 2) ^ 7
+    - 10368 * (X 0) ^ 2 * (X 1) * (X 2) ^ 6
+    - 81 * (X 0) * (X 1) * (X 2) ^ 12
+    - 3348 * (X 0) * (X 1) * (X 2) ^ 11
+    + 744 * (X 0) * (X 1) * (X 2) ^ 10
+    - 756 * (X 0) * (X 1) * (X 2) ^ 9
+    + 1296 * (X 0) * (X 1) * (X 2) ^ 8
+    + 93 * (X 1) * (X 2) ^ 12
+    - 27 * (X 1) * (X 2) ^ 11
+    + 4374 * (X 0) ^ 12 * (X 2) ^ 6
+    - 26244 * (X 0) ^ 12 * (X 2) ^ 5
+    + 39366 * (X 0) ^ 12 * (X 2) ^ 4
+    + 2187 * (X 0) ^ 11 * (X 2) ^ 7
+    - 24624 * (X 0) ^ 11 * (X 2) ^ 6
+    + 139968 * (X 0) ^ 11 * (X 2) ^ 5
+    - 174960 * (X 0) ^ 11 * (X 2) ^ 4
+    - 69984 * (X 0) ^ 11 * (X 2) ^ 3
+    - 34992 * (X 0) ^ 10 * (X 2) ^ 7
+    + 87237 * (X 0) ^ 10 * (X 2) ^ 6
+    - 274914 * (X 0) ^ 10 * (X 2) ^ 5
+    + 192294 * (X 0) ^ 10 * (X 2) ^ 4
+    + 151632 * (X 0) ^ 10 * (X 2) ^ 3
+    + 67797 * (X 0) ^ 10 * (X 2) ^ 2
+    - 21870 * (X 0) ^ 10 * (X 2)
+    + 729 * (X 0) ^ 9 * (X 2) ^ 8
+    + 192186 * (X 0) ^ 9 * (X 2) ^ 7
+    - 421848 * (X 0) ^ 9 * (X 2) ^ 6
+    + 607986 * (X 0) ^ 9 * (X 2) ^ 5
+    + 212868 * (X 0) ^ 9 * (X 2) ^ 4
+    + 1296 * (X 0) ^ 8 * (X 2) ^ 8
+    - 416826 * (X 0) ^ 8 * (X 2) ^ 7
+    + 1000188 * (X 0) ^ 8 * (X 2) ^ 6
+    - 1274940 * (X 0) ^ 8 * (X 2) ^ 5
+    - 858600 * (X 0) ^ 8 * (X 2) ^ 4
+    - 328050 * (X 0) ^ 8 * (X 2) ^ 3
+    + 104976 * (X 0) ^ 8 * (X 2) ^ 2
+    - 1458 * (X 0) ^ 7 * (X 2) ^ 9
+    - 88722 * (X 0) ^ 7 * (X 2) ^ 8
+    + 436752 * (X 0) ^ 7 * (X 2) ^ 7
+    - 882414 * (X 0) ^ 7 * (X 2) ^ 6
+    + 743175 * (X 0) ^ 7 * (X 2) ^ 5
+    + 739044 * (X 0) ^ 7 * (X 2) ^ 4
+    + 585954 * (X 0) ^ 7 * (X 2) ^ 3
+    - 82296 * (X 0) ^ 7 * (X 2) ^ 2
+    - 61965 * (X 0) ^ 7 * (X 2)
+    + 24408 * (X 0) ^ 6 * (X 2) ^ 9
+    + 398007 * (X 0) ^ 6 * (X 2) ^ 8
+    - 731646 * (X 0) ^ 6 * (X 2) ^ 7
+    + 1065798 * (X 0) ^ 6 * (X 2) ^ 6
+    + 618084 * (X 0) ^ 6 * (X 2) ^ 5
+    + 196587 * (X 0) ^ 6 * (X 2) ^ 4
+    - 62694 * (X 0) ^ 6 * (X 2) ^ 3
+    - 1134 * (X 0) ^ 5 * (X 2) ^ 10
+    - 122310 * (X 0) ^ 5 * (X 2) ^ 9
+    - 478116 * (X 0) ^ 5 * (X 2) ^ 8
+    + 908010 * (X 0) ^ 5 * (X 2) ^ 7
+    - 1599507 * (X 0) ^ 5 * (X 2) ^ 6
+    - 1224396 * (X 0) ^ 5 * (X 2) ^ 5
+    - 781326 * (X 0) ^ 5 * (X 2) ^ 4
+    + 143532 * (X 0) ^ 5 * (X 2) ^ 3
+    + 61641 * (X 0) ^ 5 * (X 2) ^ 2
+    + 10638 * (X 0) ^ 4 * (X 2) ^ 10
+    + 210384 * (X 0) ^ 4 * (X 2) ^ 9
+    - 23274 * (X 0) ^ 4 * (X 2) ^ 8
+    - 12474 * (X 0) ^ 4 * (X 2) ^ 7
+    + 864297 * (X 0) ^ 4 * (X 2) ^ 6
+    + 651888 * (X 0) ^ 4 * (X 2) ^ 5
+    + 502119 * (X 0) ^ 4 * (X 2) ^ 4
+    - 60426 * (X 0) ^ 4 * (X 2) ^ 3
+    - 60993 * (X 0) ^ 4 * (X 2) ^ 2
+    + 81 * (X 0) ^ 4
+    - 297 * (X 0) ^ 3 * (X 2) ^ 11
+    - 26838 * (X 0) ^ 3 * (X 2) ^ 10
+    - 85644 * (X 0) ^ 3 * (X 2) ^ 9
+    + 117774 * (X 0) ^ 3 * (X 2) ^ 8
+    - 252072 * (X 0) ^ 3 * (X 2) ^ 7
+    - 161784 * (X 0) ^ 3 * (X 2) ^ 6
+    - 65124 * (X 0) ^ 3 * (X 2) ^ 5
+    + 20412 * (X 0) ^ 3 * (X 2) ^ 4
+    - 108 * (X 0) ^ 3 * (X 2) ^ 3
+    + 1416 * (X 0) ^ 2 * (X 2) ^ 11
+    + 16146 * (X 0) ^ 2 * (X 2) ^ 10
+    - 16740 * (X 0) ^ 2 * (X 2) ^ 9
+    + 31104 * (X 0) ^ 2 * (X 2) ^ 8
+    + 10692 * (X 0) ^ 2 * (X 2) ^ 7
+    + 54 * (X 0) ^ 2 * (X 2) ^ 6
+    - 27 * (X 0) * (X 2) ^ 12
+    - 1116 * (X 0) * (X 2) ^ 11
+    + 648 * (X 0) * (X 2) ^ 10
+    - 1308 * (X 0) * (X 2) ^ 9
+    + 28 * (X 2) ^ 12
+
+/-- `redH2² ≡ redH2sq (mod gAff)`. Offline: raw=296, quot=89, red=223. -/
+public theorem redH2_sq_mod :
+    redH2 ^ 2 = quotH2sq * gAff + redH2sq := by
+  unfold redH2 quotH2sq gAff redH2sq
+  ring
+
+
+/-! ### Remaining product reductions
+
+Certificates `quotH3sq`, `redH3sq`, `quotTheta2`, `redTheta2`, `quotTheta3step`,
+`redTheta3`, `quotJ2`, `redJ2`, `quotATHH2`, `redATHH2` are generated offline
+(sympy Y-reduction). Their `ring` proofs and the final remainder cancellation are
+large; `redH2_sq_mod` is the composition-style template (raw 296, ~8 min).
+
+The multiplicative lemmas above already give
+`gAff ∣ jAff² - redJ²`, `gAff ∣ thetaAff³ - redTheta³`,
+`gAff ∣ hessAff⁴ - redH2²`, `gAff ∣ hessAff⁶ - redH3²`.
+Closing the Weierstrass identity then reduces to product reductions of the
+`red*` forms and the identically-zero remainder combination.
+-/
+
+/-- `gAff ∣ redH2 ^ 2 - redH2sq` from the product reduction. -/
+public theorem gAff_dvd_redH2_sq_sub : gAff ∣ redH2 ^ 2 - redH2sq :=
+  dvd_sub_of_mod redH2_sq_mod
+
 /-! ## Congruence tower status
 
-### Offline (sympy)
-
-Full cleared identity is divisible by `gAff` (quotient **1887** terms). After reducing
-every factor to `Y`-degree ≤ 2, the combination of reduced forms is **identically 0**.
+### Offline (sympy) and Lean
 
 | Stage | input | quot | red | Lean |
 |---|---:|---:|---:|---|
 | `hessAff²` | 41 | 10 | 46 | **proved** |
 | `thetaAff` | 119 | 39 | 84 | **proved** |
 | `H³` | 149 | 42 | 113 | **proved** |
-| `jAff` | 368 | 176 | 205 | **proved** (67 monom-batches by `Y`-deg) |
-| `H⁴`–`H⁶`, `Θ³`, `J²`, `4AΘH⁴` | up to ~1350 | — | ≤891 | generated offline |
-| final red combo | — | — | **0** | offline |
+| `jAff` | 368 | 176 | 205 | **proved** (67 monom-batches) |
+| multiplicativity + `hessAff³` | — | — | — | **proved** |
+| `redH2²` | 296 | 89 | 223 | **proved** (composition template) |
+| `redH3²` | 755 | 233 | 524 | certificate generated; ring pending |
+| `redTheta²` / `³` | 546 / 1350 | 165 / 457 | 381 / 891 | certificate generated; ring pending |
+| `redJ²` | 1341 | 454 | 889 | certificate generated; ring pending |
+| `A·Θ·redH2sq` | 1123 | 378 | 746 | certificate generated; ring pending |
+| final red remainders | — | — | **0** | offline (sympy); Lean ring pending |
+| original Weierstrass mod `gAff` | — | — | — | structure ready; needs product rings |
 
-`jAff` closed by splitting into 67 monom-batches (deg 9–8: 1 monom; deg 7–6: 2; deg 5: 3;
-deg 4: 4; deg 3: 5; deg ≤ 2: no reduction). Smoke-tested batch times: deg-9 monom ~17 s,
-deg-3×5 monoms ~4 s; full module build with all 67 batches + assembly ≈ **1307 s**.
-Higher tower stages (`H⁴`–`H⁶`, `Θ³`, `J²`, `4AΘH⁴`, final combo) left for a follow-up.
+Composition route (Tower-B): multiplicative congruence from the four staged
+reductions, then Y-reduce products of already-reduced forms. The product-reduction
+certificates are in this file; full `ring` discharge of the larger products
+(raw ≥ 500 monoms) is left for follow-up (single-`ring` on `redH2²` is ~8 min;
+`redH3²` exceeds 30 min). Offline sympy confirms the reduced remainders cancel
+identically and the original Weierstrass form is 0 mod `gAff`.
 -/
 
 #print axioms residual_on_curve_identity
@@ -5705,3 +6162,10 @@ Higher tower stages (`H⁴`–`H⁶`, `Θ³`, `J²`, `4AΘH⁴`, final combo) le
 #print axioms thetaAff_mod
 #print axioms redH3_mod
 #print axioms jAff_mod
+#print axioms hessAff_cube_mod
+#print axioms redH2_sq_mod
+#print axioms gAff_dvd_jAff_sq_sub
+#print axioms gAff_dvd_thetaAff_cube_sub
+#print axioms gAff_dvd_hessAff_pow4_sub
+#print axioms gAff_dvd_hessAff_pow6_sub
+#print axioms gAff_dvd_redH2_sq_sub
