@@ -25,8 +25,10 @@ public import ExplicitUnirational.FunctionField.ResidualDegree
 public import ExplicitUnirational.FunctionField.TangentResidual
 public import ExplicitUnirational.FunctionField.YSplit
 public import ExplicitUnirational.FunctionField.TorsorDescent
+public import ExplicitUnirational.FunctionField.TowerBProducts
 public import ExplicitUnirational.FunctionField.Trivialization
 public import ExplicitUnirational.GenericDegree
+public import ExplicitUnirational.Tactics.PolyCert
 public import ExplicitUnirational.Weierstrass.Fibres
 public import ExplicitUnirational.WeightedProjective.Basic
 public import ExplicitUnirational.WeightedProjective.Integrality
