@@ -25,6 +25,7 @@ public import ExplicitUnirational.FunctionField.ResidualDegree
 public import ExplicitUnirational.FunctionField.TangentResidual
 public import ExplicitUnirational.FunctionField.TorsorDescent
 public import ExplicitUnirational.FunctionField.TowerBProducts
+public import ExplicitUnirational.FunctionField.Unirationality
 public import ExplicitUnirational.FunctionField.WeierstrassOnCurve
 public import ExplicitUnirational.FunctionField.Trivialization
 public import ExplicitUnirational.GenericDegree
