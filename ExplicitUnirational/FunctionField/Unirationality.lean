@@ -41,20 +41,22 @@ into the rational function field `ℚ(x, y)` in two variables, sending the fibre
 parameter `z` to the pencil parameter.  This homomorphism is the algebraic
 form of the rational map `𝔸² ⤏ S` of the unirationality argument.
 
-## What is *not* proved here
+## What is proved elsewhere
 
 The upgrade from homomorphism to *field embedding* `K(S) ↪ ℚ(x, y)`
-(equivalently: dominance of the rational map) is the injectivity of
-`surfaceCoordRingToPlane`, which amounts to the transcendence facts that
-`ζ` is transcendental over `ℚ` and `ξ` is transcendental over `ℚ(ζ)` — i.e.
-that `(ξ, η)` is a *generic* point of the surface, the classical
-"the multiplication-by-`α_λ` map is nonconstant" step (the note's degree-9
-computation).  That is genuine mathematical content, not bookkeeping, and is
-left for a follow-up (`ResidualDegree` contains the relevant resultant
-certificate infrastructure).  Similarly, identifying `K(S)` with the function
-field of the weighted del Pezzo hypersurface `S_Q` of `DelPezzo/Surface.lean`
-is a birationality statement about the two models that is not formalized
-here; the present theorem is about the Weierstrass model (3.7) itself.
+(equivalently: dominance of the rational map, i.e. unirationality) is the
+injectivity of `surfaceCoordRingToPlane`.  It is proved in
+`ExplicitUnirational.FunctionField.Dominance`
+(`surfaceCoordRingToPlane_injective`), via the transcendence facts that `ζ` is
+transcendental over `ℚ` and that `{ζ, ξ}` is algebraically independent over `ℚ`.
+
+## What is *not* proved here or there
+
+The *degree* of that map (the note's `deg α_λ = 9`) is not established by either
+module.  And identifying `K(S)` with the function field of the weighted del Pezzo
+hypersurface `S_Q` of `DelPezzo/Surface.lean` is a birationality statement about
+the two models that is not formalized; the theorems here are about the affine
+Weierstrass model (3.7) itself.
 -/
 
 @[expose] public section
@@ -271,9 +273,9 @@ private theorem a6_plane : 4 * noteCurvePlane.a₆ = toPlane weierstrassBnum := 
 `ξ = Θ/H²`, `η = J/(2H³)` satisfy the Weierstrass equation of the note's
 model (3.7) with parameter `ζ = −f₀/f₁`, inside the rational function field
 `ℚ(x, y)`.  (This is the *point* of the surface over `ℚ(x, y)`; the induced
-coordinate-ring homomorphism is `surfaceCoordRingToPlane` below.  Upgrading
-it to a field embedding `K(S) ↪ ℚ(x, y)` — dominance — additionally requires
-the transcendence facts discussed in the module docstring.) -/
+coordinate-ring homomorphism is `surfaceCoordRingToPlane` below.  Its upgrade
+to a field embedding `K(S) ↪ ℚ(x, y)` — dominance — is
+`Dominance.surfaceCoordRingToPlane_injective`.) -/
 public theorem noteCurvePlane_equation :
     noteCurvePlane.toAffine.Equation xiPlane etaPlane := by
   haveI : CharZero (FunctionField.planeField ℚ) :=
@@ -342,7 +344,8 @@ affine coordinate ring of the note's Weierstrass surface (3.7) to the rational
 function field `ℚ(x, y)`, sending `ξ ↦ Θ/H²`, `η ↦ J/(2H³)` and the fibre
 parameter `z` to the pencil parameter `−f₀/f₁` of Lemma 3.1.  Injectivity of
 this map (= dominance of the underlying rational map `𝔸² ⤏ S`, = the field
-embedding `K(S) ↪ ℚ(x, y)`) is *not* proved here; see the module docstring. -/
+embedding `K(S) ↪ ℚ(x, y)`) is proved in
+`ExplicitUnirational.FunctionField.Dominance`. -/
 public noncomputable def surfaceCoordRingToPlane :
     (MvPolynomial (Fin 3) ℚ ⧸ Ideal.span {weierstrassSurfaceAff})
       →ₐ[ℚ] FunctionField.planeField ℚ :=
