@@ -16,6 +16,7 @@ public import ExplicitUnirational.Divisors.Bridge
 public import ExplicitUnirational.Divisors.ClassGroup
 public import ExplicitUnirational.Divisors.NSLattice
 public import ExplicitUnirational.Foundation
+public import ExplicitUnirational.FunctionField.Dominance
 public import ExplicitUnirational.FunctionField.GeometricIntegrality
 public import ExplicitUnirational.FunctionField.MonodromyS9
 public import ExplicitUnirational.FunctionField.MulThree

@@ -57,6 +57,8 @@ is a birationality statement about the two models that is not formalized
 here; the present theorem is about the Weierstrass model (3.7) itself.
 -/
 
+@[expose] public section
+
 set_option maxHeartbeats 1600000
 
 noncomputable section
