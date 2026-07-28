@@ -380,4 +380,319 @@ public theorem algebraicIndependent_planeZeta_xiPlane :
 #print axioms transcendental_planeZeta
 #print axioms algebraicIndependent_planeZeta_xiPlane
 
+/-! ## Step 4: injectivity of the coordinate-ring homomorphism
+
+`weierstrassSurfaceAff` is quadratic in `η` with unit leading coefficient, so every
+ambient polynomial is congruent mod it to one of the form `a(ξ, z)·η + b(ξ, z)`.
+Such a class dies in `ℚ(x, y)` only if `a = b = 0`: squaring the relation and using
+the Weierstrass equation turns it into a *polynomial* identity in `ℚ[ξ, z]`, which
+`{ζ, ξ}`-independence then transports to `ℚ[ξ, z]` itself, where a degree-parity
+argument in `ξ` finishes. -/
+
+/-- The `(ξ, z)`-coordinates inside the ambient `(ξ, η, z)`: `X 0 ↦ X 0`, `X 1 ↦ X 2`. -/
+public def injXiZ : MvPolynomial (Fin 2) ℚ →ₐ[ℚ] MvPolynomial (Fin 3) ℚ :=
+  aeval ![X 0, X 2]
+
+@[simp] public theorem injXiZ_X0 : injXiZ (X 0) = X 0 := by simp [injXiZ]
+@[simp] public theorem injXiZ_X1 : injXiZ (X 1) = X 2 := by simp [injXiZ]
+
+/-- The `η`-free part of the affine Weierstrass surface polynomial, in the
+coordinates `X 0 = ξ`, `X 1 = z`. -/
+public def surfaceTail : MvPolynomial (Fin 2) ℚ :=
+  -(4 * (X 0) ^ 3) - 4 * ((X 1) ^ 2 * (3 - X 1)) * (X 0)
+    - (X 1) * (4 * (X 1) ^ 4 - 23 * (X 1) ^ 3 - 18 * (X 1) ^ 2 + (X 1) - 4)
+
+public theorem weierstrassSurfaceAff_eq_add :
+    weierstrassSurfaceAff = 4 * (X 1 : MvPolynomial (Fin 3) ℚ) ^ 2 + injXiZ surfaceTail := by
+  simp only [weierstrassSurfaceAff, surfaceTail, injXiZ, map_sub, map_neg, map_add, map_mul,
+    map_pow, map_ofNat, aeval_X, Matrix.cons_val_zero, Matrix.cons_val_one]
+  ring
+
+/-- Division with remainder by the surface polynomial in the variable `η`.
+The power of `4` keeps everything integral. -/
+public theorem exists_eta_division (p : MvPolynomial (Fin 3) ℚ) :
+    ∃ (n : ℕ) (q : MvPolynomial (Fin 3) ℚ) (a b : MvPolynomial (Fin 2) ℚ),
+      4 ^ n * p = q * weierstrassSurfaceAff + injXiZ a * X 1 + injXiZ b := by
+  induction p using MvPolynomial.induction_on with
+  | C c => exact ⟨0, 0, 0, MvPolynomial.C c, by simp⟩
+  | add p p' hp hp' =>
+      obtain ⟨n, q, a, b, h⟩ := hp
+      obtain ⟨m, q', a', b', h'⟩ := hp'
+      refine ⟨n + m, 4 ^ m * q + 4 ^ n * q', 4 ^ m * a + 4 ^ n * a', 4 ^ m * b + 4 ^ n * b', ?_⟩
+      have e1 : (4 : MvPolynomial (Fin 3) ℚ) ^ (n + m) * (p + p')
+          = 4 ^ m * (4 ^ n * p) + 4 ^ n * (4 ^ m * p') := by ring
+      rw [e1, h, h']
+      simp only [map_add, map_mul, map_pow, map_ofNat]
+      ring
+  | mul_X p i hp =>
+      obtain ⟨n, q, a, b, h⟩ := hp
+      have hi : i = 0 ∨ i = 1 ∨ i = 2 := by fin_cases i <;> decide
+      rcases hi with rfl | rfl | rfl
+      · refine ⟨n, q * X 0, a * X 0, b * X 0, ?_⟩
+        have e : (4 : MvPolynomial (Fin 3) ℚ) ^ n * (p * X 0) = (4 ^ n * p) * X 0 := by ring
+        rw [e, h]
+        simp only [map_mul, injXiZ_X0]
+        ring
+      · refine ⟨n + 1, 4 * q * X 1 + injXiZ a, 4 * b, -(a * surfaceTail), ?_⟩
+        have e : (4 : MvPolynomial (Fin 3) ℚ) ^ (n + 1) * (p * X 1)
+            = 4 * (4 ^ n * p) * X 1 := by ring
+        rw [e, h]
+        simp only [map_mul, map_neg, map_ofNat]
+        rw [weierstrassSurfaceAff_eq_add]
+        ring
+      · refine ⟨n, q * X 2, a * X 1, b * X 1, ?_⟩
+        have e : (4 : MvPolynomial (Fin 3) ℚ) ^ n * (p * X 2) = (4 ^ n * p) * X 2 := by ring
+        rw [e, h]
+        simp only [map_mul, injXiZ_X1]
+        ring
+
+/-! ### Independence in the order `(ξ, z)` -/
+
+public theorem injective_aeval_xi_zeta :
+    Function.Injective (aeval ![xiPlane, planeZeta] :
+      MvPolynomial (Fin 2) ℚ →ₐ[ℚ] FunctionField.planeField ℚ) := by
+  have hswap : Function.Injective
+      (rename (Equiv.swap (0 : Fin 2) 1) : MvPolynomial (Fin 2) ℚ → MvPolynomial (Fin 2) ℚ) :=
+    rename_injective _ (Equiv.injective _)
+  have hcomp : ∀ P : MvPolynomial (Fin 2) ℚ,
+      aeval ![xiPlane, planeZeta] P
+        = aeval ![planeZeta, xiPlane] (rename (Equiv.swap (0 : Fin 2) 1) P) := by
+    have hc : (aeval ![planeZeta, xiPlane] : MvPolynomial (Fin 2) ℚ →ₐ[ℚ] _).comp
+        (rename (Equiv.swap (0 : Fin 2) 1)) = aeval ![xiPlane, planeZeta] := by
+      apply MvPolynomial.algHom_ext
+      intro i
+      have hi : i = 0 ∨ i = 1 := by fin_cases i <;> decide
+      rcases hi with rfl | rfl <;>
+        simp [Equiv.swap_apply_left, Equiv.swap_apply_right]
+    intro P
+    rw [← hc]; rfl
+  intro P Q hPQ
+  rw [hcomp, hcomp] at hPQ
+  exact hswap (algebraicIndependent_planeZeta_xiPlane hPQ)
+
+public theorem surfaceToPlane_injXiZ (a : MvPolynomial (Fin 2) ℚ) :
+    surfaceToPlane (injXiZ a) = aeval ![xiPlane, planeZeta] a := by
+  have hc : surfaceToPlane.comp injXiZ = aeval ![xiPlane, planeZeta] := by
+    apply MvPolynomial.algHom_ext
+    intro i
+    have hi : i = 0 ∨ i = 1 := by fin_cases i <;> decide
+    rcases hi with rfl | rfl <;> simp [injXiZ, surfaceToPlane]
+  rw [← hc]; rfl
+
+/-- The Weierstrass relation in the form used below. -/
+public theorem four_etaPlane_sq :
+    4 * etaPlane ^ 2 + aeval ![xiPlane, planeZeta] surfaceTail = 0 := by
+  have h := surfaceToPlane_vanishes
+  rw [weierstrassSurfaceAff_eq_add, map_add, map_mul, map_pow, map_ofNat,
+    surfaceToPlane_injXiZ] at h
+  have he : surfaceToPlane (X 1) = etaPlane := by simp [surfaceToPlane]
+  rw [he] at h
+  exact h
+
+/-! ### Setting `z = 0` in the `(ξ, z)`-plane -/
+
+/-- Setting the second variable (`z`) to zero. -/
+public def projX1 : MvPolynomial (Fin 2) ℚ →ₐ[ℚ] Polynomial ℚ :=
+  aeval ![Polynomial.X, 0]
+
+public theorem projX1_surfaceTail : projX1 surfaceTail = -(4 * Polynomial.X ^ 3) := by
+  simp [projX1, surfaceTail, map_ofNat]
+
+public theorem X1_dvd_sub_emb (P : MvPolynomial (Fin 2) ℚ) :
+    (X 1 : MvPolynomial (Fin 2) ℚ) ∣
+      P - Polynomial.aeval (X 0 : MvPolynomial (Fin 2) ℚ) (projX1 P) := by
+  induction P using MvPolynomial.induction_on with
+  | C c => simp [projX1]
+  | add p q hp hq =>
+      obtain ⟨c, hc⟩ := hp
+      obtain ⟨d, hd⟩ := hq
+      refine ⟨c + d, ?_⟩
+      rw [map_add, map_add]
+      linear_combination hc + hd
+  | mul_X p i hp =>
+      have hi : i = 0 ∨ i = 1 := by fin_cases i <;> decide
+      rcases hi with rfl | rfl
+      · obtain ⟨c, hc⟩ := hp
+        refine ⟨c * X 0, ?_⟩
+        have hz : projX1 (p * X 0) = projX1 p * Polynomial.X := by simp [projX1]
+        rw [hz, map_mul, Polynomial.aeval_X, ← sub_mul, hc]; ring
+      · refine ⟨p, ?_⟩
+        have hz : projX1 (p * X 1) = 0 := by simp [projX1]
+        rw [hz, map_zero, sub_zero]; ring
+
+public theorem X1_dvd_of_projX1_eq_zero {P : MvPolynomial (Fin 2) ℚ} (h : projX1 P = 0) :
+    (X 1 : MvPolynomial (Fin 2) ℚ) ∣ P := by
+  have hd := X1_dvd_sub_emb P
+  rwa [h, map_zero, sub_zero] at hd
+
+private theorem eq_zero_of_sq_eq_sq_mul_X_cube {P Q : Polynomial ℚ}
+    (h : Q ^ 2 = P ^ 2 * Polynomial.X ^ 3) : P = 0 ∧ Q = 0 := by
+  by_cases hP : P = 0
+  · subst hP
+    simp at h
+    exact ⟨rfl, h⟩
+  · exfalso
+    have hR : P ^ 2 * Polynomial.X ^ 3 ≠ 0 :=
+      mul_ne_zero (pow_ne_zero _ hP) (pow_ne_zero _ Polynomial.X_ne_zero)
+    have hQ : Q ≠ 0 := by
+      intro hq; rw [hq, zero_pow (by norm_num)] at h; exact hR h.symm
+    have hdeg := congrArg Polynomial.natDegree h
+    rw [Polynomial.natDegree_pow, Polynomial.natDegree_mul (pow_ne_zero _ hP)
+      (pow_ne_zero _ Polynomial.X_ne_zero), Polynomial.natDegree_pow,
+      Polynomial.natDegree_X_pow] at hdeg
+    omega
+
+/-- If `a·η + b = 0` in `ℚ(x, y)` with `a, b` polynomials in `(ξ, z)`, then `z` divides
+both `a` and `b`. -/
+private theorem eta_relation_dvd {a b : MvPolynomial (Fin 2) ℚ}
+    (hrel : aeval ![xiPlane, planeZeta] a * etaPlane + aeval ![xiPlane, planeZeta] b = 0) :
+    (X 1 : MvPolynomial (Fin 2) ℚ) ∣ a ∧ (X 1 : MvPolynomial (Fin 2) ℚ) ∣ b := by
+  set ψ := (aeval ![xiPlane, planeZeta] : MvPolynomial (Fin 2) ℚ →ₐ[ℚ] _) with hψ
+  -- squaring the relation and using the Weierstrass equation
+  have hpoly : ψ (4 * b ^ 2 + a ^ 2 * surfaceTail) = 0 := by
+    have hw := four_etaPlane_sq
+    simp only [map_add, map_mul, map_pow, map_ofNat]
+    have hb : ψ b = -(ψ a * etaPlane) := by linear_combination hrel
+    rw [hb]
+    linear_combination (ψ a) ^ 2 * hw
+  have hid : 4 * b ^ 2 + a ^ 2 * surfaceTail = 0 := by
+    have := injective_aeval_xi_zeta (by rw [hpoly, map_zero] : ψ _ = ψ 0)
+    exact this
+  -- set `z = 0`
+  have hz := congrArg projX1 hid
+  rw [map_add, map_mul, map_mul, map_pow, map_pow, map_ofNat, projX1_surfaceTail,
+    map_zero] at hz
+  have h4 : (4 : Polynomial ℚ) * (projX1 b ^ 2 - projX1 a ^ 2 * Polynomial.X ^ 3) = 0 := by
+    linear_combination hz
+  have hsq : projX1 b ^ 2 = projX1 a ^ 2 * Polynomial.X ^ 3 :=
+    sub_eq_zero.mp (by
+      rcases mul_eq_zero.mp h4 with h | h
+      · exact absurd h (by norm_num)
+      · exact h)
+  obtain ⟨ha0, hb0⟩ := eq_zero_of_sq_eq_sq_mul_X_cube hsq
+  exact ⟨X1_dvd_of_projX1_eq_zero ha0, X1_dvd_of_projX1_eq_zero hb0⟩
+
+private theorem eta_relation_eq_zero : ∀ (N : ℕ) (a b : MvPolynomial (Fin 2) ℚ),
+    a.degreeOf 1 + b.degreeOf 1 ≤ N →
+    aeval ![xiPlane, planeZeta] a * etaPlane + aeval ![xiPlane, planeZeta] b = 0 →
+    a = 0 ∧ b = 0 := by
+  intro N
+  induction N with
+  | zero =>
+      intro a b hdeg hrel
+      obtain ⟨⟨a', ha'⟩, ⟨b', hb'⟩⟩ := eta_relation_dvd hrel
+      constructor
+      · by_contra ha0
+        have : a.degreeOf 1 = a'.degreeOf 1 + 1 := by
+          rw [ha', mul_comm]
+          exact (degreeOf_mul_X_eq_degreeOf_add_one_iff 1 a').mpr
+            (fun hc => ha0 (by rw [ha', hc, mul_zero]))
+        omega
+      · by_contra hb0
+        have : b.degreeOf 1 = b'.degreeOf 1 + 1 := by
+          rw [hb', mul_comm]
+          exact (degreeOf_mul_X_eq_degreeOf_add_one_iff 1 b').mpr
+            (fun hc => hb0 (by rw [hb', hc, mul_zero]))
+        omega
+  | succ N ih =>
+      intro a b hdeg hrel
+      obtain ⟨⟨a', ha'⟩, ⟨b', hb'⟩⟩ := eta_relation_dvd hrel
+      by_cases hab : a = 0 ∧ b = 0
+      · exact hab
+      · exfalso
+        have hrel' : aeval ![xiPlane, planeZeta] a' * etaPlane
+            + aeval ![xiPlane, planeZeta] b' = 0 := by
+          have hz : aeval ![xiPlane, planeZeta] (X 1 : MvPolynomial (Fin 2) ℚ)
+              = planeZeta := by simp
+          rw [ha', hb', map_mul, map_mul, hz] at hrel
+          have := mul_eq_zero.mp (by linear_combination hrel :
+            planeZeta * (aeval ![xiPlane, planeZeta] a' * etaPlane
+              + aeval ![xiPlane, planeZeta] b') = 0)
+          rcases this with h | h
+          · exact absurd h planeZeta_ne_zero
+          · exact h
+        have hda : a'.degreeOf 1 ≤ a.degreeOf 1 := by
+          rcases eq_or_ne a' 0 with rfl | h
+          · simp
+          · rw [ha', mul_comm, (degreeOf_mul_X_eq_degreeOf_add_one_iff 1 a').mpr h]; omega
+        have hdb : b'.degreeOf 1 ≤ b.degreeOf 1 := by
+          rcases eq_or_ne b' 0 with rfl | h
+          · simp
+          · rw [hb', mul_comm, (degreeOf_mul_X_eq_degreeOf_add_one_iff 1 b').mpr h]; omega
+        have hstrict : a'.degreeOf 1 + b'.degreeOf 1 < a.degreeOf 1 + b.degreeOf 1 := by
+          rcases not_and_or.mp hab with h | h
+          · have ha'0 : a' ≠ 0 := fun hc => h (by rw [ha', hc, mul_zero])
+            rw [ha', mul_comm, (degreeOf_mul_X_eq_degreeOf_add_one_iff 1 a').mpr ha'0]
+            omega
+          · have hb'0 : b' ≠ 0 := fun hc => h (by rw [hb', hc, mul_zero])
+            rw [hb', mul_comm, (degreeOf_mul_X_eq_degreeOf_add_one_iff 1 b').mpr hb'0]
+            omega
+        obtain ⟨ha0, hb0⟩ := ih a' b' (by omega) hrel'
+        exact hab ⟨by rw [ha', ha0, mul_zero], by rw [hb', hb0, mul_zero]⟩
+
+/-- **The kernel of the evaluation is exactly the surface ideal.** -/
+public theorem surfaceToPlane_eq_zero_iff {p : MvPolynomial (Fin 3) ℚ} :
+    surfaceToPlane p = 0 ↔ p ∈ Ideal.span {weierstrassSurfaceAff} := by
+  constructor
+  · intro h
+    obtain ⟨n, q, a, b, hdiv⟩ := exists_eta_division p
+    have hval : aeval ![xiPlane, planeZeta] a * etaPlane
+        + aeval ![xiPlane, planeZeta] b = 0 := by
+      have h4 : surfaceToPlane (4 ^ n * p) = 0 := by rw [map_mul, h, mul_zero]
+      rw [hdiv] at h4
+      simp only [map_add, map_mul, surfaceToPlane_injXiZ, surfaceToPlane_vanishes,
+        mul_zero, zero_add] at h4
+      have he : surfaceToPlane (X 1) = etaPlane := by simp [surfaceToPlane]
+      rw [he] at h4
+      exact h4
+    obtain ⟨ha, hb⟩ :=
+      eta_relation_eq_zero (a.degreeOf 1 + b.degreeOf 1) a b le_rfl hval
+    rw [ha, hb] at hdiv
+    simp only [map_zero, zero_mul, add_zero] at hdiv
+    rw [Ideal.mem_span_singleton]
+    refine ⟨MvPolynomial.C (((4 : ℚ) ^ n)⁻¹) * q, ?_⟩
+    have h4 : (4 : MvPolynomial (Fin 3) ℚ) ^ n = MvPolynomial.C ((4 : ℚ) ^ n) := by
+      rw [map_pow, map_ofNat]
+    have hu : MvPolynomial.C (((4 : ℚ) ^ n)⁻¹) * (4 : MvPolynomial (Fin 3) ℚ) ^ n = 1 := by
+      rw [h4, ← map_mul, inv_mul_cancel₀ (by positivity), map_one]
+    calc p = MvPolynomial.C (((4 : ℚ) ^ n)⁻¹) * (4 ^ n * p) := by
+            rw [← mul_assoc, hu, one_mul]
+      _ = weierstrassSurfaceAff * (MvPolynomial.C (((4 : ℚ) ^ n)⁻¹) * q) := by
+            rw [hdiv]; ring
+  · intro h
+    rw [Ideal.mem_span_singleton] at h
+    obtain ⟨c, rfl⟩ := h
+    rw [map_mul, surfaceToPlane_vanishes, zero_mul]
+
+/-- **Unirationality of the note's Weierstrass surface, field-theoretic form.**
+
+The `ℚ`-algebra homomorphism from the affine coordinate ring of the Weierstrass
+model (3.7) to the rational function field `ℚ(x, y)` in two variables is *injective*.
+Equivalently: it is a field embedding `K(S) ↪ ℚ(x, y)` of the function field of the
+surface into a purely transcendental extension of `ℚ` of the same transcendence
+degree, i.e. the rational map `𝔸² ⤏ S` given by
+
+    z = −f₀/f₁,   ξ = Θ/H²,   η = J/(2H³)
+
+is *dominant*.
+
+What this asserts: the affine coordinate ring `ℚ[ξ, η, z]/(4η² − 4ξ³ − 4z²(3−z)ξ − z·P(z))`
+of the note's model (3.7) embeds into `ℚ(x, y)` by the displayed formulas.
+
+What this does *not* assert: nothing about the *degree* of the map (the note's degree
+9 is not used here); nothing about the weighted hypersurface `S_Q ⊂ P(1,1,2,3)` of
+`DelPezzo/Surface.lean` — identifying `K(S)` with the function field of `S_Q` is a
+separate birationality statement that is *not* formalized; and no scheme-theoretic
+statement of unirationality. -/
+public theorem surfaceCoordRingToPlane_injective :
+    Function.Injective surfaceCoordRingToPlane := by
+  rw [injective_iff_map_eq_zero]
+  intro x hx
+  obtain ⟨p, rfl⟩ := Ideal.Quotient.mk_surjective x
+  rw [surfaceCoordRingToPlane_mk] at hx
+  rw [Ideal.Quotient.eq_zero_iff_mem]
+  exact surfaceToPlane_eq_zero_iff.mp hx
+
+#print axioms surfaceCoordRingToPlane_injective
+
 end ExplicitUnirational
