@@ -13,3 +13,11 @@ rev = "v4.32.1"
 
 [[lean_lib]]
 name = "ExplicitUnirational"
+
+[[lean_lib]]
+name = "Statement"
+srcDir = "comparator"
+
+[[lean_lib]]
+name = "Solution"
+srcDir = "comparator"
