@@ -126,6 +126,56 @@ public theorem gAff_dvd_weierstrassA_redTheta_redH2sq_sub :
     gAff ∣ weierstrassA * redTheta * redH2sq - redATHH2 :=
   dvd_sub_of_mod weierstrassA_redTheta_redH2sq_mod
 
+
+/-! ## The Weierstrass congruence
+
+Assembling the staged reductions: the cleared Weierstrass form of the note,
+`jAff² − 4·thetaAff³ − 4·A·thetaAff·hessAff⁴ − Bnum·hessAff⁶`, is divisible by
+`gAff`.  Every product of reduced forms is congruent to its certificate
+remainder by the lemmas above, and the resulting combination of remainders
+vanishes identically (`residual_combination_eq_zero`). -/
+
+/-- The reduced remainders cancel identically:
+`redJ2 − 4·redTheta3 − 4·redATHH2 − Bnum·redH3sq = 0`. -/
+public theorem residual_combination_eq_zero :
+    redJ2 - 4 * redTheta3 - 4 * redATHH2 - weierstrassBnum * redH3sq = 0 := by
+  unfold redJ2 redTheta3 redATHH2 weierstrassBnum redH3sq
+  poly_cert
+
+/-- The cleared Weierstrass identity of note (3.7) holds modulo `gAff`:
+`jAff² − 4 thetaAff³ − 4 A thetaAff hessAff⁴ − Bnum hessAff⁶ ≡ 0 (mod gAff)`. -/
+public theorem weierstrass_congruence_mod_gAff :
+    gAff ∣ jAff ^ 2 - 4 * thetaAff ^ 3
+      - 4 * weierstrassA * thetaAff * hessAff ^ 4
+      - weierstrassBnum * hessAff ^ 6 := by
+  have key : jAff ^ 2 - 4 * thetaAff ^ 3
+      - 4 * weierstrassA * thetaAff * hessAff ^ 4
+      - weierstrassBnum * hessAff ^ 6 =
+      ((jAff ^ 2 - redJ ^ 2) + (redJ ^ 2 - redJ2))
+      - 4 * ((thetaAff ^ 3 - redTheta ^ 3) + redTheta * (redTheta ^ 2 - redTheta2)
+          + (redTheta * redTheta2 - redTheta3))
+      - 4 * weierstrassA * ((thetaAff - redTheta) * hessAff ^ 4
+          + redTheta * ((hessAff ^ 4 - redH2 ^ 2) + (redH2 ^ 2 - redH2sq)))
+      - 4 * (weierstrassA * redTheta * redH2sq - redATHH2)
+      - weierstrassBnum * ((hessAff ^ 6 - redH3 ^ 2) + (redH3 ^ 2 - redH3sq))
+      + (redJ2 - 4 * redTheta3 - 4 * redATHH2 - weierstrassBnum * redH3sq) := by
+    ring
+  rw [key, residual_combination_eq_zero, add_zero]
+  have hT1 := dvd_add gAff_dvd_jAff_sq_sub gAff_dvd_redJ_sq_sub
+  have hT2 := (dvd_add (dvd_add gAff_dvd_thetaAff_cube_sub
+      (gAff_dvd_redTheta_sq_sub.mul_left redTheta))
+      gAff_dvd_redTheta_cube_step_sub).mul_left 4
+  have hT3 := (dvd_add (gAff_dvd_thetaAff_sub.mul_right (hessAff ^ 4))
+      ((dvd_add gAff_dvd_hessAff_pow4_sub gAff_dvd_redH2_sq_sub).mul_left
+        redTheta)).mul_left (4 * weierstrassA)
+  have hT4 := gAff_dvd_weierstrassA_redTheta_redH2sq_sub.mul_left 4
+  have hT5 := (dvd_add gAff_dvd_hessAff_pow6_sub gAff_dvd_redH3_sq_sub).mul_left
+    weierstrassBnum
+  exact dvd_sub (dvd_sub (dvd_sub (dvd_sub hT1 hT2) hT3) hT4) hT5
+
+#print axioms residual_combination_eq_zero
+#print axioms weierstrass_congruence_mod_gAff
+
 #print axioms redH3_sq_mod
 #print axioms redTheta_sq_mod
 #print axioms redTheta_cube_step_mod
