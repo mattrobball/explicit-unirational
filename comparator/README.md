@@ -1,6 +1,8 @@
 # Comparator package: unirationality
 
-Verified 2026-07-28. Comparator accepted this solution:
+Verified 2026-07-28 (proof as of commit 55cff64; the certificate layer was switched to
+Macaulean's GMP-free `algebra_norm_reflect` on 2026-08-26 and awaits a re-run, ideally on
+Lean ≥ 4.33.1 with `enable_nanoda: true`). Comparator accepted this solution:
 
     Exporting #[ExplicitUnirationalChallenge.unirationality, propext, Quot.sound,
                 Classical.choice, ...] from Solution

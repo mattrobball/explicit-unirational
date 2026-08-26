@@ -30,7 +30,6 @@ public import ExplicitUnirational.FunctionField.Unirationality
 public import ExplicitUnirational.FunctionField.WeierstrassOnCurve
 public import ExplicitUnirational.FunctionField.Trivialization
 public import ExplicitUnirational.GenericDegree
-public import ExplicitUnirational.Tactics.PolyCert
 public import ExplicitUnirational.Weierstrass.Fibres
 public import ExplicitUnirational.WeightedProjective.Basic
 public import ExplicitUnirational.WeightedProjective.Integrality
