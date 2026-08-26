@@ -1,8 +1,9 @@
 # Formalization design
 
-Source of truth for the mathematics: [`docs/note.pdf`](docs/note.pdf), with a
-grep-able text extraction at [`docs/note.txt`](docs/note.txt). Every work
-package below cites the note by section or equation number.
+Source of truth for the mathematics: the draft note, kept as a grep-able
+text extraction at [`docs/note.txt`](docs/note.txt) (the published version is
+arXiv:2608.15435; its numbering differs). Every work package below cites the
+note by section or equation number.
 
 This document supersedes the sequencing in `ROADMAP.md`. The work-package
 content there is largely right; the *ordering* is not, for the reason given in
