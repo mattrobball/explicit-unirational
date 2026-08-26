@@ -27,7 +27,7 @@ public import Mathlib.Tactic.Ring
 /-!
 # Chartwise Jacobian criterion for weighted hypersurfaces
 
-Note Proposition 3.3 (smoothness half) and the deferred clause of
+Smoothness half of [CLOP Lemma 2.2] / [CLOP Lemma 4.1] and the deferred clause of
 `DelPezzo/Surface.lean`.
 
 ## Vendored material (sorry-free at time of vendoring)
@@ -53,7 +53,7 @@ hypersurface presentation (`AffineHypersurfaceJacobian.smooth_of_jacobianIdeal_e
 * Affine single-equation Jacobian criterion (standard-smooth + Nullstellensatz forms).
 * Weighted packaging: charts cover, Zariski locality, chart dehomogenisation, Euler.
 * Weighted evaluation scaling; chart-point evaluation of dehomogenised equations.
-* Algebraic input for `surfaceEquation` / Proposition 3.3 (partials, `u = v = 0`, `q₈`).
+* Algebraic input for `surfaceEquation` / smoothness of `S_ℚ` (partials, `u = v = 0`, `q₈`).
 * **Smooth-locus reframing:** weight-one open `D₊(u) ∪ D₊(v)`, free generators of weight-one
   chart rings, residual locus `u = v = 0` / base point `[0:0:1:1]` with cone nonsingularity,
   ambient singular ideals miss `S_Q`.
@@ -644,7 +644,7 @@ public noncomputable def chartEquation (i : Fin 4) (f : MvPolynomial (Fin 4) R) 
 
 `Fin 3` and `Fin 4` live in `Type`, so the affine packaging (which requires the variable index
 type to share a universe with the coefficient field) is stated here for `K : Type`.  This covers
-`ℚ` and every concrete base field used in the note. -/
+`ℚ` and every concrete base field used in the paper. -/
 public theorem smooth_chartEquation_of_exists_pderiv_ne_zero_of_geometric
     {K : Type} [Field K] {L : Type} [Field L] [IsAlgClosed L] [Algebra K L]
     (i : Fin 4) (f : MvPolynomial (Fin 4) K)
@@ -717,7 +717,8 @@ public theorem weighted_aeval_scaling
 
 end WeightedProjectiveSpace
 
-/-! ## Algebraic content of Proposition 3.3 for `surfaceEquation` -/
+/-! ## Algebraic content of the smoothness of `S_ℚ` for `surfaceEquation`
+([CLOP Lemma 2.2] / [CLOP Lemma 4.1]) -/
 
 namespace DelPezzo
 
@@ -832,8 +833,8 @@ public theorem aeval_uv0_pderiv_y :
   rw [pderiv_surfaceEquation_y]
   simp only [map_mul, map_ofNat, uv0Eval_X3]
 
-/-- Note Prop. 3.3 (cone form on `u = v = 0`): if `y² = x³` and both partials
-`-3x²` and `2y` vanish over `ℚ`, then `x = y = 0`. -/
+/-- Smoothness of `S_ℚ`, cone form on `u = v = 0` ([CLOP Lemma 2.2]): if `y² = x³` and both
+partials `-3x²` and `2y` vanish over `ℚ`, then `x = y = 0`. -/
 public theorem uv0_singular_implies_origin
     (x y : ℚ) (_heq : y ^ 2 = x ^ 3)
     (hx : (-3 : ℚ) * x ^ 2 = 0) (hy : (2 : ℚ) * y = 0) :
@@ -851,7 +852,7 @@ public theorem uv0_singular_implies_origin
 public theorem squarefree_q8_for_smoothness : Squarefree (q8 : Polynomial ℚ) :=
   squarefree_q8
 
-/-- Discriminant factorisation (3.13). -/
+/-- Discriminant factorisation `−64 A³ − 27 (u v P₄)² = −u² v² Q₈` (not displayed in [CLOP]). -/
 public theorem discriminant_factorization_for_smoothness :
     -64 * (X 0 * (X 1) ^ 2 * (3 * X 0 - X 1)) ^ 3
       - 27 * (X 0 * X 1 * P4) ^ 2
@@ -1029,13 +1030,13 @@ public theorem not_mem_weightOneOpen_iff (R : Type u) [CommRing R]
 
 /-! ### Residual locus `u = v = 0` and the anticanonical base point
 
-Note Prop. 3.3: on `u = v = 0` the equation becomes `y² = x³`, defining the single
-projective point `p = [0:0:1:1]`.  The ambient singularities `[0:0:1:0]` and `[0:0:0:1]`
-are excluded by `ambient_singular_miss_S_Q`.  Cone nonsingularity at residual points is
+Smoothness of `S_ℚ` ([CLOP Lemma 2.2]): on `u = v = 0` the equation becomes `y² = x³`,
+defining the single projective point `p = [0:0:1:1]`.  The ambient singularities `[0:0:1:0]`
+and `[0:0:0:1]` are excluded by `ambient_singular_miss_S_Q`.  Cone nonsingularity at residual points is
 `uv0_singular_implies_origin` / the geometric form below. -/
 
 /-- On `u = v = 0`, the only candidate singular cone point is the origin, which is not a
-projective point.  Packaged for the residual base point `[0:0:1:1]` of note Prop. 3.3:
+projective point.  Packaged for the residual base point `[0:0:1:1]` ([CLOP Lemma 2.2]):
 
 if `y² = x³` and `(x, y) ≠ (0, 0)` over a char-0 field, then the cone partials
 `∂F/∂x = -3x²` and `∂F/∂y = 2y` cannot both vanish. -/
@@ -1130,12 +1131,12 @@ global smoothness.
 3. **Weight-one free generators** — `weightOneChartGen` / `weightOneChartToAway` /
    `chartDehomogenize` package the classical generators `X_j / X_i^{w_j}` of `A_(X i)₀` for
    `weights i = 1`.  Full `≃ₐ` bijectivity of `weightOneChartToAway` is **not** closed.
-4. **Ambient singular ideals miss `S_Q`** — `ambient_singular_miss_S_Q` (re-export of
-   Prop. 3.3 ideal form from `DelPezzo/Surface.lean`).
+4. **Ambient singular ideals miss `S_Q`** — `ambient_singular_miss_S_Q` (re-export of the
+   ideal form of smoothness from `DelPezzo/Surface.lean`).
 5. **Residual locus `u = v = 0` / base point `[0:0:1:1]`** — equation specialises to
    `y² − x³`; cone partials `∂/∂x = −3x²`, `∂/∂y = 2y` cannot vanish simultaneously at a
    non-origin point (`cone_nonsingular_at_uv0`, `residual_basepoint_cone_nonsingular`).
-   This is the algebraic content of note Prop. 3.3 at the anticanonical base point.
+   This is the algebraic content of [CLOP Lemma 2.2] at the anticanonical base point.
 
 **What remains for `Smooth (S_Q_toSpec)`.**
 

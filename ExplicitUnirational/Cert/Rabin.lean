@@ -21,10 +21,11 @@ public import Mathlib.SetTheory.Cardinal.Finite
 # Rabin's irreducibility criterion
 
 Formalization of Rabin's criterion for irreducibility of monic polynomials over finite fields
-(note Appendix A, [LN97, §3.4]), together with a Frobenius ladder for reducing the congruence
+([LN97, §3.4]; used here for the explicit irreducibility certificates, which are
+computer-algebra generated and not in [CLOP]), together with a Frobenius ladder for reducing the congruence
 `X ^ (q ^ n) ≡ X [MOD f]` to a chain of ordinary polynomial identities of manageable degree.
 
-The four public theorems are the API consumed by the Appendix A certificate modules
+The four public theorems are the API consumed by the certificate modules
 (`Cert/OcticF7`, `Cert/NonicF5`, `Cert/SexticF5`).
 
 ## Certificate idiom (ladder steps over `ZMod q`)
@@ -171,7 +172,7 @@ section SmokeTest
 
 /-! End-to-end exercise of the API on `X² + 2` over `F₅`, irreducible because `-2 = 3` is not
 a square mod `5`. This deliberately uses `q = 5`, not `q = 2`: characteristic two is degenerate
-(`-1 = 1`), so an idiom validated there would not transfer to the Appendix A certificates. -/
+(`-1 = 1`), so an idiom validated there would not transfer to the irreducibility certificates. -/
 
 private instance : Fact (Nat.Prime 5) := ⟨by decide⟩
 

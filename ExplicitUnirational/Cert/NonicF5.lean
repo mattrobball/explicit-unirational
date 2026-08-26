@@ -10,9 +10,9 @@ public import Mathlib.Tactic.ComputeDegree
 public import Mathlib.Tactic.LinearCombination
 
 /-!
-# Irreducibility of the nonic over `F₅` (note Appendix A)
+# Irreducibility of the nonic over `F₅` (explicit Rabin/Bézout certificate)
 
-Note Proposition 4.1: on `Z = 1` the base scheme of the reduced pencil is cut out
+`[CLOP Lemma 4.1]`: on `Z = 1` the base scheme of the reduced pencil is cut out
 by `Y = X^3` and `R(X) = X^9 + X^6 + X - 1 = 0`. Irreducibility of `R` is what makes
 the base scheme a single reduced closed point of degree 9.
 
@@ -37,7 +37,7 @@ private lemma hq : (5 : (ZMod 5)[X]) = 0 := by
 
 private lemma card_zmod : Nat.card (ZMod 5) = 5 := Nat.card_zmod 5
 
-/-- `R = X^9 + X^6 + X - 1`, the base-scheme polynomial of note Proposition 4.1. -/
+/-- `R = X^9 + X^6 + X - 1`, the base-scheme polynomial of `[CLOP Lemma 4.1]`. -/
 public def R : (ZMod 5)[X] := X ^ 9 + X ^ 6 + X + 4
 
 public lemma R_monic : R.Monic := by
@@ -183,7 +183,7 @@ private lemma coprime3 : IsCoprime R (X ^ (Nat.card (ZMod 5) ^ 3) - X) := by
   rw [e]
   exact rung3
 
-/-- Note Proposition 4.1: the base scheme of the reduced pencil is `Spec F_{5^9}`. -/
+/-- `[CLOP Lemma 4.1]`: the base scheme of the reduced pencil is `Spec F_{5^9}`. -/
 public theorem irreducible_R : Irreducible R := by
   refine Rabin.irreducible_of_rabin R_monic ?_ ?_ ?_
   · rw [R_natDegree]; norm_num

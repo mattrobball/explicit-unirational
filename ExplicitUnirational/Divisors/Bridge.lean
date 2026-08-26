@@ -16,7 +16,7 @@ public import Mathlib.LinearAlgebra.TensorProduct.Basic
 public import Mathlib.Logic.Equiv.Fin.Rotate
 
 /-!
-# Bridge: Weil class group ↔ combinatorial NS lattice (note §4.2, §5.4)
+# Bridge: Weil class group ↔ combinatorial NS lattice ([CLOP §2], [CLOP Cor 3.8])
 
 Two objects already live in this repository and are not yet connected:
 
@@ -26,11 +26,11 @@ Two objects already live in this repository and are not yet connected:
   `H, E₁, …, E₉` with form `diag(1,-1,…,-1)`, the `S₉` action, the zero-sum representation, and
   the lattice-theoretic `ρ = 1` for the geometric Frobenius 9-cycle.
 
-The note's Picard-rank argument (docs/note.txt §4.2, §5.4, Prop. 4.2, (5.18)) is stated about
+The Picard-rank argument of [CLOP] ([CLOP §2], [CLOP Lemma 3.9], [CLOP Cor 3.8]) is stated about
 geometry but is proved combinatorially on the second object. This module turns that combinatorial
 fact into a **conditional theorem about schemes**: *if* the rational class group of `X` is
 identified with the lattice model as a module with form and with Galois/Frobenius action, *then*
-the note's `ρ = 1` conclusion holds for `X`.
+the `ρ = 1` conclusion of [CLOP Cor 3.8] holds for `X`.
 
 ## What is proved unconditionally
 
@@ -41,7 +41,7 @@ the note's `ρ = 1` conclusion holds for `X`.
 * Conditional interface theorems: under an identification hypothesis
   (`IsNineCycleNSModel`, `IsS9NSModel`, `IsDelPezzoNineCycleModel`), the arithmetic Picard rank
   of `X` equals the lattice-theoretic value (`2` for the elliptic-surface packaging of `NSQ`,
-  `1` for the del Pezzo packaging used by the note).
+  `1` for the del Pezzo packaging used by [CLOP]).
 
 ## What is an explicit hypothesis (not a construction)
 
@@ -59,19 +59,20 @@ the note's `ρ = 1` conclusion holds for `X`.
 
 * Blow-ups of schemes (absent from Mathlib).
 * `Cl(Bl₉ ℙ²) ≅ NS` as lattices with form, or the Shioda–Tate decomposition.
-* Specialization injectivity on Néron–Severi (note (4.6)).
+* Specialization injectivity on Néron–Severi (the reduction-mod-5 comparison behind
+  `ρ_ℚ(S_ℚ) = 1`; not in [CLOP]).
 * That `ClassGroupQ X` equals `NS(X_{k̄}) ⊗ ℚ` (on a rational surface one has
   `Pic⁰ = 0` so `NS = Pic = Cl`, but that comparison is not formalized).
 
 See `BlowUpIdentificationObligations` for a precise checklist of missing inputs for a
 blow-up of `ℙ²`.
 
-## Relation to the note's two packagings of `ρ = 1`
+## Relation to the two packagings of `ρ = 1` in [CLOP]
 
 * **Elliptic surface `E`** (rank-10 lattice `NSQ`, Shioda–Tate): Gal-invariants are
   `ℚ[O] ⊕ ℚ[F]` after the MW summand contributes none, so `ρ(E) = 2`. Transferred by
   `rho_eq_two_of_nineCycleNSModel` when the full lattice is identified with the 9-cycle action.
-* **Del Pezzo `S`** (contract the zero section): the note packages
+* **Del Pezzo `S`** (contract the zero section): [CLOP Cor 3.8] packages
   `ρ(S) = 1 + dim Fix(zeroSum)`. Transferred by `rho_eq_one_of_delPezzoNineCycleModel` and the
   monodromy variant `rho_eq_one_of_S9NSModel`.
 -/
@@ -96,9 +97,9 @@ namespace ExplicitUnirational.Divisors
 
 Ordered as `ℚ ⊗[ℤ] _` so the left `Module ℚ` instance fires (Mathlib's
 `TensorProduct.leftModule`). On a smooth rational surface one expects
-`NS(X) = Pic(X) = Cl(X)`, so this type stands in for the rational Néron–Severi space of the
-note. That comparison is **not** proved here; it is part of the identification hypothesis when
-the note's statements are read geometrically. -/
+`NS(X) = Pic(X) = Cl(X)`, so this type stands in for the rational Néron–Severi space of
+[CLOP]. That comparison is **not** proved here; it is part of the identification hypothesis when
+the statements of [CLOP] are read geometrically. -/
 public abbrev ClassGroupQ (X : Scheme.{u}) [IsIntegral X] [IsLocallyNoetherian X] : Type u :=
   ℚ ⊗[ℤ] ClassGroup X
 
@@ -132,7 +133,8 @@ public theorem intersectionFormQ_isSymm (X : Scheme.{u}) [IsIntegral X] [IsLocal
 /-- Arithmetic Picard rank relative to a single linear endomorphism: dimension of the fixed
 subspace.
 
-Matches definition (1.2) of the note when `V` is `NS(X_{k̄}) ⊗ ℚ` and `σ` is geometric Frobenius
+Matches the definition `ρ(S) = rk Pic(S)` of [CLOP §1] when `V` is `NS(X_{k̄}) ⊗ ℚ` and `σ` is
+geometric Frobenius
 (or a topological generator of the image of `Gal(k̄/k)`). For a full Galois group one uses the
 common fixed space under the whole image; see `arithmeticPicardRank_of_action`. -/
 public noncomputable def arithmeticPicardRank {V : Type*} [AddCommGroup V] [Module ℚ V]
@@ -339,7 +341,7 @@ public def fixedFinRotateEquivCoord :
 
 /-- Fixed subspace of the 9-cycle on the full rank-10 lattice is 2-dimensional
 (`span{H, ∑ Eᵢ}`). This is the lattice model for `ρ(E) = 2` on the elliptic surface
-(note Prop. 4.2: `ρ_{𝔽₅}(E₅) = 2`). -/
+([CLOP §2]: `ρ_{𝔽₅}(E₅) = 2`). -/
 public theorem finrank_fixed_permAction_finRotate :
     Module.finrank ℚ (LinearMap.fixedSubmodule (permAction (finRotate 9))) = 2 := by
   rw [LinearEquiv.finrank_eq fixedFinRotateEquivCoord, Module.finrank_prod]
@@ -357,7 +359,7 @@ public theorem arithmeticPicardRank_NSQ_finRotate :
 lattice as a module with form, and a designated endomorphism (geometric Frobenius) is
 intertwined with the model 9-cycle action on the full rank-10 lattice.
 
-This is the packaging for the **elliptic surface** `E` of the note (`ρ(E) = 2`). It does **not**
+This is the packaging for the **elliptic surface** `E` (`ρ(E) = 2`, [CLOP §2]). It does **not**
 by itself give `ρ = 1` for the del Pezzo obtained by contracting the zero section; see
 `IsDelPezzoNineCycleModel`. -/
 public structure IsNineCycleNSModel (X : Scheme.{u}) [IsIntegral X] [IsLocallyNoetherian X] where
@@ -393,7 +395,7 @@ public theorem IsNineCycleNSModel.finiteDimensional {X : Scheme.{u}}
 
 /-- **Conditional theorem (elliptic-surface packaging).** If `ClassGroupQ X` is identified with
 `NSQ` as a formed module with 9-cycle action, then the arithmetic Picard rank relative to that
-action is `2` (note Prop. 4.2: `ρ(E) = 2`).
+action is `2` ([CLOP §2]: `ρ(E) = 2`).
 
 Stated in terms of `finrank` of the fixed submodule so the finite-dimensionality instance
 (from the identification) need not appear in the theorem binder list. -/
@@ -408,10 +410,10 @@ public theorem rho_eq_two_of_nineCycleNSModel {X : Scheme.{u}}
   rw [h]
   exact arithmeticPicardRank_NSQ_finRotate
 
-/-- **Hypothesis for the del Pezzo `ρ = 1` packaging of the note.**
+/-- **Hypothesis for the del Pezzo `ρ = 1` packaging of [CLOP].**
 
-The note computes `ρ(S) = 1 + dim Fix(zeroSum)` after contracting a rational zero section
-(Prop. 4.2, (5.18)). This structure packages exactly that bookkeeping as hypotheses on
+The paper computes `ρ(S) = 1 + dim Fix(zeroSum)` after contracting a rational zero section
+([CLOP Cor 3.8]). This structure packages exactly that bookkeeping as hypotheses on
 `ClassGroupQ X`:
 
 * a Frobenius-fixed line (the anticanonical / residual class after contraction);
@@ -422,7 +424,7 @@ The note computes `ρ(S) = 1 + dim Fix(zeroSum)` after contracting a rational ze
   lattice computation once the action is identified).
 
 None of these is constructed from geometry here. The last field `invariants_eq` is the
-geometric input that Shioda–Tate + fibre-irreducibility + contraction of `O` supply in the note.
+geometric input that Shioda–Tate + fibre-irreducibility + contraction of `O` supply in [CLOP].
 -/
 public structure IsDelPezzoNineCycleModel (X : Scheme.{u})
     [IsIntegral X] [IsLocallyNoetherian X] where
@@ -444,14 +446,14 @@ public structure IsDelPezzoNineCycleModel (X : Scheme.{u})
           ⟨permOnNine (finRotate 9) (v : Fin 9 → ℚ),
             permOnNine_maps_zeroSum (finRotate 9) v.property⟩
   /-- **Key geometric hypothesis**: Frobenius-fixed classes are exactly the line `ℚ · kappa`.
-      In the note this follows from Shioda–Tate (no reducible fibres) plus the vanishing of
+      In [CLOP] this follows from Shioda–Tate (no reducible fibres) plus the vanishing of
       fixed vectors on the zero-sum MW summand (lattice computation) after contracting `O`. -/
   invariants_eq : LinearMap.fixedSubmodule frobenius = ℚ ∙ kappa
   /-- `kappa` is nonzero (so the invariant line is genuinely 1-dimensional). -/
   kappa_ne_zero : kappa ≠ 0
 
 /-- **Primary conditional theorem.** Under the del Pezzo nine-cycle identification hypothesis,
-the arithmetic Picard rank relative to Frobenius is `1` (note Prop. 4.2 / (5.18): `ρ = 1`).
+the arithmetic Picard rank relative to Frobenius is `1` ([CLOP Cor 3.8]: `ρ = 1`).
 
 This is the interface that turns `NSLattice.arithmeticPicardRank_one` into a statement about
 schemes. The geometric content is entirely in the fields of `IsDelPezzoNineCycleModel`; the
@@ -487,7 +489,7 @@ public theorem IsDelPezzoNineCycleModel.zeroSum_fixed_trivial {X : Scheme.{u}}
   exact Subtype.ext this
 
 /-- **Hypothesis**: monodromy / Galois acts through the full `S₉` on a zero-sum summand of
-`ClassGroupQ X`, as in note §5.4 over `ℂ(t)`. -/
+`ClassGroupQ X`, as in [CLOP Remark 4.4] over `ℂ(t)`. -/
 public structure IsS9NSModel (X : Scheme.{u}) [IsIntegral X] [IsLocallyNoetherian X] where
   /-- Anticanonical (or residual) class. -/
   kappa : ClassGroupQ X
@@ -508,12 +510,12 @@ public structure IsS9NSModel (X : Scheme.{u}) [IsIntegral X] [IsLocallyNoetheria
       action σ (zeroSumIncl v) =
         zeroSumIncl ⟨permOnNine σ (v : Fin 9 → ℚ), permOnNine_maps_zeroSum σ v.property⟩
   /-- Invariants under the full `S₉` equal `ℚ · kappa`
-      (i.e. the zero-sum summand contributes no invariants — note §5.4). -/
+      (i.e. the zero-sum summand contributes no invariants — [CLOP Cor 3.8]). -/
   invariants_eq : fixedBy action = ℚ ∙ kappa
   kappa_ne_zero : kappa ≠ 0
 
 /-- **Conditional theorem (monodromy packaging).** Under the full `S₉` identification
-hypothesis of note §5.4, the arithmetic Picard rank is `1`. -/
+hypothesis of [CLOP Remark 4.4], the arithmetic Picard rank is `1` ([CLOP Cor 3.8]). -/
 public theorem rho_eq_one_of_S9NSModel {X : Scheme.{u}}
     [IsIntegral X] [IsLocallyNoetherian X] (M : IsS9NSModel X)
     [FiniteDimensional ℚ (ClassGroupQ X)] :
@@ -559,10 +561,10 @@ public structure BlowUpIdentificationObligations where
       `finRotate 9`. -/
   frobenius_is_nine_cycle : True := trivial
   /-- After choosing a zero section and applying Shioda–Tate with irreducible fibres, the MW
-      summand is the zero-sum representation (note (4.4), (5.16)). -/
+      summand is the zero-sum representation ([CLOP Lemma 3.9]). -/
   shioda_tate_zero_sum : True := trivial
   /-- Contracting a rational (−1)-section yields the del Pezzo and drops one invariant class
-      (note Prop. 4.2, (5.18)). -/
+      ([CLOP Cor 3.8]). -/
   contract_section : True := trivial
 
 /-- Documentation-only inhabitant of the blow-up checklist. Every field is `True`; this does

@@ -16,10 +16,11 @@ public import Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Basic
 
 Composition of the two halves of the unirationality argument:
 
-* Lemma 3.1 (`PencilRationality.adjoin_pencil_parameter_eq_top`): on the chart
+* Rationality of the incidence surface ([CLOP §3, `Y = Bl_Σ ℙ²`])
+  (`PencilRationality.adjoin_pencil_parameter_eq_top`): on the chart
   `Z = 1` the pencil parameter is the *rational plane function*
   `ζ = −f₀/f₁ ∈ ℚ(x, y)`, where `f₀ = y − x³`, `f₁ = x + y³ + y² − 1` are the
-  dehomogenizations of `F₀_rat`, `F₁_rat` (note (3.1)).
+  dehomogenizations of `F₀_rat`, `F₁_rat` (the pencil generators of [CLOP §4.1]).
 * The Tower-B congruence (`weierstrass_congruence_mod_gAff`), which holds in
   `ℚ[x, y, z]` and therefore evaluates along *any* assignment killing `gAff`.
 
@@ -27,16 +28,16 @@ Rather than bridging the two presentations of the curve's function field
 (the `AdjoinRoot` one of `WeierstrassOnCurve` and the `MvPolynomial` quotient
 implicit in `PencilRationality`) we evaluate the ambient polynomial ring
 directly into the plane function field `planeField ℚ = Frac(ℚ[x, y])` by
-`x ↦ x`, `y ↦ y`, `z ↦ ζ`; `gAff` dies by Lemma 3.1, so the congruence lands
-on the Weierstrass equation.  The result (`noteCurvePlane_equation`,
+`x ↦ x`, `y ↦ y`, `z ↦ ζ`; `gAff` dies by `adjoin_pencil_parameter_eq_top`,
+so the congruence lands on the Weierstrass equation.  The result (`noteCurvePlane_equation`,
 `surfaceToPlane_vanishes`): the plane rational functions
 
     ζ = −f₀/f₁,  ξ = Θ/H²,  η = J/(2H³)
 
-satisfy the affine equation of the note's Weierstrass model (3.7) with
-parameter `ζ` — equivalently, there is a ℚ-algebra homomorphism
+satisfy the affine equation of the Weierstrass model of [CLOP §4.1]
+(the equation for `J_η`) with parameter `ζ` — equivalently, there is a ℚ-algebra homomorphism
 `surfaceCoordRingToPlane` from the affine coordinate ring
-`ℚ[ξ, η, z]/(4η² − 4ξ³ − 4z²(3−z)ξ − z·P(z))` of the note's elliptic surface
+`ℚ[ξ, η, z]/(4η² − 4ξ³ − 4z²(3−z)ξ − z·P(z))` of the elliptic surface of [CLOP §4.1]
 into the rational function field `ℚ(x, y)` in two variables, sending the fibre
 parameter `z` to the pencil parameter.  This homomorphism is the algebraic
 form of the rational map `𝔸² ⤏ S` of the unirationality argument.
@@ -52,11 +53,11 @@ transcendental over `ℚ` and that `{ζ, ξ}` is algebraically independent over 
 
 ## What is *not* proved here or there
 
-The *degree* of that map (the note's `deg α_λ = 9`) is not established by either
-module.  And identifying `K(S)` with the function field of the weighted del Pezzo
+The *degree* of that map (the value `deg α_λ = 9` of [CLOP Example 3.5]) is not
+established by either module.  And identifying `K(S)` with the function field of the weighted del Pezzo
 hypersurface `S_Q` of `DelPezzo/Surface.lean` is a birationality statement about
 the two models that is not formalized; the theorems here are about the affine
-Weierstrass model (3.7) itself.
+Weierstrass model of [CLOP §4.1] itself.
 -/
 
 @[expose] public section
@@ -80,7 +81,8 @@ public noncomputable def f₀aff : MvPolynomial (Fin 2) ℚ :=
 public noncomputable def f₁aff : MvPolynomial (Fin 2) ℚ :=
   X 0 + X 1 ^ 3 + X 1 ^ 2 - 1
 
-/-- `gAff` is the pencil relation of the affine cubics (note (3.1) at `Z = 1`). -/
+/-- `gAff` is the pencil relation of the affine cubics (the pencil generators of
+[CLOP §4.1] at `Z = 1`). -/
 public theorem pencilRelation_eq_gAff :
     FunctionField.pencilRelation f₀aff f₁aff = gAff := by
   unfold FunctionField.pencilRelation f₀aff f₁aff gAff
@@ -100,7 +102,8 @@ public noncomputable def planeX : FunctionField.planeField ℚ :=
 public noncomputable def planeY : FunctionField.planeField ℚ :=
   algebraMap (MvPolynomial (Fin 2) ℚ) _ (X 1)
 
-/-- The pencil parameter `ζ = −f₀/f₁` (Lemma 3.1) as a plane rational function. -/
+/-- The pencil parameter `ζ = −f₀/f₁` ([CLOP §3, `Y = Bl_Σ ℙ²`]) as a plane rational
+function. -/
 public noncomputable def planeZeta : FunctionField.planeField ℚ :=
   FunctionField.pencilParameter f₀aff f₁aff
 
@@ -131,7 +134,8 @@ private theorem toPlane_rename (f : MvPolynomial (Fin 2) ℚ) :
     (fun i => by fin_cases i <;> simp [planeX, planeY])
   exact DFunLike.congr_fun h f
 
-/-- The pencil cubic dies under `toPlane` — Lemma 3.1 in evaluation form. -/
+/-- The pencil cubic dies under `toPlane` — rationality of the incidence surface
+([CLOP §3, `Y = Bl_Σ ℙ²`]) in evaluation form. -/
 public theorem toPlane_gAff : toPlane gAff = 0 := by
   have h31 := (FunctionField.adjoin_pencil_parameter_eq_top f₀aff f₁aff f₁aff_ne_zero).1
   rw [← pencilRelation_eq_gAff]
@@ -141,8 +145,8 @@ public theorem toPlane_gAff : toPlane gAff = 0 := by
 
 /-! ## The Weierstrass identity over `ℚ(x, y)` -/
 
-/-- The cleared Weierstrass identity of note (3.7), evaluated in the plane
-function field along `z ↦ ζ`. -/
+/-- The cleared Weierstrass identity of [CLOP §4.1] (the equation for `J_η`),
+evaluated in the plane function field along `z ↦ ζ`. -/
 public theorem weierstrass_identity_plane :
     toPlane jAff ^ 2 = 4 * toPlane thetaAff ^ 3
       + 4 * toPlane weierstrassA * toPlane thetaAff * toPlane hessAff ^ 4
@@ -246,7 +250,8 @@ public noncomputable def xiPlane : FunctionField.planeField ℚ :=
 public noncomputable def etaPlane : FunctionField.planeField ℚ :=
   toPlane jAff / (2 * toPlane hessAff ^ 3)
 
-/-- The Weierstrass model of note (3.7) over the plane function field, with the
+/-- The Weierstrass model of [CLOP §4.1] (the equation for `J_η`) over the plane
+function field, with the
 fibre parameter specialized to the pencil parameter `ζ = −f₀/f₁`.  Its
 coefficients are the defining polynomials of `noteCurveQ` (`a₄ = z²(3 − z)`,
 `a₆ = (z/4)·P(z)`) evaluated at `z = ζ`. -/
@@ -270,9 +275,9 @@ private theorem a6_plane : 4 * noteCurvePlane.a₆ = toPlane weierstrassBnum := 
   ring
 
 /-- **Unirationality, field-theoretic form**: the plane rational functions
-`ξ = Θ/H²`, `η = J/(2H³)` satisfy the Weierstrass equation of the note's
-model (3.7) with parameter `ζ = −f₀/f₁`, inside the rational function field
-`ℚ(x, y)`.  (This is the *point* of the surface over `ℚ(x, y)`; the induced
+`ξ = Θ/H²`, `η = J/(2H³)` satisfy the Weierstrass equation of the model of
+[CLOP §4.1] (the equation for `J_η`) with parameter `ζ = −f₀/f₁`, inside the
+rational function field `ℚ(x, y)`.  (This is the *point* of the surface over `ℚ(x, y)`; the induced
 coordinate-ring homomorphism is `surfaceCoordRingToPlane` below.  Its upgrade
 to a field embedding `K(S) ↪ ℚ(x, y)` — dominance — is
 `Dominance.surfaceCoordRingToPlane_injective`.) -/
@@ -308,7 +313,7 @@ public theorem noteCurvePlane_equation :
 
 /-! ## The coordinate-ring homomorphism -/
 
-/-- Affine equation of the note-(3.7) elliptic surface with denominators
+/-- Affine equation of the elliptic surface of [CLOP §4.1] with denominators
 cleared: `4η² − 4ξ³ − 4z²(3−z)·ξ − z·P(z)`, coordinates `0 ↦ ξ`, `1 ↦ η`,
 `2 ↦ z`. -/
 public noncomputable def weierstrassSurfaceAff : MvPolynomial (Fin 3) ℚ :=
@@ -340,9 +345,11 @@ public theorem surfaceToPlane_vanishes : surfaceToPlane weierstrassSurfaceAff = 
   linear_combination 4 * heq
 
 /-- **The unirationality homomorphism**: the ℚ-algebra homomorphism from the
-affine coordinate ring of the note's Weierstrass surface (3.7) to the rational
+affine coordinate ring of the Weierstrass surface of [CLOP §4.1] (the equation
+for `J_η`) to the rational
 function field `ℚ(x, y)`, sending `ξ ↦ Θ/H²`, `η ↦ J/(2H³)` and the fibre
-parameter `z` to the pencil parameter `−f₀/f₁` of Lemma 3.1.  Injectivity of
+parameter `z` to the pencil parameter `−f₀/f₁` of
+`adjoin_pencil_parameter_eq_top`.  Injectivity of
 this map (= dominance of the underlying rational map `𝔸² ⤏ S`, = the field
 embedding `K(S) ↪ ℚ(x, y)`) is proved in
 `ExplicitUnirational.FunctionField.Dominance`. -/

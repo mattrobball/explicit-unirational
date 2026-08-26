@@ -26,8 +26,8 @@ isomorphism is therefore unavailable. By contrast:
 * `AlgebraicCycle` (locally finite support functions `X → R`) is the ambient cycle type, of which
   Weil divisors are the codimension-one case.
 
-For the surfaces in the note (`docs/note.txt` §4.2, §5.4) the surface is rational, so
-`Pic⁰ = 0` and `NS(X) = Pic(X) = Cl(X)`. The note needs only the divisor class group.
+For the surfaces of [CLOP §4.1] and [CLOP §4.2] the surface is rational, so
+`Pic⁰ = 0` and `NS(X) = Pic(X) = Cl(X)`. The argument needs only the divisor class group.
 
 ## Main definitions
 
@@ -80,7 +80,7 @@ type of `principalDivisorOf` / the domain of `principalDivisor`.
 
 ## Out of scope
 
-Intersection pairing, blow-ups, and the computation of `Cl` for the specific surface of the note
+Intersection pairing, blow-ups, and the computation of `Cl` for the specific surface of [CLOP]
 are separate work packages.
 -/
 

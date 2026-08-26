@@ -23,13 +23,14 @@ public import Mathlib.RingTheory.Polynomial.UniqueFactorization
 public import Mathlib.Topology.Irreducible
 
 /-!
-# Incidence surface of a cubic pencil (WP3; note (3.2), Lemma 3.1)
+# Incidence surface of a cubic pencil (WP3; [CLOP §3, Y = Bl_Σ ℙ²])
 
 For ternary forms `F₀, F₁` over a field `k`, the incidence surface of the pencil is
 ```
   Γ = { u · F₀ + v · F₁ = 0 } ⊆ ℙ² × ℙ¹
 ```
-(note (3.2)). Lemma 3.1 asserts that projection `Γ → ℙ²` is birational, with rational inverse
+which is the blow-up `π : Y → Z = ℙ²` of the base locus `Σ` in [CLOP §3]. Projection
+`Γ → ℙ²` is birational, with rational inverse
 ```
   [X : Y : Z]  ↦  ([X : Y : Z], [F₁(X,Y,Z) : -F₀(X,Y,Z)])
 ```
@@ -215,7 +216,7 @@ public def IsBihomogeneousOfBidegree {m n : ℕ} {R : Type*} [CommSemiring R]
 /-- The incidence equation `u · F₀ + v · F₁` on Cox coordinates of `ℙ² × ℙ¹`.
 
 Indices: `inl 0,1,2` are plane coordinates `X,Y,Z`; `inr 0,1` are pencil coordinates `u,v`.
-For homogeneous cubics this is bihomogeneous of bidegree `(3, 1)` (note (3.2)). -/
+For homogeneous cubics this is bihomogeneous of bidegree `(3, 1)` ([CLOP §3]). -/
 public noncomputable def incidenceEquation {R : Type*} [CommSemiring R]
     (F₀ F₁ : MvPolynomial (Fin 3) R) :
     MvPolynomial (BiprojectiveCoordinate 2 1) R :=
@@ -230,7 +231,7 @@ public theorem eval_incidenceEquation {R : Type*} [CommSemiring R]
   simp [incidenceEquation, MvPolynomial.eval_add, MvPolynomial.eval_mul, MvPolynomial.eval_X,
     MvPolynomial.eval_rename, Function.comp_def, Sum.elim_inl, Sum.elim_inr]
 
-/-- Polynomial form of the rational inverse of Lemma 3.1: the section
+/-- Polynomial form of the rational inverse of the projection `Γ → ℙ²`: the section
 `[F₁(x) : -F₀(x)]` lands on the incidence locus. -/
 public theorem eval_incidenceEquation_inverseSection {R : Type*} [CommRing R]
     (F₀ F₁ : MvPolynomial (Fin 3) R) (x : Fin 3 → R) :
@@ -323,7 +324,7 @@ public theorem isIntegral_affineIncidence {f₀ f₁ : PlaneRing k} (h : PencilG
   dsimp [affineIncidence]
   exact inferInstance
 
-/-! ## Explicit inverse on `D(f₁)` (algebraic form of Lemma 3.1)
+/-! ## Explicit inverse on `D(f₁)` (algebraic form of the birationality of `Γ → ℙ²`)
 
 The ring map `AdjoinRoot → Localization.Away f₁` sending the adjoined root to
 `-f₀ / f₁` realises the rational inverse of the projection on the open where `f₁` is
@@ -424,7 +425,8 @@ public theorem isDominant_affineIncidenceProj {f₀ f₁ : PlaneRing k} (h : Pen
   have : x = 0 := (planeToIncidence_injective h) (by simpa using hx0)
   simp [this]
 
-/-- **Ring-level content of Lemma 3.1.**  The map `incidenceToPlaneAway` realises the rational
+/-- **Ring-level content of the birationality of `Γ → ℙ²` ([CLOP §3, Y = Bl_Σ ℙ²]).**
+The map `incidenceToPlaneAway` realises the rational
 inverse `z ↦ -f₀/f₁` of the affine projection on the open where `f₁` is inverted: it is a
 ring homomorphism sending the adjoined pencil parameter to that rational function and
 restricting to the canonical localisation map on the plane coordinates. -/
@@ -439,7 +441,8 @@ public theorem lemma_3_1_affine_inverse (f₀ f₁ : PlaneRing k) :
 /-! ## Localization isomorphism `R[1/f₁] ≃ A[1/φ(f₁)]`
 
 The relation `f₁ · z + f₀ = 0` becomes `z = -f₀/f₁` after inverting `f₁`.  The localization of
-`planeToIncidence` at `f₁` is therefore a ring isomorphism, giving the affine form of Lemma 3.1.
+`planeToIncidence` at `f₁` is therefore a ring isomorphism, giving the affine form of the
+birationality of `Γ → ℙ²`.
 -/
 
 /-- From the incidence relation: `φ(f₁) · z = -φ(f₀)`. -/
@@ -623,7 +626,7 @@ public theorem incidenceToPlaneAway_injective {f₀ f₁ : PlaneRing k} (h : Pen
   exact halg_inj (hlift_inj hab)
 
 
-/-! ## Affine `PartialIso` (Lemma 3.1 on the chart)
+/-! ## Affine `PartialIso` (birationality of `Γ → ℙ²` on the chart)
 
 The localization isomorphism yields an isomorphism of basic opens
 `D(φ f₁) ≅ Spec A_φ ≅ Spec R_f ≅ D(f₁)`, packaged as a `PartialIso`.
@@ -664,7 +667,7 @@ public noncomputable def affineIncidenceAwayIso {f₀ f₁ : PlaneRing k} (h : P
     asIso (Spec.map (planeAwayCommRingIso h).hom) ≪≫
       (basicOpenIsoSpecAway (R := .of (PlaneRing k)) f₁).symm
 
-/-- **Affine form of Lemma 3.1 as a `PartialIso`.** -/
+/-- **Affine form of the birationality of `Γ → ℙ²` as a `PartialIso`.** -/
 public noncomputable def affineIncidencePartialIso {f₀ f₁ : PlaneRing k}
     (h : PencilGeneric f₀ f₁) :
     Scheme.PartialIso (affineIncidence f₀ f₁) (affinePlane k) where
@@ -681,7 +684,7 @@ public theorem birational_affineIncidence {f₀ f₁ : PlaneRing k} (h : PencilG
     Scheme.Birational (affineIncidence f₀ f₁) (affinePlane k) :=
   ⟨affineIncidencePartialIso h⟩
 
-/-- Explicit rational inverse of Lemma 3.1 as a partial map on `D(f₁)`. -/
+/-- Explicit rational inverse of the projection as a partial map on `D(f₁)`. -/
 public noncomputable def affineInversePartialMap {f₀ f₁ : PlaneRing k} (h : PencilGeneric f₀ f₁) :
     (affinePlane k).PartialMap (affineIncidence f₀ f₁) :=
   (affineIncidencePartialIso h).symm.toPartialMap
@@ -709,7 +712,7 @@ public theorem affineInversePartialMap_domain {f₀ f₁ : PlaneRing k} (h : Pen
   rfl
 
 /-- Package: dominance, birationality, inverse domain, localization iso.
-Affine content of note Lemma 3.1 / (3.2). -/
+Affine content of the incidence construction of [CLOP §3, Y = Bl_Σ ℙ²]. -/
 public theorem lemma_3_1_affine {f₀ f₁ : PlaneRing k} (h : PencilGeneric f₀ f₁) :
     AlgebraicGeometry.IsDominant (affineIncidenceProj f₀ f₁) ∧
       Scheme.Birational (affineIncidence f₀ f₁) (affinePlane k) ∧
@@ -725,7 +728,7 @@ public theorem planeAwayEquiv_bijective {f₀ f₁ : PlaneRing k} (h : PencilGen
 
 /-! ## Projective packaging -/
 
-/-- Ambient product `ℙ²_k × ℙ¹_k` of note (3.2). -/
+/-- Ambient product `ℙ²_k × ℙ¹_k` carrying the incidence surface ([CLOP §3]). -/
 public abbrev ambient (k : Type u) [Field k] : Scheme.{u} :=
   BiprojectiveSpace 2 1 k
 
@@ -738,14 +741,14 @@ public noncomputable abbrev incidencePoly (F₀ F₁ : MvPolynomial (Fin 3) k) :
     MvPolynomial (BiprojectiveCoordinate 2 1) k :=
   incidenceEquation F₀ F₁
 
-/-- Concrete forms of note (3.1). -/
+/-- Concrete forms `f₀ = y z² − x³`, `f₁ = x z² + y³ + y² z − z³` of [CLOP §4.1]. -/
 public noncomputable abbrev F₀_rat : MvPolynomial (Fin 3) ℚ :=
   ExplicitUnirational.FunctionField.F₀_rat
 
 public noncomputable abbrev F₁_rat : MvPolynomial (Fin 3) ℚ :=
   ExplicitUnirational.FunctionField.F₁_rat
 
-/-- Incidence equation of the rational pencil (3.1)–(3.2). -/
+/-- Incidence equation of the rational pencil of [CLOP §4.1]. -/
 public noncomputable def incidenceEquation_rat : MvPolynomial (BiprojectiveCoordinate 2 1) ℚ :=
   incidenceEquation F₀_rat F₁_rat
 

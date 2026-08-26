@@ -137,7 +137,7 @@ public theorem gAff_dvd_weierstrassA_redTheta_redH2sq_sub :
 
 /-! ## The Weierstrass congruence
 
-Assembling the staged reductions: the cleared Weierstrass form of the note,
+Assembling the staged reductions: the cleared Weierstrass form of [CLOP §4.1],
 `jAff² − 4·thetaAff³ − 4·A·thetaAff·hessAff⁴ − Bnum·hessAff⁶`, is divisible by
 `gAff`.  Every product of reduced forms is congruent to its certificate
 remainder by the lemmas above, and the resulting combination of remainders
@@ -150,7 +150,7 @@ public theorem residual_combination_eq_zero :
   unfold redJ2 redTheta3 redATHH2 weierstrassBnum redH3sq
   algebra_norm_reflect
 
-/-- The cleared Weierstrass identity of note (3.7) holds modulo `gAff`:
+/-- The cleared Weierstrass identity of [CLOP §4.1] (the equation for `J_η`) holds modulo `gAff`:
 `jAff² − 4 thetaAff³ − 4 A thetaAff hessAff⁴ − Bnum hessAff⁶ ≡ 0 (mod gAff)`. -/
 public theorem weierstrass_congruence_mod_gAff :
     gAff ∣ jAff ^ 2 - 4 * thetaAff ^ 3

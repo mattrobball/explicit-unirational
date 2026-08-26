@@ -16,8 +16,8 @@ Proves the statement of `comparator/Statement.lean`. The vocabulary below is dup
 that module and must stay structurally identical to it.
 
 The witness is the map of `ExplicitUnirational.surfaceCoordRingToPlane`, sending
-`ξ ↦ Θ/H²`, `η ↦ J/(2H³)`, `ζ ↦ −f₀/f₁` — the tangent-residual parametrization of note
-Lemma 2.1 made explicit. Injectivity is `surfaceCoordRingToPlane_injective`.
+`ξ ↦ Θ/H²`, `η ↦ J/(2H³)`, `ζ ↦ −f₀/f₁` — the tangent-residual form of the relative
+Abel–Jacobi map of [CLOP Lemma 3.4, Example 3.5] made explicit. Injectivity is `surfaceCoordRingToPlane_injective`.
 -/
 
 @[expose] public section

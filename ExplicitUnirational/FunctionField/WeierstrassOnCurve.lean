@@ -18,7 +18,7 @@ public import Mathlib.RingTheory.AdjoinRoot
 # The Weierstrass equation holds on the function field of the pencil cubic
 
 The payoff of the Tower-B congruence programme.  Write `C` for the affine
-cubic `gAff = 0` (the generic member of the rational pencil, note §3.1), with
+cubic `gAff = 0` (the generic member of the rational pencil of [CLOP §4.1]), with
 affine coordinate ring `affineCoordRing KQ = AdjoinRoot (monicCubicY KQ)`
 (a domain, `GeometricIntegrality`) and function field
 `curveFieldKQ = FractionRing (affineCoordRing KQ)`.
@@ -37,11 +37,11 @@ affine coordinate ring `affineCoordRing KQ = AdjoinRoot (monicCubicY KQ)`
   of `noteCurveQ` base-changed to `curveFieldKQ`.
 
 The last statement exhibits a `curveFieldKQ`-rational affine point of the
-Jacobian model (3.7); sending the Weierstrass coordinate functions to
-`(ξ, η)` is the field embedding `K(W) ↪ K(C)` that underlies the dominant
+Jacobian model of [CLOP §4.1] (the equation for `J_η`); sending the Weierstrass
+coordinate functions to `(ξ, η)` is the field embedding `K(W) ↪ K(C)` that underlies the dominant
 rational map of the unirationality argument.  What is *not* formalized here
 is the composition with the identification `K(C) ≅ ℚ(x, y)` of
-`PencilRationality` (Lemma 3.1, `adjoin_pencil_parameter_eq_top`) into a
+`PencilRationality` ([CLOP §3, `Y = Bl_Σ ℙ²`], `adjoin_pencil_parameter_eq_top`) into a
 single statement `P² ⤏ S`; that final glue is bookkeeping between the two
 presentations of `K(C)` and is left for a follow-up.
 -/
@@ -262,9 +262,11 @@ private theorem a6_match :
         simp only [map_mul, map_sub, map_add, map_pow, map_ofNat, algebraMap_KQ_curveField_X]
 
 /-- **The Weierstrass equation holds in the function field of the pencil
-cubic** (note (3.7)): the pair `ξ = Θ/H²`, `η = J/(2H³)` is an affine point of
+cubic** (the Weierstrass model of [CLOP §4.1], the equation for `J_η`): the
+pair `ξ = Θ/H²`, `η = J/(2H³)` is an affine point of
 `noteCurveQ` over `curveFieldKQ = Frac(ℚ(z)[x,y]/(g))`.  Together with
-Lemma 3.1 (`PencilRationality.adjoin_pencil_parameter_eq_top`, identifying
+the rationality of the incidence surface ([CLOP §3, `Y = Bl_Σ ℙ²`],
+`PencilRationality.adjoin_pencil_parameter_eq_top`, identifying
 the function field of the pencil member with a rational function field in the
 plane coordinates), this is the field-embedding form `K(W) ↪ K(C)` of the
 dominant rational map underlying unirationality. -/

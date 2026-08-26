@@ -18,8 +18,9 @@ public import Mathlib.Tactic.NormNum
 /-!
 # Hessian normalization and Fisher invariants of the cubic pencils
 
-Formalization of the Hessian normalization (3.3), the invariants (3.6) / (5.4),
-the expanded Hessian (5.5), and the covariant identity (3.4) for the rational pencil.
+Formalization of the Hessian normalization `[CLOP Example 2.1]`, the invariants
+`[CLOP §4.1]` / `[CLOP §4.2]`, the expanded Hessian `[CLOP §4.2]`, and the covariant
+identity `[CLOP (2.2)]` for the rational pencil.
 
 Numeric coefficients are plain numerals (so bare `simp` closes partials). The
 coefficient map `C` is reserved for genuine parameters (`z`, `μ`, `t`, `λ`, …).
@@ -33,7 +34,7 @@ open MvPolynomial Matrix
 
 namespace ExplicitUnirational.Invariants
 
-/-! ## Hessian normalization (3.3) -/
+/-! ## Hessian normalization `[CLOP Example 2.1]` -/
 
 /-- The matrix of second partial derivatives of a ternary polynomial. -/
 public noncomputable def hessianMatrix {R : Type*} [CommRing R]
@@ -41,7 +42,7 @@ public noncomputable def hessianMatrix {R : Type*} [CommRing R]
     Matrix (Fin 3) (Fin 3) (MvPolynomial (Fin 3) R) :=
   fun i j => pderiv i (pderiv j G)
 
-/-- The Hessian normalization `H(G) = -(1/2) det (d^2 G / dX_i dX_j)` of eq. (3.3).
+/-- The Hessian normalization `H(G) = -(1/2) det (d^2 G / dX_i dX_j)` of `[CLOP Example 2.1]`.
 
 The factor `1/2` is realized by `Ring.inverse` so the definition typechecks for every
 `CommRing`. Whenever `2` is a unit (in particular over `ℚ`) this is the classical
@@ -130,13 +131,14 @@ private theorem hessianMatrix_add_C_mul (i j : Fin 3) (a : ℚ)
       hessianMatrix f i j + C a * hessianMatrix g i j := by
   simp only [hessianMatrix, map_add, pderiv_C_mul]
 
-/-! ## Rational pencil (3.1) and invariants (3.5)–(3.6) -/
+/-! ## Rational pencil and invariants `[CLOP §4.1]` -/
 
-/-- `F₀ = Y Z² - X³` of eq. (3.1). -/
+/-- `F₀ = Y Z² - X³` of `[CLOP §4.1]` (there written `f₀ = yz² - x³`). -/
 public noncomputable def F0_rat : MvPolynomial (Fin 3) ℚ :=
   X 1 * X 2 ^ 2 - X 0 ^ 3
 
-/-- `F₁ = X Z² + Y³ + Y² Z - Z³` of eq. (3.1). -/
+/-- `F₁ = X Z² + Y³ + Y² Z - Z³` of `[CLOP §4.1]` (there written
+`f₁ = xz² + y³ + y²z - z³`). -/
 public noncomputable def F1_rat : MvPolynomial (Fin 3) ℚ :=
   X 0 * X 2 ^ 2 + X 1 ^ 3 + X 1 ^ 2 * X 2 - X 2 ^ 3
 
@@ -144,15 +146,15 @@ public noncomputable def F1_rat : MvPolynomial (Fin 3) ℚ :=
 public noncomputable def G_z (z : ℚ) : MvPolynomial (Fin 3) ℚ :=
   F0_rat + C z * F1_rat
 
-/-- `P(z) = 4z⁴ - 23z³ - 18z² + z - 4` of eq. (3.5). -/
+/-- `P(z) = 4z⁴ - 23z³ - 18z² + z - 4`, the quartic factor of `c₆` in `[CLOP §4.1]`. -/
 public def P_rat (z : ℚ) : ℚ :=
   4 * z ^ 4 - 23 * z ^ 3 - 18 * z ^ 2 + z - 4
 
-/-- `c₄(z) = 48 z² (z - 3)` of eq. (3.6). -/
+/-- `c₄(z) = 48 z² (z - 3)` of `[CLOP §4.1]`. -/
 public def c4_rat (z : ℚ) : ℚ :=
   48 * z ^ 2 * (z - 3)
 
-/-- `c₆(z) = -216 z P(z)` of eq. (3.6). -/
+/-- `c₆(z) = -216 z P(z)` of `[CLOP §4.1]`. -/
 public def c6_rat (z : ℚ) : ℚ :=
   -216 * z * P_rat z
 
@@ -275,14 +277,14 @@ private theorem hess22_H_G_z (z : ℚ) :
   unfold hessianMatrix H_G_z
   simp; ring
 
-/-! ### Eq. (3.6) -/
+/-! ### The invariants `c₄`, `c₆` of `[CLOP §4.1]` -/
 
-/-- Eq. (3.6): the Fisher invariants of the generic member of the pencil over `ℚ`. -/
+/-- `[CLOP §4.1]`: the Fisher invariants of the generic member of the pencil over `ℚ`. -/
 public theorem c4_c6_rat (z : ℚ) :
     c4_rat z = 48 * z ^ 2 * (z - 3) ∧ c6_rat z = -216 * z * P_rat z := by
   constructor <;> rfl
 
-/-! ### Identity (3.4) -/
+/-! ### Identity `[CLOP (2.2)]` -/
 
 private noncomputable def Gmu (z mu : ℚ) : MvPolynomial (Fin 3) ℚ :=
   G_z z + C mu * H_G_z z
@@ -309,7 +311,7 @@ private theorem det_hess_Gmu (z mu : ℚ) :
     C_eighteen, C_twentyThree, C_fortyEight, C_twoSixteen]
   ring
 
-/-- Eq. (3.4) holds for the pencil over `ℚ` with the invariants of eq. (3.6). -/
+/-- `[CLOP (2.2)]` holds for the pencil over `ℚ` with the invariants of `[CLOP §4.1]`. -/
 public theorem hessian_identity_rat (z mu : ℚ) :
     hessian (G_z z + C mu * hessian (G_z z)) =
       C (3 * (c4_rat z * mu + 2 * c6_rat z * mu ^ 2 + c4_rat z ^ 2 * mu ^ 3)) * G_z z
@@ -318,35 +320,35 @@ public theorem hessian_identity_rat (z mu : ℚ) :
   change hessian (Gmu z mu) = rhs_identity z mu
   exact hessian_eq_of_det_eq _ _ (det_hess_Gmu z mu)
 
-/-! ## Pencil over `C(t)`: eqs. (5.1), (5.4), (5.5) -/
+/-! ## Pencil over `C(t)`: `[CLOP §4.2]` -/
 
-/-- `F₀ = Y Z² - X³` of eq. (5.1). -/
+/-- `F₀ = Y Z² - X³` of `[CLOP §4.2]`. -/
 public noncomputable def F0_Ct : MvPolynomial (Fin 3) ℚ :=
   F0_rat
 
-/-- `F₁ = Y³ - X Z² - 2 t Z³` of eq. (5.1). -/
+/-- `F₁ = Y³ - X Z² - 2 t Z³` of `[CLOP §4.2]`. -/
 public noncomputable def F1_Ct (t : ℚ) : MvPolynomial (Fin 3) ℚ :=
   X 1 ^ 3 - X 0 * X 2 ^ 2 - 2 * C t * X 2 ^ 3
 
-/-- Generic member `G_λ = F₀ + λ F₁` of the pencil (5.1). -/
+/-- Generic member `G_λ = F₀ + λ F₁` of the pencil of `[CLOP §4.2]`. -/
 public noncomputable def G_lambda (t lam : ℚ) : MvPolynomial (Fin 3) ℚ :=
   F0_Ct + C lam * F1_Ct t
 
-/-- `c₄(λ) = 144 λ²` of eq. (5.4). -/
+/-- `c₄(λ) = 144 λ²` of `[CLOP §4.2]`. -/
 public def c4_lambda (lam : ℚ) : ℚ :=
   144 * lam ^ 2
 
-/-- `c₆(λ) = 864 λ (λ⁴ + 27 t² λ³ + 1)` of eq. (5.4). -/
+/-- `c₆(λ) = 864 λ (λ⁴ + 27 t² λ³ + 1)` of `[CLOP §4.2]`. -/
 public def c6_lambda (t lam : ℚ) : ℚ :=
   864 * lam * (lam ^ 4 + 27 * t ^ 2 * lam ^ 3 + 1)
 
-/-- Eq. (5.4): the Fisher invariants of the generic member of the pencil over `C(t)`. -/
+/-- `[CLOP §4.2]`: the Fisher invariants of the generic member of the pencil over `C(t)`. -/
 public theorem c4_c6_lambda (t lam : ℚ) :
     c4_lambda lam = 144 * lam ^ 2 ∧
     c6_lambda t lam = 864 * lam * (lam ^ 4 + 27 * t ^ 2 * lam ^ 3 + 1) := by
   constructor <;> rfl
 
-/-- Right-hand side of eq. (5.5). -/
+/-- Right-hand side of the displayed Hessian `H(g)` of `[CLOP §4.2]`. -/
 public noncomputable def H_G_lambda (t lam : ℚ) : MvPolynomial (Fin 3) ℚ :=
   -36 * C lam ^ 2 * (X 0 ^ 2 * X 1) + 36 * C lam * (X 0 * X 1 ^ 2)
     - 216 * C t * C lam ^ 2 * (X 0 * X 1 * X 2) - 12 * (X 0 * X 2 ^ 2)
@@ -404,7 +406,7 @@ private theorem det_hess_G_lambda (t lam : ℚ) :
     hess12_G_lambda, hess20_G_lambda, hess21_G_lambda, hess22_G_lambda, H_G_lambda]
   ring
 
-/-- Eq. (5.5): the Hessian of the generic member of the pencil over `C(t)`. -/
+/-- `[CLOP §4.2]`: the Hessian of the generic member of the pencil over `C(t)`. -/
 public theorem hessian_lambda (t lam : ℚ) :
     hessian (G_lambda t lam) = H_G_lambda t lam :=
   hessian_eq_of_det_eq _ _ (det_hess_G_lambda t lam)

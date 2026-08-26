@@ -22,7 +22,7 @@ public import Mathlib.Logic.Equiv.Fin.Rotate
 public import Mathlib.Tactic.Ring
 
 /-!
-# Abstract Néron–Severi lattice of the nine-point blow-up (note §4.2, §5.4)
+# Abstract Néron–Severi lattice of the nine-point blow-up ([CLOP §2], [CLOP Cor 3.8])
 
 Lattice-theoretic content of the arithmetic Picard-rank argument, with no scheme theory.
 
@@ -35,10 +35,11 @@ Lattice-theoretic content of the arithmetic Picard-rank argument, with no scheme
   `K ∈ K^⊥` (since `K` is isotropic).
 * `S₉`-action permuting the `Eᵢ` and fixing `H`, preserving the form and fixing `K` and `F`.
 * Zero-sum representation on `ℚ⁹` of rank 8, embedded as pure exceptional combinations;
-  full `S₉`-invariants vanish (note §5.4).
+  full `S₉`-invariants vanish ([CLOP Cor 3.8], with the `𝔖₉` monodromy of [CLOP Remark 4.4]).
 * For the geometric Frobenius 9-cycle, fixed vectors on the zero-sum summand vanish, so the
-  lattice-theoretic arithmetic Picard rank is `1` (note Prop. 4.2 / `ρ = 1`).
-* The case split of formula (1.3) as pure number theory is already
+  lattice-theoretic arithmetic Picard rank is `1` ([CLOP Cor 3.8]: `ρ = 1`).
+* The case split of the base-change rank formula `ρ = 1, 3, 9` according to `gcd(9,n)`
+  (not in [CLOP]) as pure number theory is already
   `NineCycle.picardRank_formula`; we re-export the connection that the rank equals `gcd(9,n)`
   once the fixed-dimension count `gcd(9,n)-1` on the zero-sum summand is granted by the
   orbit count for powers of a 9-cycle (formalised here for the identity power `n = 1`, which
@@ -46,12 +47,12 @@ Lattice-theoretic content of the arithmetic Picard-rank argument, with no scheme
 
 ## Honesty
 
-This proves the note's lattice / representation argument on an **abstract** free lattice. It does
+This proves the lattice / representation argument of [CLOP] on an **abstract** free lattice. It does
 **not** identify that lattice with geometric `NS(X_{k̄})`, nor does it prove Shioda–Tate.
 
 Intersection numbers: on this rank-10 lattice one has `K² = F² = 0` (as for `Bl₉ ℙ²`). The
-brief's simultaneous claims `K² = 1`, `F = -K`, and `F² = 0` are inconsistent; we follow the
-note and the geometry of `Bl₉ ℙ²`. Degree `1` appears as `(K - Eᵢ)²` after contracting a
+brief's simultaneous claims `K² = 1`, `F = -K`, and `F² = 0` are inconsistent; we follow
+[CLOP] and the geometry of `Bl₉ ℙ²`. Degree `1` appears as `(K - Eᵢ)²` after contracting a
 section.
 -/
 
@@ -149,7 +150,7 @@ public theorem intersectionForm_isRefl : intersectionForm.IsRefl :=
 
 /-! ## Canonical and fibre classes -/
 
-/-- Canonical class `K = -3H + ∑ Eᵢ` (note §4.2, (5.12)). -/
+/-- Canonical class `K = -3H + ∑ Eᵢ` ([CLOP §2], [CLOP §3]). -/
 public def K : NSQ := (-3 : ℚ) • H + ∑ i : Fin 9, E i
 
 /-- Fibre class `F = 3H - ∑ Eᵢ = -K`. -/
@@ -335,7 +336,7 @@ public theorem permAction_K (σ : Perm (Fin 9)) : permAction σ K = K := by
 public theorem permAction_F (σ : Perm (Fin 9)) : permAction σ F = F := by
   rw [F_eq_neg_K, map_neg, permAction_K]
 
-/-! ## Zero-sum representation (note (4.4), (5.16)) -/
+/-! ## Zero-sum representation ([CLOP Lemma 3.9]) -/
 
 public def zeroSum : Submodule ℚ (Fin 9 → ℚ) where
   carrier := { v | ∑ i : Fin 9, v i = 0 }
@@ -424,7 +425,7 @@ public theorem permOnNine_maps_zeroSum (σ : Perm (Fin 9)) {v : Fin 9 → ℚ}
   change ∑ j, v (σ.symm j) = 0
   rw [Function.Bijective.sum_comp σ.symm.bijective v, hv]
 
-/-- An `S₉`-invariant vector in the zero-sum representation vanishes (note §5.4). -/
+/-- An `S₉`-invariant vector in the zero-sum representation vanishes ([CLOP Cor 3.8]). -/
 public theorem zeroSum_S9_invariants (v : Fin 9 → ℚ)
     (hfix : ∀ σ : Perm (Fin 9), permOnNine σ v = v) (hsum : v ∈ zeroSum) : v = 0 := by
   have hconst : ∀ i j : Fin 9, v i = v j := by
@@ -508,21 +509,23 @@ public theorem finrank_fixedZeroSum_finRotate :
   rw [fixedZeroSum_finRotate_eq_bot, finrank_bot]
 
 /-- Lattice-theoretic arithmetic Picard rank for the geometric Frobenius 9-cycle:
-`1 + dim Fix(zeroSum) = 1` (note Prop. 4.2, `ρ = 1`). -/
+`1 + dim Fix(zeroSum) = 1` ([CLOP Cor 3.8], `ρ = 1`). -/
 public theorem arithmeticPicardRank_one :
     finrank ℚ (fixedZeroSum (finRotate 9)) + 1 = 1 := by
   simp [finrank_fixedZeroSum_finRotate]
 
-/-- Re-export of the number-theoretic case split of formula (1.3). Combined with the
+/-- Re-export of the number-theoretic case split of the base-change rank formula
+`ρ = 1, 3, 9` according to `gcd(9,n)` (not in [CLOP]). Combined with the
 representation-theoretic fact that the fixed dimension of the `n`-th power of a 9-cycle on the
-zero-sum representation is `gcd(9,n) - 1` (note Corollary 4.3), this yields the arithmetic Picard
+zero-sum representation is `gcd(9,n) - 1`, this yields the arithmetic Picard
 ranks over finite extensions. The identity-power case `gcd(9,1) - 1 = 0` is
 `finrank_fixedZeroSum_finRotate` above. -/
 public theorem picardRank_formula_reexport (n : ℕ) (hn : 0 < n) :
     Nat.gcd 9 n = if 9 ∣ n then 9 else if 3 ∣ n then 3 else 1 :=
   ExplicitUnirational.NineCycle.picardRank_formula n hn
 
-/-- Full `S₉`-invariants of the zero-sum summand vanish (note §5.4 monodromy). -/
+/-- Full `S₉`-invariants of the zero-sum summand vanish ([CLOP Remark 4.4] monodromy,
+[CLOP Cor 3.8]). -/
 public theorem rho_eq_one_of_S9 :
     ∀ v : Fin 9 → ℚ,
       (∀ σ : Perm (Fin 9), permOnNine σ v = v) → v ∈ zeroSum → v = 0 :=

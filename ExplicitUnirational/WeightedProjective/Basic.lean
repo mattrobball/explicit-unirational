@@ -50,7 +50,7 @@ discipline of WP4; the last needs a graded-quotient instance that Mathlib does n
 ## Design choice
 
 We specialise to the fixed weights `(1,1,2,3)` rather than a general `P(w₀,…,wₙ)`. The specific
-case is what the note needs; positivity of all four weights is used for the chart degrees and the
+case is what the paper needs; positivity of all four weights is used for the chart degrees and the
 irrelevant-ideal comparison. (Foundation records the same weight vector, but it is not yet a
 public export, so the weights are restated here.)
 -/

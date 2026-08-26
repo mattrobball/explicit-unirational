@@ -13,10 +13,11 @@ public import Mathlib.LinearAlgebra.Dimension.Finrank
 /-!
 # Torsor trivialization and translation-invariance (gaps 2–3 of Route A)
 
-Note Lemma 2.1 identifies the degree-9 map `α_λ : C → Jac(C)`, after base change to an algebraic
-closure and choice of an origin, with multiplication-by-3 followed by a translation on the
-Jacobian. Combined with the base-change arithmetic of
-`ExplicitUnirational.FunctionField.TorsorDescent`, this would close Endpoint A0 along Route A.
+[CLOP Lemma 3.4], in the case of [CLOP Example 3.5], identifies the degree-9 map
+`α_λ : C → Jac(C)`, after base change to an algebraic closure and choice of an origin, with
+multiplication-by-3 followed by a translation on the Jacobian. Combined with the base-change
+arithmetic of `ExplicitUnirational.FunctionField.TorsorDescent`, this would close Endpoint A0
+along Route A.
 
 This module supplies the **field-theoretic** half of that identification:
 
@@ -196,7 +197,7 @@ public theorem finrank_eq_of_algEquiv_over_base
 
 If a finite extension of function fields has degree `n` and `τ` is any automorphism of the
 big field over the base, the image of the small field under `τ` still has degree `n`. In the
-geometry of note Lemma 2.1, the small field is the pullback of the function field of the
+geometry of [CLOP Lemma 3.4], the small field is the pullback of the function field of the
 Jacobian along `[3]`, and `τ` is translation by a fixed point of the Jacobian. -/
 public theorem finrank_eq_of_translation
     {K L : Type*} [Field K] [Field L] [Algebra K L]
@@ -254,7 +255,7 @@ Suppose an identification `e : L ≃ₐ[F] RatFunc F` carries an intermediate fi
 (function field of the) plane cubic onto the translate of the `mulThreeX` subfield of the
 Weierstrass `x`-line. Then `[L : M] = 9`, using `finrank_mulThreeX` and gap 3.
 
-This is the precise field-theoretic residual of note Lemma 2.1 once the geometric
+This is the precise field-theoretic residual of [CLOP Lemma 3.4] once the geometric
 trivialization `e` is supplied. -/
 public theorem finrank_eq_nine_of_trivialization_translation
     {F L : Type*} [Field F] [Field L] [Algebra F L]
@@ -270,7 +271,8 @@ public theorem finrank_eq_nine_of_trivialization_translation
     finrank_eq_nine_of_translation τ F⟮mulThreeX W⟯ h9
   exact finrank_eq_of_algEquiv_map_eq e M _ hmap h9'
 
-/-- Specialization to the note's Weierstrass model (3.7) over `ℚ(z)`, where coprimality of
+/-- Specialization to the Weierstrass model of [CLOP §4.1] (the equation for `J_η`) over `ℚ(z)`,
+where coprimality of
 `Φ₃` and `ΨSq₃` is already certified. -/
 public theorem finrank_eq_nine_of_trivialization_translation_noteCurveQ
     {L : Type*} [Field L] [Algebra KQ L]
@@ -293,7 +295,8 @@ public theorem finrank_eq_nine_of_trivialization
     finrank_mulThreeX W h3 hcop
   exact finrank_eq_of_algEquiv_map_eq e M _ hmap h9
 
-/-- Note-model specialization of `finrank_eq_nine_of_trivialization`. -/
+/-- Specialization of `finrank_eq_nine_of_trivialization` to `noteCurveQ`, the Weierstrass
+model of [CLOP §4.1] (the equation for `J_η`). -/
 public theorem finrank_eq_nine_of_trivialization_noteCurveQ
     {L : Type*} [Field L] [Algebra KQ L]
     (e : L ≃ₐ[KQ] RatFunc KQ) (M : IntermediateField KQ L)

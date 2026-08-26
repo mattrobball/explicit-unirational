@@ -18,24 +18,26 @@ public import Mathlib.Tactic.NormNum
 # Tangent residual and Weierstrass coordinates on the rational pencil (Route B)
 
 Route B for Endpoint A0: an explicit, certificate-shaped treatment of the degree-9 map
-from the generic plane cubic of note eq. (3.1) to its Jacobian (3.7), bypassing Picard
-schemes and torsor trivialization.
+from the generic plane cubic of the pencil of [CLOP §4.1] to its Jacobian (the Weierstrass
+model of [CLOP §4.1], the equation for `J_η`), bypassing Picard schemes and torsor trivialization.
 
 ## Mathematics
 
-Let `G_z = F₀ + z F₁` be the generic member of the pencil (3.1), and write
+Let `G_z = F₀ + z F₁` be the generic member of the pencil of [CLOP §4.1], and write
 `g(X,Y) = G_z(X,Y,1)` for the affine chart `Z = 1`. For a point `P = (x,y)` on `g = 0`
 with nonzero gradient, the tangent line at `P` meets the cubic again at a residual point
 `Q(P)`. Classically `2P + Q(P) ∼ λ` (hyperplane class), so
-`α_λ(P) = [3P − λ] ∼ [P − Q(P)]` (note Lemma 2.1 / DESIGN §3 Route B).
+`α_λ(P) = [3P − λ] ∼ [P − Q(P)]` ([CLOP Lemma 3.4] with [CLOP Example 3.5] / DESIGN §3
+Route B).
 
 This module supplies:
 
 1. **Tangent residual.** Explicit polynomials giving `Q(P)` in affine coordinates, with the
    defining identities (on the curve, on the tangent line) checked by `ring`.
 
-2. **Weierstrass coefficients.** Matching of the Jacobian model (3.7) / `noteCurveQ` to the
-   Aronhold invariants `S`, `T` of the ternary cubic (`27 S = A`, `−27 T = 4B`).
+2. **Weierstrass coefficients.** Matching of the Jacobian model of [CLOP §4.1] (the equation
+   for `J_η`) / `noteCurveQ` to the Aronhold invariants `S`, `T` of the ternary cubic
+   (`27 S = A`, `−27 T = 4B`).
 
 3. **Staged `Y`-reduction of Fisher/Sage covariants.** Integer forms of `Θ` and reduced normal
    forms of `H²`, `H³` modulo `gAff`, each as a separate `ring` certificate (no monolithic
@@ -58,7 +60,7 @@ namespace ExplicitUnirational
 
 /-! ## Affine cubic of the rational pencil -/
 
-/-- Affine chart `Z = 1` of the generic member `G_z = F₀ + z F₁` of note (3.1):
+/-- Affine chart `Z = 1` of the generic member `G_z = F₀ + z F₁` of the pencil of [CLOP §4.1]:
 `g = Y − X³ + z(X + Y³ + Y² − 1)`. Variables: `X 0 = X`, `X 1 = Y`, `X 2 = z`. -/
 public noncomputable def gAff : MvPolynomial (Fin 3) ℚ :=
   (X 1) ^ 3 * (X 2)
@@ -176,9 +178,11 @@ public theorem residual_on_curve_divisible :
     gAff ∣ gAffCleared residualQx residualQy residualA3 :=
   ⟨residualA3 ^ 3, residual_on_curve_identity⟩
 
-/-! ## Weierstrass model coefficients (note (3.7) / `noteCurveQ`) -/
+/-! ## Weierstrass model coefficients (the Weierstrass model of [CLOP §4.1], the equation for
+`J_η`, i.e. `noteCurveQ`) -/
 
-/-- Coefficient `A = z²(3 − z)` of note (3.7) / `noteCurveQ.a₄`, as a polynomial in `z = X 2`. -/
+/-- Coefficient `A = z²(3 − z)` of the Weierstrass model of [CLOP §4.1] (the equation for `J_η`),
+i.e. `noteCurveQ.a₄`, as a polynomial in `z = X 2`. -/
 public noncomputable def weierstrassA : MvPolynomial (Fin 3) ℚ :=
   (X 2) ^ 2 * (3 - X 2)
 
@@ -190,7 +194,8 @@ public noncomputable def weierstrassBnum : MvPolynomial (Fin 3) ℚ :=
 
 For the ternary cubic `G_z`, the Aronhold invariants (Sage normalization) are
 `S = z²(3−z)/27` and `T = −z P(z)/27`. The short Weierstrass model produced by
-`WeierstrassForm` is `Y² = X³ + (27S) X + (−27/4 T)`, which is exactly note (3.7):
+`WeierstrassForm` is `Y² = X³ + (27S) X + (−27/4 T)`, which is exactly the Weierstrass model
+of [CLOP §4.1] (the equation for `J_η`):
 `Y² = X³ + A X + B` with `A = z²(3−z)` and `B = (z/4) P(z)`. -/
 
 /-- `27 S = A` as an identity of rational coefficients in `z`. -/
@@ -241,7 +246,8 @@ public noncomputable def hessAff : MvPolynomial (Fin 3) ℚ :=
     + 3 * (X 0)
 
 /-- Dehomogenization of `Invariants.H_G_z` at `Z = 1`, with parameter `z` as `X 2`.
-Uses the closed form of note (3.3)/(3.6) Hessian, with `C z` replaced by `X 2`. -/
+Uses the closed form of the Hessian covariant `H` of [CLOP Example 2.1] on the pencil of
+[CLOP §4.1], with `C z` replaced by `X 2`. -/
 public noncomputable def H_G_z_aff : MvPolynomial (Fin 3) ℚ :=
   36 * (X 2) ^ 2 * ((X 0) ^ 2 * (X 1)) + 12 * (X 2) ^ 2 * ((X 0) ^ 2)
     - 12 * (X 2) ^ 2 * ((X 0) * (X 1) ^ 2) + 36 * (X 2) * ((X 0) * (X 1) ^ 2)
@@ -249,7 +255,8 @@ public noncomputable def H_G_z_aff : MvPolynomial (Fin 3) ℚ :=
     - 36 * (X 2) ^ 2 * (X 0) - 12 * (X 0)
     + 12 * (X 2) ^ 3 * (X 1) + 4 * (X 2) ^ 3
 
-/-- Sage's affine Hessian is `-1/4` times the note's Hessian on `Z = 1`:
+/-- Sage's affine Hessian is `-1/4` times the Hessian covariant `H` of [CLOP Example 2.1]
+on `Z = 1`:
 `hessAff = − H_G_z_aff / 4`. -/
 public theorem hessAff_eq_neg_quarter_H :
     (4 : MvPolynomial (Fin 3) ℚ) * hessAff = -H_G_z_aff := by

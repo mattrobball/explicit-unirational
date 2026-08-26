@@ -20,11 +20,11 @@ public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Ring
 
 /-!
-# Residual degree of the tangent-residual map (Route B, degree half of Lemma 2.1)
+# Residual degree of the tangent-residual map (Route B, degree half of [CLOP Lemma 3.4])
 
-Note Lemma 2.1 / DESIGN Route B: the tangent-residual construction supplies Weierstrass
-coordinates `(ξ, η)` on the Jacobian of the generic cubic `C : g = 0` over `K = ℚ(z)`, and
-the degree of the induced function-field extension is
+[CLOP Lemma 3.4] with [CLOP Example 3.5] / DESIGN Route B: the tangent-residual construction
+supplies Weierstrass coordinates `(ξ, η)` on the Jacobian of the generic cubic `C : g = 0`
+over `K = ℚ(z)`, and the degree of the induced function-field extension is
 
 ```
   [K(C) : K(ξ, η)] = 9.
@@ -267,7 +267,8 @@ public theorem finrank_weierstrassCoord_over_X (A B : F) :
   have h := (AdjoinRoot.isAdjoinRootMonic _ (monic_weierstrassY A B)).finrank
   rwa [natDegree_weierstrassY A B] at h
 
-/-- Specialization to the note's model (3.7) over `KQ = ℚ(z)`. -/
+/-- Specialization to the Weierstrass model of [CLOP §4.1] (the equation for `J_η`) over
+`KQ = ℚ(z)`. -/
 public theorem finrank_weierstrassCoord_noteCurveQ :
     Module.finrank (RatFunc KQ)
       (weierstrassCoordRing (F := KQ) noteCurveQ.a₄ noteCurveQ.a₆) = 2 :=

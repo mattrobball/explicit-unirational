@@ -24,7 +24,7 @@ public import Mathlib.Tactic.Ring
 /-!
 # Geometric integrality of the generic plane cubic (Torsor gap 1)
 
-Note §3.1–3.2: the generic member of the rational pencil, dehomogenized at `Z = 1`, is the
+[CLOP §4.1]: the generic member of the rational pencil, dehomogenized at `Z = 1`, is the
 affine plane cubic
 
 ```
@@ -467,7 +467,7 @@ public theorem monicCubicY_irreducible_algClosure :
     Algebra.charZero_of_charZero (R := KQ) (A := AlgebraicClosure KQ)
   exact monicCubicY_irreducible param_algClosure_ne_zero
 
-/-! ## Discriminant nonvanishing (note (3.14)) -/
+/-! ## Discriminant nonvanishing (the discriminant octic `q₈`) -/
 
 public theorem q8_ne_zero : Cert.q8 ≠ 0 := by
   intro h

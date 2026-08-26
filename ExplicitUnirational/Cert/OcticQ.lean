@@ -16,12 +16,14 @@ public import Mathlib.Tactic.ComputeDegree
 public import Mathlib.Tactic.LinearCombination
 
 /-!
-# Irreducibility of the octic `q₈` over `ℚ` (note §3.2)
+# Irreducibility of the octic `q₈` over `ℚ`
 
-Note §3.2: the reduction of `q₈` mod 7 is irreducible in `𝔽₇[z]` (Appendix A / `irreducible_f8`,
-up to the unit scaling by 3 that makes the reduction monic). Since the leading coefficient
-`432` is nonzero mod 7, the reduction has the same degree 8, so Gauss's lemma yields
-irreducibility of `q₈` over `ℚ`, and in particular square-freeness.
+The reduction of `q₈` mod 7 is irreducible in `𝔽₇[z]` (the explicit Rabin certificate
+`irreducible_f8`, computer-algebra generated and not in [CLOP], up to the unit scaling by 3
+that makes the reduction monic). Since the leading coefficient `432` is nonzero mod 7, the
+reduction has the same degree 8, so Gauss's lemma yields irreducibility of `q₈` over `ℚ`,
+and in particular square-freeness. Geometrically this says that the eight nodal members of
+the pencil of `[CLOP §4.1]` form a single closed point, as in `[CLOP Lemma 4.1]`.
 -/
 
 noncomputable section
@@ -37,7 +39,7 @@ private instance : Fact (Nat.Prime 7) := ⟨by decide⟩
 private lemma seven_eq_zero : (7 : (ZMod 7)[X]) = 0 := by
   simpa using CharP.cast_eq_zero ((ZMod 7)[X]) 7
 
-/-- Integer-coefficient lift of `q₈` (note eq. (3.14)).
+/-- Integer-coefficient lift of the discriminant octic `q₈`.
 
 Coefficients are `C`-wrapped so that `Polynomial.map_C` applies cleanly under reduction. -/
 public def q8Z : ℤ[X] :=
@@ -90,11 +92,11 @@ public lemma q8Z_isPrimitive : IsPrimitive q8Z := by
   rw [h1] at hgcd
   exact isUnit_of_dvd_one hgcd
 
-/-- The reduction of `q₈` mod 7 from note §3.2. -/
+/-- The reduction of `q₈` mod 7. -/
 public def r7 : (ZMod 7)[X] :=
   5 * X ^ 8 + X ^ 7 + 2 * X ^ 6 + 5 * X ^ 5 + 5 * X ^ 4 + 6 * X ^ 3 + 2 * X ^ 2 + X + 5
 
-/-- Note Appendix A: multiplying the reduction by 3 makes it monic, so `r7 = C 5 * f8`
+/-- Multiplying the reduction by 3 makes it monic, so `r7 = C 5 * f8`
 (since `3 * 5 = 1` in `𝔽₇`). -/
 public lemma r7_eq_C5_mul_f8 : r7 = C (5 : ZMod 7) * f8 := by
   unfold r7 f8
@@ -198,13 +200,13 @@ private lemma irreducible_of_irreducible_map_zmod
 public theorem irreducible_q8Z : Irreducible q8Z :=
   irreducible_of_irreducible_map_zmod q8Z_isPrimitive irreducible_map_q8Z q8Z_map_natDegree
 
-/-- Note §3.2: `q₈` is irreducible over `ℚ`. -/
+/-- `q₈` is irreducible over `ℚ`. -/
 public theorem irreducible_q8 : Irreducible (q8 : Polynomial ℚ) := by
   have h := (IsPrimitive.Int.irreducible_iff_irreducible_map_cast q8Z_isPrimitive).mp
     irreducible_q8Z
   rwa [q8Z_map_rat] at h
 
-/-- Note §3.2: `q₈` is square-free over `ℚ` (corollary of irreducibility). -/
+/-- `q₈` is square-free over `ℚ` (corollary of irreducibility). -/
 public theorem squarefree_q8 : Squarefree (q8 : Polynomial ℚ) :=
   irreducible_q8.squarefree
 

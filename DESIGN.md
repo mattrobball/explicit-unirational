@@ -1,9 +1,9 @@
 # Formalization design
 
-Source of truth for the mathematics: the draft note, kept as a grep-able
-text extraction at [`docs/note.txt`](docs/note.txt) (the published version is
-arXiv:2608.15435; its numbering differs). Every work package below cites the
-note by section or equation number.
+Source of truth for the mathematics: Cheltsov–Loginov–Orlov–Prokhorov,
+*Unirational del Pezzo surfaces of degree one*, arXiv:2608.15435v1. Citations of
+the form `[CLOP §n.m]`, `[CLOP (n.m)]`, `[CLOP Lemma n.m]` below and in the Lean
+docstrings refer to that paper.
 
 This document supersedes the sequencing in `ROADMAP.md`. The work-package
 content there is largely right; the *ordering* is not, for the reason given in
@@ -50,8 +50,10 @@ lines on the *same toolchain*. Directly relevant:
   `ResidualLineMap*.lean`, `TangentPointResidualInfinitesimalCertificate.lean`
   — the tangent-residual construction (see §3, route B).
 - `Biprojective*.lean` — charts, overlaps, Jacobian smoothness criterion,
-  projection dominance for `P² × P¹`. This is exactly the ambient of `Γ`
-  (note (3.2), (5.2)), so WP3 is mostly instantiation.
+  projection dominance for `P² × P¹`. This is exactly the ambient of the
+  incidence surface `Γ` — the blow-up `Y = Bl_Σ ℙ²` of [CLOP §3], realized as
+  `{u f₀ + v f₁ = 0} ⊂ ℙ² × ℙ¹` for the pencils of [CLOP §4.1] and [CLOP §4.2] —
+  so WP3 is mostly instantiation.
 
 That repo has ~57 `sorry`s; anything imported must be checked with
 `#print axioms` before it enters a guarded endpoint.
@@ -63,9 +65,9 @@ That repo has ~57 `sorry`s; anything imported must be checked with
 `ROADMAP.md` puts WP4 (weighted projective schemes) upstream of every headline
 theorem. That inverts the risk: constructing `P(1,1,2,3)` as a scheme with
 charts, properness, and a weighted Jacobian criterion is a Mathlib-scale
-project, and until it lands **nothing** in the note is formalized.
+project, and until it lands **nothing** in the paper is formalized.
 
-The note's actual content — the degree-9 map, the invariant computations, the
+The paper's actual content — the degree-9 map, the invariant computations, the
 irreducibility certificates, the Frobenius representation — needs none of it.
 
 **Fix: insert Endpoint A0, a purely field-theoretic statement, upstream of all
@@ -76,15 +78,15 @@ scheme theory.** The ambient weighted projective space is then an
 
 | Rung | Statement | New scheme theory needed | Risk |
 | --- | --- | --- | --- |
-| **L0** | Certificate tier: every polynomial identity, discriminant factorization, and irreducibility claim in §3.2, §4.1, §5.3, Appendix A | none | low |
-| **L0′** | Corollary 4.3 / formula (1.3) as a standalone representation-theoretic theorem | none | low |
+| **L0** | Certificate tier: every polynomial identity, discriminant factorization, and irreducibility certificate behind the smoothness and fibre analysis of [CLOP Lemma 2.2], [CLOP Lemma 4.1] and [CLOP Lemma 4.2] (most of these computations are not displayed in [CLOP]) | none | low |
+| **L0′** | The `gcd(9,n)` base-change rank formula (`ρ = 1, 3, 9`; not in [CLOP]) as a standalone representation-theoretic theorem | none | low |
 | **A0** | For `k ∈ {ℚ, F₅, ℂ(t)}`: an explicit finite separable field extension of degree exactly 9 realizing the parametrization | none | medium |
 | **A1** | A0 + `S` as a smooth proper scheme in `P(1,1,2,3)` | WP4 | high |
 | **A2** | A1 packaged as `UnirationalParametrization` carrying degree 9 | WP2 | medium |
 | **B** | `−K_S` ample, `K_S² = 1` (del Pezzo of degree 1) | invertible sheaves, ampleness, weighted adjunction | high |
 | **C** | `ρ_k(S) = 1` | blow-up, NS, Shioda–Tate, Mordell–Weil | very high |
 
-L0, L0′ and A0 together are the majority of the note's verifiable content and
+L0, L0′ and A0 together are the majority of the paper's verifiable content and
 carry no research risk in the formalization. They ship first.
 
 ---
@@ -94,7 +96,8 @@ carry no research risk in the formalization. They ship first.
 ### Statement shape
 
 For a base field `k` with `char k ≠ 3`, put `K = k(z)`. Let `W : K` be the
-Weierstrass curve of note (3.7) (resp. (5.6)), and let `C/K` be the generic
+Weierstrass curve of [CLOP §4.1] (resp. [CLOP §4.2]) — the equation for `J_η` —
+and let `C/K` be the generic
 member of the cubic pencil. The target is
 
 ```lean
@@ -105,12 +108,14 @@ theorem degree_nine (hk : (3 : k) ≠ 0) :
 ```
 
 with `FunctionField_of_C ≃ₐ[k] RatFunc₂ k` (two variables) supplied separately
-by Lemma 3.1. Exact signatures are fixed in WP-A0 below before dispatch.
+by the rationality of the incidence surface ([CLOP §3], `Y = Bl_Σ ℙ²`). Exact
+signatures are fixed in WP-A0 below before dispatch.
 
 ### Why this is now tractable
 
-Note Lemma 2.1 proves `deg α_λ = 9` abstractly: `Sym³`, `Pic³`, and
-`deg[3] = 3² = 9` for the multiplication-by-3 isogeny. Formalizing `Pic` of a
+[CLOP Lemma 3.4] proves `deg μ_A = n²` abstractly via the relative Abel–Jacobi
+map, specialized in [CLOP Example 3.5] to `Z = ℙ²`, `A = 𝒪(1)`, `n = 3`, so
+`deg = 9`; the argument runs through `Pic` and the multiplication-by-3 isogeny. Formalizing `Pic` of a
 genus-one curve and the degree of an isogeny is out of reach at this stage.
 
 **Replace it with the explicit computation on the `x`-line.** Over any field,
@@ -122,7 +127,8 @@ genus-one curve and the degree of an isogeny is out of reach at this stage.
 so `RatFunc.finrank_eq_max_natDegree` yields `max 9 8 = 9` for the extension
 `K(x) / K(x ∘ [3])` directly. Combined with `[K(W) : K(x)] = 2` on both sides,
 `deg[3] = 9`. Separability is `char ≠ 3` via `Ψ₃ ≠ 0`
-(`natDegree_Ψ₃` needs `(3 : R) ≠ 0`, which is exactly the note's hypothesis).
+(`natDegree_Ψ₃` needs `(3 : R) ≠ 0`, which is exactly the paper's standing
+assumption `char 𝕜 ≠ 2, 3`).
 
 This is the same theorem by a strictly more elementary route, and it lands
 almost entirely inside existing Mathlib.
@@ -130,9 +136,10 @@ almost entirely inside existing Mathlib.
 ### The one genuinely hard node
 
 `C` is a torsor: the generic plane cubic `G_z = 0` has no `K`-rational point, so
-`C ≇ W` over `K`, and the note's Lemma 2.1 is applied to a curve that is only
+`C ≇ W` over `K`, and [CLOP Lemma 3.4] is applied to a curve that is only
 geometrically an elliptic curve. Bridging `K(C)` to `K(W)` is
-Fisher [Fis08, Prop. 2.3] — the note cites it, and it is **not** in Mathlib.
+Fisher [Fis08, Prop. 2.3] — [CLOP Example 2.1] cites it, and it is **not** in
+Mathlib.
 
 Two routes; build **A** first, keep **B** as fallback and as an independent
 cross-check.
@@ -166,43 +173,54 @@ Ordered by dispatch readiness. `⊥` = no upstream dependency.
 ### Tier L0 — certificates (fully parallel, no scheme theory)
 
 Every one of these is a self-contained module over `Polynomial`/`MvPolynomial`.
-The note's own algebra is internally consistent — (3.13), (3.11), (5.7), (5.8),
-and the `ξ = 36x, η = 216y` normalizations in (3.7)/(5.6) all check by hand — so
-these should close by `ring`/`decide` plus the supplied witnesses.
+The algebra is internally consistent — the discriminant factorizations
+`Δ = −u²v²Q₈` and `4A³ + 27B² = 27u²v²Q₊Q₋`, and the `ξ = 36x, η = 216y`
+normalizations turning [CLOP (2.1)] into the `J_η` equations of [CLOP §4.1]
+and [CLOP §4.2], all check by hand — so these should close by `ring`/`decide`
+plus the supplied witnesses.
 
 - **C1 `Cert/Rabin.lean`** `⊥` — Rabin's irreducibility criterion over `ZMod q`
-  (note Appendix A, [LN97 §3.4]). *The only L0 item with real mathematical
+  ([LN97 §3.4]). *The only L0 item with real mathematical
   content*; everything below consumes it. Statement: for monic `f` of degree
   `n`, if `X^(q^n) ≡ X [MOD f]` and `IsCoprime f (X^(q^(n/ℓ)) - X)` for every
   prime `ℓ ∣ n`, then `Irreducible f`. Dispatch this one alone and first.
-- **C2 `Cert/OcticF7.lean`** ← C1 — `f₈` irreducible over `F₇`, using the
-  Bézout pair `A₈, B₈` printed in Appendix A.
+- **C2 `Cert/OcticF7.lean`** ← C1 — `f₈` irreducible over `F₇`, using an
+  explicit Bézout pair `A₈, B₈` (computer-algebra generated; not in [CLOP]).
 - **C3 `Cert/NonicF5.lean`** ← C1 — `R = X⁹ + X⁶ + X − 1` irreducible over `F₅`
-  (witnesses `A_R, B_R` in Appendix A). This is Proposition 4.1's core.
+  (witnesses `A_R, B_R`, likewise computer-algebra generated). This is the core
+  of [CLOP Lemma 4.1].
 - **C4 `Cert/SexticF5.lean`** ← C1 — `d₆ = X⁶ − X⁴ + X³ − X − 1` irreducible
   over `F₅` (witnesses `A₂,B₂,A₃,B₃`).
-- **C5 `Cert/OcticQ.lean`** ← C2 — `q₈` (3.14) irreducible over `ℚ` by Gauss +
-  degree-preserving reduction mod 7.
-- **C6 `Cert/Invariants.lean`** `⊥` — Lemma 3.2 / eq. (3.6) and eq. (5.4)–(5.5):
-  the Hessian normalization (3.3), the identity (3.4), and the resulting
-  `c₄`, `c₆`. Pure `MvPolynomial (Fin 3)` expansion.
-- **C7 `Cert/Discriminant.lean`** `⊥` — (3.10)–(3.14) and (5.7)–(5.8): the
-  factorizations `Δ = −u²v²Q₈` and `4A³ + 27B² = 27u²v²Q₊Q₋`, plus the numeric
-  values (3.15).
-- **C8 `Cert/QuarticDiscriminants.lean`** `⊥` — (5.9)–(5.11): `disc(q₊)`,
-  `disc(q₋)`, `Res(q₊,q₋) = 256` in `ℚ[t]`, and their nonvanishing in `ℂ(t)`.
-- **C9 `Cert/BaseScheme.lean`** ← C3 — Proposition 4.1 and Proposition 5.2:
-  `F₀ = F₁ = 0` forces `Z ≠ 0`, `Y = X³`, and `R(X) = 0` (resp. `X⁹ − X − 2t`);
-  hence the base scheme is `Spec` of a degree-9 field.
-- **C10 `Cert/NineCycle.lean`** `⊥` — Proposition 4.2 and Corollary 4.3 as pure
-  representation theory: the characteristic polynomial of a 9-cycle on the
-  zero-sum subrepresentation of `ℚ⁹` is `(T⁹−1)/(T−1) = Φ₃Φ₉`, and the fixed
-  space of its `n`-th power has dimension `gcd(9,n) − 1`. **This proves formula
-  (1.3) outright**, independently of all geometry.
+- **C5 `Cert/OcticQ.lean`** ← C2 — the discriminant octic `q₈` of the model
+  [CLOP §1, `S_ℚ`] is irreducible over `ℚ` by Gauss + degree-preserving
+  reduction mod 7.
+- **C6 `Cert/Invariants.lean`** `⊥` — the Fisher invariants `c₄`, `c₆` of the
+  two pencils, displayed in [CLOP §4.1] and [CLOP §4.2]: the Hessian
+  normalization `H(g) = −½ det Hess(g)` of [CLOP Example 2.1] and the identity
+  [CLOP (2.2)]. Pure `MvPolynomial (Fin 3)` expansion.
+- **C7 `Cert/Discriminant.lean`** `⊥` — the discriminant factorizations
+  `Δ = −u²v²Q₈` and `4A³ + 27B² = 27u²v²Q₊Q₋` for the models of [CLOP §1], plus
+  the numeric values placing the roots of `Q₈`. None of this is displayed in
+  [CLOP].
+- **C8 `Cert/QuarticDiscriminants.lean`** `⊥` — `disc(q₊)`, `disc(q₋)`,
+  `Res(q₊,q₋) = 256` in `ℚ[t]`, and their nonvanishing in `ℂ(t)` (not in
+  [CLOP]).
+- **C9 `Cert/BaseScheme.lean`** ← C3 — [CLOP Lemma 4.1] and [CLOP Lemma 4.3]:
+  `f₀ = f₁ = 0` forces `z ≠ 0`, `y = x³`, and `x⁹ + x⁶ + x − 1 = 0` (resp.
+  `x⁹ − x − 2t`); hence the base scheme is `Spec` of a degree-9 field.
+- **C10 `Cert/NineCycle.lean`** `⊥` — [CLOP Cor 3.8] and the base-change rank
+  formula as pure representation theory: the characteristic polynomial of a
+  9-cycle on the zero-sum subrepresentation of `ℚ⁹` is `(T⁹−1)/(T−1)` (the
+  polynomial displayed in [CLOP Example 3.10]), which factors as `Φ₃Φ₉`, and the
+  fixed space of its `n`-th power has dimension `gcd(9,n) − 1`. **This proves the
+  `ρ = 1, 3, 9` case split outright** (not stated in [CLOP]), independently of
+  all geometry.
 
 ### Tier A0
 
-- **WP-A0a `FunctionField/PencilRationality.lean`** `⊥` — Lemma 3.1 / §5.1:
+- **WP-A0a `FunctionField/PencilRationality.lean`** `⊥` — rationality of the
+  incidence surface ([CLOP §3], `Y = Bl_Σ ℙ²`) for the pencils of [CLOP §4.1]
+  and [CLOP §4.2]:
   `k(Γ) ≅ k(s₁,s₂)` via `z = −F₀/F₁`, as an explicit `k`-algebra isomorphism of
   fraction fields. No schemes.
 - **WP-A0b `FunctionField/MulThree.lean`** `⊥` — `deg[3] = 9` via `Φ₃`/`ΨSq₃` and
@@ -215,7 +233,8 @@ these should close by `ring`/`decide` plus the supplied witnesses.
   not incidental: `finrank_eq_max_natDegree` is stated about `num`/`denom`, so a common factor
   `d` would give `9 - d.natDegree` rather than `9`. Two tracks, lower-load first:
 
-  - **A0b-cert** (do first) — for the two *explicit* curves (3.7) and (5.6), certify
+  - **A0b-cert** (do first) — for the two *explicit* `J_η` curves of [CLOP §4.1]
+    and [CLOP §4.2], certify
     coprimality by an explicit Bézout identity, CAS-generated and `ring`-checked. Over `ℚ` and
     `F₅` this is ordinary tier-L0 work; over `ℂ(t)` the witnesses carry `t` and live in
     `ℚ(t)[x]`.
@@ -253,7 +272,7 @@ these should close by `ring`/`decide` plus the supplied witnesses.
 ## 5. Conventions
 
 1. **No `sorry`, no `native_decide`** in anything reachable from an endpoint.
-   Certificates are explicit witnesses (the note already supplies the Bézout
+   Certificates are explicit witnesses (computer-algebra generated Bézout
    pairs), checked by `decide`/`ring`/`norm_num`.
 2. Every module that an endpoint depends on gets a neighbouring
    `*AxiomAudit.lean` with `#print axioms`, matching the sibling repo's
@@ -307,9 +326,10 @@ A task brief must contain:
 2. **The exact `theorem`/`def` signatures to be proved, written out in full.**
    The subagent may add private lemmas; it may not alter a given signature.
 3. The permitted import list.
-4. The note section / equation numbers being formalized, with the relevant
-   text quoted inline from `docs/note.txt`.
-5. Any witnesses (Bézout pairs, coefficient lists) transcribed from the note.
+4. The [CLOP] section / equation numbers being formalized, with the relevant
+   text quoted inline.
+5. Any witnesses (Bézout pairs, coefficient lists), transcribed or
+   computer-algebra generated.
 6. Definition of done, checked by the orchestrator not the subagent:
    `lake build` clean, plus `#print axioms` showing only `propext`,
    `Classical.choice`, `Quot.sound`.
@@ -336,6 +356,7 @@ identities over `ZMod 5` / `ZMod 7` at degree 8–9 — parameterizes the C2/C3/
 3. **WP4 scope.** A general `P(w₀,…,w_n)` is reusable and Mathlib-worthy; a
    bespoke `P(1,1,2,3)` glued from four explicit charts is perhaps a third of
    the work and sufficient here.
-4. **Tate's algorithm.** The note invokes it for the type-II / type-I₁
-   classification, but only geometric irreducibility of the singular fibres is
-   used downstream. Confirm we may state the weaker fact directly.
+4. **Tate's algorithm.** Classifying the singular fibres as type II / type I₁
+   needs it, but only geometric irreducibility of the singular fibres is used
+   downstream — which is exactly what [CLOP Lemma 2.2] and the proof of
+   [CLOP Lemma 4.1] turn on. Confirm we may state the weaker fact directly.

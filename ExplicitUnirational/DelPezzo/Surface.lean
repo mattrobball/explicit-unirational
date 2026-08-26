@@ -15,15 +15,18 @@ public import Mathlib.Tactic.Ring
 /-!
 # The arithmetic surface `S_ℚ` as a closed subscheme of `ℙ(1,1,2,3)`
 
-Note Theorem 1.1 (first clause) / equations (1.1) and (3.9).
+[CLOP Thm 1.4] and the model `S_ℚ` of [CLOP §1], together with its integral long Weierstrass
+form (equal to `[CLOP §1, S_ℚ]` over `ℤ[1/2]` after completing the square; not displayed in
+[CLOP]).
 
 ## Deliverables
 
-1. `surfaceEquation` — LHS of (1.1), weighted-homogeneous of degree 6.
+1. `surfaceEquation` — LHS of the equation for `S_ℚ` in [CLOP §1], weighted-homogeneous of
+   degree 6.
 2. `S_Q` — closed subscheme via `weightedHypersurface`.
 3. The coordinate ideals of the ambient singular points `[0:0:1:0]` and `[0:0:0:1]` do
    not contain `surfaceEquation` (so those points cannot lie on `S_Q`).
-4. Completing the square in cleared-denominator form (note (3.12)): integer identity relating
+4. Completing the square in cleared-denominator form (not in [CLOP]): integer identity relating
    the short and long Weierstrass models.
 
 ## Smoothness (deferred)
@@ -33,7 +36,8 @@ hypersurfaces in weighted `Proj`**, and no `Proj(A/⟨f⟩)` (missing graded-quo
 see `WeightedProjective/Integrality`). Full `Smooth (S_Q ⟶ Spec ℚ)` is deferred. Packaging the
 two ambient singular points as `ProjectiveSpectrum` elements (which needs a primeness proof for
 the coordinate spans equal to kernels of evaluations) is also deferred; the ideal-level
-non-membership below is exactly the vanishing check the note uses.
+non-membership below is exactly the vanishing check used in the smoothness argument for `S_ℚ`
+([CLOP Lemma 2.2] with [CLOP Lemma 4.1]).
 -/
 
 @[expose] public section
@@ -52,24 +56,29 @@ namespace DelPezzo
 
 /-! ## Polynomials: `(u,v,x,y) = (X 0, X 1, X 2, X 3)` -/
 
-/-- The bihomogeneous quartic `P₄(u,v)` of note (3.10), in four variables. -/
+/-- The bihomogeneous quartic `P₄(u,v)` — the quartic factor of `a₆` in [CLOP §1, S_ℚ] — in
+four variables. -/
 public def P4_uv : MvPolynomial (Fin 4) ℚ :=
   4 * (X 1) ^ 4 - 23 * X 0 * (X 1) ^ 3 - 18 * (X 0) ^ 2 * (X 1) ^ 2
     + (X 0) ^ 3 * X 1 - 4 * (X 0) ^ 4
 
-/-- Weierstrass coefficient `A = u v² (3u − v)` of note (3.12). -/
+/-- Weierstrass coefficient `A = u v² (3u − v)`, the `a₄` of [CLOP §1, S_ℚ] (cf.
+[CLOP (2.3)]). -/
 public def A_poly : MvPolynomial (Fin 4) ℚ :=
   X 0 * (X 1) ^ 2 * (3 * X 0 - X 1)
 
-/-- Weierstrass coefficient `B = (1/4) u v P₄` of note (3.12). -/
+/-- Weierstrass coefficient `B = (1/4) u v P₄`, the `a₆` of [CLOP §1, S_ℚ] (cf.
+[CLOP (2.3)]). -/
 public def B_poly : MvPolynomial (Fin 4) ℚ :=
   C (1 / 4 : ℚ) * X 0 * X 1 * P4_uv
 
-/-- Defining equation of `S_ℚ` (note (1.1)): `y² − x³ − A x − B`. -/
+/-- Defining equation of `S_ℚ` ([CLOP §1, S_ℚ]): `y² − x³ − A x − B`. -/
 public def surfaceEquation : MvPolynomial (Fin 4) ℚ :=
   (X 3) ^ 2 - (X 2) ^ 3 - A_poly * X 2 - B_poly
 
-/-- Integral long Weierstrass equation of note (3.9). -/
+/-- Integral long Weierstrass equation
+`y² + uv(v−u)y = x³ + uv²(3u−v)x + uv(v⁴−6uv³−4u²v²−u⁴)`, equal to `[CLOP §1, S_ℚ]` over
+`ℤ[1/2]` after completing the square (not displayed in [CLOP]). -/
 public def surfaceEquationLong : MvPolynomial (Fin 4) ℚ :=
   (X 3) ^ 2 + X 0 * X 1 * (X 1 - X 0) * X 3 - (X 2) ^ 3 - A_poly * X 2
     - X 0 * X 1 * ((X 1) ^ 4 - 6 * X 0 * (X 1) ^ 3 - 4 * (X 0) ^ 2 * (X 1) ^ 2 - (X 0) ^ 4)
@@ -178,7 +187,7 @@ public theorem isWeightedHomogeneous_surfaceEquation :
     simpa using isWeightedHomogeneous_A_poly.mul whX2
   exact whSub (whSub (whSub hy2 hx3) hAx) isWeightedHomogeneous_B_poly
 
-/-- Long form (3.9) is weighted-homogeneous of degree 6.
+/-- The integral long Weierstrass form is weighted-homogeneous of degree 6.
 
 Proved by transporting the short-form result along the cleared completing-the-square identity
 is not available without inverting 4 in the graded sense; we instead assemble termwise. -/
@@ -234,13 +243,13 @@ public theorem isWeightedHomogeneous_surfaceEquationLong :
 
 end WeightedHomogeneous
 
-/-! ## Completing the square (note (3.12))
+/-! ## Completing the square (not in [CLOP])
 
 The short form involves the rational scalar `1/4`. Clearing denominators yields an
 equivalent integer-coefficient identity, which closes by `ring`.
 -/
 
-/-- Cleared-denominator form of note (3.12): with `s = u v (v − u)`,
+/-- Cleared-denominator form of the completion of the square: with `s = u v (v − u)`,
 `(2y + s)² − 4 x³ − 4 A x − u v P₄ = 4 · (long form)`. -/
 public theorem completing_the_square_cleared :
     let s : MvPolynomial (Fin 4) ℚ := X 0 * X 1 * (X 1 - X 0)
@@ -252,7 +261,7 @@ public theorem completing_the_square_cleared :
 
 /-! ## The scheme `S_ℚ` -/
 
-/-- The arithmetic surface `S_ℚ` of note (1.1). -/
+/-- The arithmetic surface `S_ℚ` of [CLOP §1]. -/
 public abbrev S_Q : Scheme :=
   weightedHypersurface (R := ℚ) surfaceEquation
 
@@ -277,7 +286,8 @@ public theorem mem_delPezzoGraded_surfaceEquation :
 /-! ## Ambient singular points: defining equation does not vanish
 
 The singular locus of `ℙ(1,1,2,3)` is the pair of coordinate points `[0:0:1:0]` and
-`[0:0:0:1]` (note Prop. 3.3). Their homogeneous ideals are `(u,v,y)` and `(u,v,x)`.
+`[0:0:0:1]`; this check is a step in the smoothness argument for `S_ℚ` ([CLOP Lemma 2.2] with
+[CLOP Lemma 4.1]). Their homogeneous ideals are `(u,v,y)` and `(u,v,x)`.
 Evaluating the defining equation along the complementary free coordinate shows it does not
 lie in either ideal, so neither point lies on the hypersurface zero locus.
 -/
@@ -362,7 +372,8 @@ public theorem surfaceEquation_not_mem_ambientSingularIdeal_y :
   rw [aeval_keep_3_surfaceEquation] at heval
   exact pow_ne_zero 2 Polynomial.X_ne_zero heval
 
-/-- Note Prop. 3.3 (ideal form): the equation does not vanish at the ambient singular ideals,
+/-- Smoothness step of [CLOP Lemma 2.2] (ideal form): the equation does not vanish at the
+ambient singular ideals,
 so those points cannot lie on the hypersurface zero locus. -/
 public theorem ambientSingularIdeals_avoid_surfaceEquation :
     surfaceEquation ∉ ambientSingularIdeal_x ∧

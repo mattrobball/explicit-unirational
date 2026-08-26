@@ -21,7 +21,7 @@ public import Mathlib.FieldTheory.RatFunc.Basic
 
     ℚ[ξ, η, z] / (4η² − 4ξ³ − 4z²(3−z)ξ − z·P(z))
 
-of the note's Weierstrass model (3.7) into the plane function field
+of the Weierstrass model of [CLOP §4.1] (the equation for `J_η`) into the plane function field
 `ℚ(x, y) = Frac ℚ[x, y]`, sending
 
     z ↦ ζ = −f₀aff/f₁aff,    ξ ↦ Θ/H²,    η ↦ J/(2H³).
@@ -49,12 +49,12 @@ over `MvPolynomial (Fin 3) ℚ`; no explicit `z`-expansion of the covariants `Θ
 
 ## What is *not* proved here
 
-* Nothing about the **degree** of the map: the note's `deg α_λ = 9` is not used and
-  not reproved.  Only nonconstancy (dominance) is established.
+* Nothing about the **degree** of the map: the value `deg α_λ = 9` of [CLOP Example 3.5]
+  is not used and not reproved.  Only nonconstancy (dominance) is established.
 * Nothing about the **weighted hypersurface** `S_Q ⊂ P(1,1,2,3)` of
   `DelPezzo/Surface.lean`.  Identifying `K(S)` with the function field of `S_Q` is a
   separate birationality statement between the two models, and it is *not* formalized.
-  The statements here are about the affine Weierstrass model (3.7) only.
+  The statements here are about the affine Weierstrass model of [CLOP §4.1] only.
 * No scheme-theoretic notion of unirationality, and no statement over any base field
   other than `ℚ`.
 -/
@@ -704,10 +704,11 @@ public theorem surfaceToPlane_eq_zero_iff {p : MvPolynomial (Fin 3) ℚ} :
     obtain ⟨c, rfl⟩ := h
     rw [map_mul, surfaceToPlane_vanishes, zero_mul]
 
-/-- **Unirationality of the note's Weierstrass surface, field-theoretic form.**
+/-- **Unirationality of the Weierstrass surface of [CLOP §4.1], field-theoretic form.**
 
 The `ℚ`-algebra homomorphism from the affine coordinate ring of the Weierstrass
-model (3.7) to the rational function field `ℚ(x, y)` in two variables is *injective*.
+model of [CLOP §4.1] (the equation for `J_η`) to the rational function field `ℚ(x, y)`
+in two variables is *injective*.
 Equivalently: it is a field embedding `K(S) ↪ ℚ(x, y)` of the function field of the
 surface into a purely transcendental extension of `ℚ` of the same transcendence
 degree, i.e. the rational map `𝔸² ⤏ S` given by
@@ -717,10 +718,12 @@ degree, i.e. the rational map `𝔸² ⤏ S` given by
 is *dominant*.
 
 What this asserts: the affine coordinate ring `ℚ[ξ, η, z]/(4η² − 4ξ³ − 4z²(3−z)ξ − z·P(z))`
-of the note's model (3.7) embeds into `ℚ(x, y)` by the displayed formulas.
+of the model of [CLOP §4.1] (the equation for `J_η`) embeds into `ℚ(x, y)` by the
+displayed formulas.
 
-What this does *not* assert: nothing about the *degree* of the map (the note's degree
-9 is not used here); nothing about the weighted hypersurface `S_Q ⊂ P(1,1,2,3)` of
+What this does *not* assert: nothing about the *degree* of the map (the paper's degree
+9, [CLOP Thm 1.4], is not used here); nothing about the weighted hypersurface
+`S_Q ⊂ P(1,1,2,3)` of
 `DelPezzo/Surface.lean` — identifying `K(S)` with the function field of `S_Q` is a
 separate birationality statement that is *not* formalized; and no scheme-theoretic
 statement of unirationality. -/
@@ -735,7 +738,8 @@ public theorem surfaceCoordRingToPlane_injective :
 
 /-! ## Step 5: packaging — the function field embedding -/
 
-/-- The affine coordinate ring of the note's Weierstrass model (3.7). -/
+/-- The affine coordinate ring of the Weierstrass model of [CLOP §4.1] (the equation
+for `J_η`). -/
 public abbrev surfaceCoordRing : Type :=
   MvPolynomial (Fin 3) ℚ ⧸ Ideal.span {weierstrassSurfaceAff}
 
@@ -743,7 +747,7 @@ public abbrev surfaceCoordRing : Type :=
 public instance : IsDomain surfaceCoordRing :=
   Function.Injective.isDomain surfaceCoordRingToPlane surfaceCoordRingToPlane_injective
 
-/-- The function field of the note's Weierstrass model (3.7). -/
+/-- The function field of the Weierstrass model of [CLOP §4.1] (the equation for `J_η`). -/
 public abbrev surfaceFunctionField : Type := FractionRing surfaceCoordRing
 
 /-- The induced map on function fields. -/
@@ -757,9 +761,10 @@ public theorem surfaceFunctionFieldToPlane_algebraMap (x : surfaceCoordRing) :
       = surfaceCoordRingToPlane x :=
   IsFractionRing.lift_algebraMap surfaceCoordRingToPlane_injective x
 
-/-- **Unirationality of the note's Weierstrass surface, function-field form.**
+/-- **Unirationality of the Weierstrass surface of [CLOP §4.1], function-field form.**
 
-The function field `K(S)` of the affine Weierstrass model (3.7) embeds into the
+The function field `K(S)` of the affine Weierstrass model of [CLOP §4.1] (the equation
+for `J_η`) embeds into the
 rational function field `ℚ(x, y)` in two variables, by
 
     z ↦ ζ = −f₀aff/f₁aff,   ξ ↦ Θ/H²,   η ↦ J/(2H³)
@@ -768,7 +773,8 @@ rational function field `ℚ(x, y)` in two variables, by
 over `ℚ` of transcendence degree 2, this says exactly that `S` is unirational over `ℚ`
 in the function-field sense: there is a dominant rational map `𝔸² ⤏ S` defined over `ℚ`.
 
-This asserts nothing about the *degree* of that map — the note's value 9 is neither used
+This asserts nothing about the *degree* of that map — the paper's value 9 ([CLOP Thm 1.4])
+is neither used
 nor reproved here — and nothing about the weighted hypersurface `S_Q ⊂ P(1,1,2,3)` of
 `DelPezzo/Surface.lean`: identifying `K(S)` with the function field of `S_Q` is a
 separate birationality statement that is not formalized. -/

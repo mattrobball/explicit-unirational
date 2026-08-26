@@ -21,17 +21,19 @@ public import Mathlib.RingTheory.TensorProduct.Nontrivial
 /-!
 # Torsor descent of the degree-nine map (Route A)
 
-Note Proposition 2.2 produces a degree-9 extension of function fields `k(E) ↪ k(Γ)`. Restricted
-to the pencil base this is an extension of function fields of curves over `K = k(z)`:
+[CLOP Lemma 3.4] with [CLOP Example 3.5] produces a degree-9 extension of function fields
+`k(E) ↪ k(Γ)`. Restricted to the pencil base this is an extension of function fields of curves
+over `K = k(z)`:
 
 ```
   K(C) / K(W)    of degree 9
 ```
 
-where `C` is the generic plane cubic and `W` is its Jacobian (note eq. (3.7)). The obstruction is
-that `C` is a **torsor**: the generic cubic has no `K`-point, so `C ≇ W` over `K` — only over an
-algebraic closure. The note bridges this by quoting Fisher [Fis08, Prop. 2.3], which is not in
-Mathlib.
+where `C` is the generic plane cubic and `W` is its Jacobian (the Weierstrass model of
+[CLOP §4.1], the equation for `J_η`). The obstruction is that `C` is a **torsor**: the generic
+cubic has no `K`-point, so `C ≇ W` over `K` — only over an algebraic closure. The paper bridges
+this by quoting Fisher [Fis08, Prop. 2.3] (the same result is cited in [CLOP Example 2.1]),
+which is not in Mathlib.
 
 ## Route A (this module)
 
@@ -66,13 +68,13 @@ The missing geometric steps, not attempted here:
 
 * **Geometric integrality of the generic cubic** `C/K`: that `K` is algebraically closed in
   `K(C)`, equivalently that `K(C) ⊗[K] K̄` is a field (domain). This is a statement about the
-  plane cubic `G_z = 0` remaining geometrically integral — true by the note's smoothness
-  hypothesis on the generic member, but not yet connected to a Mathlib `IsIntegral` /
-  `GeometricallyIntegral` instance for this explicit pencil.
+  plane cubic `G_z = 0` remaining geometrically integral — true by the smoothness
+  hypothesis on the generic member ([CLOP Lemma 4.1]), but not yet connected to a Mathlib
+  `IsIntegral` / `GeometricallyIntegral` instance for this explicit pencil.
 * **Torsor trivialization over `K̄`:** an identification `K̄(C) ≃ K̄(W)` under which the map
-  becomes `[3]` composed with a translation. That is Fisher [Fis08, Prop. 2.3] / note Lemma 2.1's
-  Picard-scheme argument; Mathlib has neither `Pic` of a genus-one curve nor Fisher's Jacobian
-  formula as a scheme morphism.
+  becomes `[3]` composed with a translation. That is Fisher [Fis08, Prop. 2.3] (cited in
+  [CLOP Example 2.1]) / the Picard-scheme argument of [CLOP Lemma 3.4]; Mathlib has neither
+  `Pic` of a genus-one curve nor Fisher's Jacobian formula as a scheme morphism.
 * **Translation-invariance of degree** for the composite `τ ∘ [3]` as a map of curves (as
   function-field extensions this is automatic once the map is identified with an automorphism
   of the target composed with `[3]`).
@@ -189,8 +191,9 @@ Suppose `L/M` is a finite extension of fields over `K` (think `L = K(C)`, `M = K
 after base change to some `Kp/K` the free module `(M ⊗[K] Kp) ⊗[M] L` has rank 9. Then
 `Module.finrank M L = 9`.
 
-The geometric content that upgrades this to Proposition 2.2 is: choose `Kp = AlgebraicClosure K`,
-verify the tensor is a field (geometric integrality), and identify the extension with the degree-9
+The geometric content that upgrades this to [CLOP Lemma 3.4] / [CLOP Example 3.5] is:
+choose `Kp = AlgebraicClosure K`, verify the tensor is a field (geometric integrality), and
+identify the extension with the degree-9
 extension coming from `mulThreeX` on the Weierstrass model (torsor trivialization + translation). -/
 public theorem finrank_eq_nine_of_baseChange_finrank_nine
     (K M L : Type*) (Kp : Type*) [Field K] [Field M] [Field L]
@@ -209,7 +212,7 @@ public theorem finrank_eq_nine_of_baseChange_finrank_nine_field
     Module.finrank M L = 9 :=
   finrank_eq_nine_of_baseChange_finrank_nine K M L Kp h
 
-/-- Specialization of the arithmetic half to the note's Weierstrass `x`-line over `ℚ(z)`.
+/-- Specialization of the arithmetic half to the Weierstrass `x`-line of [CLOP §4.1] over `ℚ(z)`.
 
 If a finite extension `L` of `KQ⟮mulThreeX noteCurveQ⟯` base-changes to rank 9 along any
 faithful domain `KQ`-algebra (in particular along an algebraic closure), then `L` itself has
@@ -226,7 +229,8 @@ public theorem finrank_eq_nine_of_baseChange_over_mulThreeX
     Module.finrank KQ⟮mulThreeX noteCurveQ⟯ L = 9 :=
   finrank_eq_nine_of_baseChange_finrank_nine KQ KQ⟮mulThreeX noteCurveQ⟯ L Kp h
 
-/-- Unconditional degree 9 for the `x`-line of the note's model (3.7), restated as the target of
+/-- Unconditional degree 9 for the `x`-line of the Weierstrass model of [CLOP §4.1] (the equation
+for `J_η`), restated as the target of
 descent. The base-change lemmas above reduce the torsor problem to matching this number after
 trivialization. -/
 public theorem finrank_mulThreeX_noteCurveQ_eq_nine :

@@ -11,10 +11,11 @@ public import ExplicitUnirational.Cert.OcticF7
 public import ExplicitUnirational.Cert.SexticF5
 
 /-!
-# Axiom audit for the Appendix A certificates
+# Axiom audit for the irreducibility certificates
 
-Each of the three irreducibility claims of note Appendix A must depend only on `propext`,
-`Classical.choice`, and `Quot.sound`. Anything else -- in particular `sorryAx` -- is a defect.
+Each of the three explicit Rabin/Bézout irreducibility claims (computer-algebra generated;
+not in [CLOP]) must depend only on `propext`, `Classical.choice`, and `Quot.sound`.
+Anything else -- in particular `sorryAx` -- is a defect.
 -/
 
 #print axioms ExplicitUnirational.Rabin.irreducible_of_rabin
