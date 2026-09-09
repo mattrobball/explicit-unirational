@@ -16,7 +16,7 @@ rev = "v4.33.1"
 [[require]]
 name = "Macaulean"
 git = "https://github.com/Macaulean/Macaulean.git"
-rev = "f5d48712fe6afba7eefff37d33a079d7a87bfad0"
+rev = "05e592e5c9aec02e26d9b41c6655c8c2b511ed05"
 
 [[lean_lib]]
 name = "ExplicitUnirational"
