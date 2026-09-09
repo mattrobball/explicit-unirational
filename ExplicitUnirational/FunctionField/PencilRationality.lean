@@ -53,9 +53,7 @@ public noncomputable def pencilParameter (f₀ f₁ : MvPolynomial (Fin 2) k) :
 
 /-! ## Helpers: coordinates generate the polynomial image inside the intermediate field -/
 
--- Used by `Dominance`, which no longer imports this file with `import all` (it is a legacy,
--- non-`module` file since it reaches `Macaulean`), so this may not be `private`.
-public theorem isScalarTower_planeField :
+private theorem isScalarTower_planeField :
     IsScalarTower k (MvPolynomial (Fin 2) k) (planeField k) :=
   IsScalarTower.of_algebraMap_eq' rfl
 

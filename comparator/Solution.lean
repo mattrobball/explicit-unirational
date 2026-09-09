@@ -3,9 +3,11 @@ Copyright (c) 2026 Matthew R. Ballard. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Matthew R. Ballard
 -/
+module
 
-import Mathlib
-import ExplicitUnirational.FunctionField.Dominance
+public import Mathlib
+public import ExplicitUnirational.FunctionField.Dominance
+import all ExplicitUnirational.FunctionField.Dominance
 
 /-!
 # Comparator solution: unirationality
@@ -18,7 +20,7 @@ The witness is the map of `ExplicitUnirational.surfaceCoordRingToPlane`, sending
 Abel–Jacobi map of [CLOP Lemma 3.4, Example 3.5] made explicit. Injectivity is `surfaceCoordRingToPlane_injective`.
 -/
 
-section
+@[expose] public section
 
 namespace ExplicitUnirationalChallenge
 

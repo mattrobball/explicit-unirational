@@ -3,13 +3,16 @@ Copyright (c) 2026 Matthew R. Ballard.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Matthew R. Ballard
 -/
+module
 
-import ExplicitUnirational.FunctionField.TowerBProducts
-import ExplicitUnirational.FunctionField.TangentResidual
-import ExplicitUnirational.FunctionField.GeometricIntegrality
-import ExplicitUnirational.FunctionField.MulThreeCert
-import Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Basic
-import Mathlib.RingTheory.AdjoinRoot
+public import ExplicitUnirational.FunctionField.TowerBProducts
+import all ExplicitUnirational.FunctionField.TangentResidual
+public import ExplicitUnirational.FunctionField.GeometricIntegrality
+import all ExplicitUnirational.FunctionField.GeometricIntegrality
+public import ExplicitUnirational.FunctionField.MulThreeCert
+import all ExplicitUnirational.FunctionField.MulThreeCert
+public import Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Basic
+public import Mathlib.RingTheory.AdjoinRoot
 
 /-!
 # The Weierstrass equation holds on the function field of the pencil cubic
@@ -54,29 +57,29 @@ namespace ExplicitUnirational
 /-! ## Coordinates on the affine curve -/
 
 /-- The affine coordinate `x` in the coordinate ring of the pencil cubic. -/
-noncomputable def curveX : affineCoordRing KQ :=
+public noncomputable def curveX : affineCoordRing KQ :=
   AdjoinRoot.of (monicCubicY KQ) Polynomial.X
 
 /-- The affine coordinate `y` (the adjoined root of the monic cubic). -/
-noncomputable def curveY : affineCoordRing KQ :=
+public noncomputable def curveY : affineCoordRing KQ :=
   AdjoinRoot.root (monicCubicY KQ)
 
 /-- The pencil parameter `z` in the coordinate ring. -/
-noncomputable def curveZ : affineCoordRing KQ :=
+public noncomputable def curveZ : affineCoordRing KQ :=
   AdjoinRoot.of (monicCubicY KQ) (Polynomial.C RatFunc.X)
 
 /-- Evaluation of the ambient polynomial ring on the affine curve:
 `X 0 ↦ x`, `X 1 ↦ y`, `X 2 ↦ z`. -/
-noncomputable def toCurve : MvPolynomial (Fin 3) ℚ →ₐ[ℚ] affineCoordRing KQ :=
+public noncomputable def toCurve : MvPolynomial (Fin 3) ℚ →ₐ[ℚ] affineCoordRing KQ :=
   MvPolynomial.aeval ![curveX, curveY, curveZ]
 
-theorem toCurve_X0 : toCurve (X 0) = curveX := by
+public theorem toCurve_X0 : toCurve (X 0) = curveX := by
   simp [toCurve]
 
-theorem toCurve_X1 : toCurve (X 1) = curveY := by
+public theorem toCurve_X1 : toCurve (X 1) = curveY := by
   simp [toCurve]
 
-theorem toCurve_X2 : toCurve (X 2) = curveZ := by
+public theorem toCurve_X2 : toCurve (X 2) = curveZ := by
   simp [toCurve]
 
 /-! ## The defining relation -/
@@ -87,7 +90,7 @@ private theorem z_inv_cancel :
     mul_inv_cancel₀ (RatFunc.X_ne_zero (K := ℚ)), Polynomial.C_1, map_one]
 
 /-- The image of the pencil cubic `gAff` vanishes on the curve. -/
-theorem toCurve_gAff : toCurve gAff = 0 := by
+public theorem toCurve_gAff : toCurve gAff = 0 := by
   -- the monic relation satisfied by `curveY` (quotient index kept opaque;
   -- the explicit argument is definitionally `monicCubicY KQ`)
   have h : curveY ^ 3 + (curveY ^ 2
@@ -179,7 +182,7 @@ private theorem hessP_natDegree_le : hessP.natDegree ≤ 2 := by
 
 /-- The covariant `hessAff` does not vanish on the curve: its image in the
 (integral) affine coordinate ring is nonzero. -/
-theorem toCurve_hessAff_ne_zero : toCurve hessAff ≠ 0 := by
+public theorem toCurve_hessAff_ne_zero : toCurve hessAff ≠ 0 := by
   rw [toCurve_hessAff_eq]
   intro hcon
   rw [AdjoinRoot.mk_eq_zero] at hcon
@@ -195,7 +198,7 @@ theorem toCurve_hessAff_ne_zero : toCurve hessAff ≠ 0 := by
 /-- Pushing the congruence `weierstrass_congruence_mod_gAff` onto the curve:
 in the affine coordinate ring,
 `J² = 4·Θ³ + 4·A·Θ·H⁴ + Bnum·H⁶`. -/
-theorem weierstrass_identity_on_curve :
+public theorem weierstrass_identity_on_curve :
     toCurve jAff ^ 2 = 4 * toCurve thetaAff ^ 3
       + 4 * toCurve weierstrassA * toCurve thetaAff * toCurve hessAff ^ 4
       + toCurve weierstrassBnum * toCurve hessAff ^ 6 := by
@@ -207,16 +210,16 @@ theorem weierstrass_identity_on_curve :
 /-! ## The Weierstrass equation in the function field -/
 
 /-- `ξ = Θ/H²` in the function field of the pencil cubic. -/
-noncomputable def xiOnCurve : curveFieldKQ :=
+public noncomputable def xiOnCurve : curveFieldKQ :=
   algebraMap (affineCoordRing KQ) curveFieldKQ (toCurve thetaAff)
     / algebraMap (affineCoordRing KQ) curveFieldKQ (toCurve hessAff) ^ 2
 
 /-- `η = J/(2·H³)` in the function field of the pencil cubic. -/
-noncomputable def etaOnCurve : curveFieldKQ :=
+public noncomputable def etaOnCurve : curveFieldKQ :=
   algebraMap (affineCoordRing KQ) curveFieldKQ (toCurve jAff)
     / (2 * algebraMap (affineCoordRing KQ) curveFieldKQ (toCurve hessAff) ^ 3)
 
-theorem hess_image_ne_zero :
+public theorem hess_image_ne_zero :
     algebraMap (affineCoordRing KQ) curveFieldKQ (toCurve hessAff) ≠ 0 := by
   rw [Ne, IsFractionRing.to_map_eq_zero_iff]
   exact toCurve_hessAff_ne_zero
@@ -267,7 +270,7 @@ the rationality of the incidence surface ([CLOP §3, `Y = Bl_Σ ℙ²`],
 the function field of the pencil member with a rational function field in the
 plane coordinates), this is the field-embedding form `K(W) ↪ K(C)` of the
 dominant rational map underlying unirationality. -/
-theorem noteCurveQ_equation_xi_eta :
+public theorem noteCurveQ_equation_xi_eta :
     (noteCurveQ.baseChange curveFieldKQ).toAffine.Equation xiOnCurve etaOnCurve := by
   haveI : CharZero curveFieldKQ :=
     Algebra.charZero_of_charZero (R := KQ) (A := curveFieldKQ)

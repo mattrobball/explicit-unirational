@@ -1,37 +1,39 @@
-import ExplicitUnirational.Cert.AxiomAudit
-import ExplicitUnirational.Cert.Discriminant
-import ExplicitUnirational.Cert.Invariants
-import ExplicitUnirational.Cert.NineCycle
-import ExplicitUnirational.Cert.NonicF5
-import ExplicitUnirational.Cert.OcticF7
-import ExplicitUnirational.Cert.OcticQ
-import ExplicitUnirational.Cert.QuarticDiscriminants
-import ExplicitUnirational.Cert.Rabin
-import ExplicitUnirational.Cert.SexticF5
-import ExplicitUnirational.CubicPencil.Incidence
-import ExplicitUnirational.DelPezzo.Surface
-import ExplicitUnirational.Divisors.Bridge
-import ExplicitUnirational.Divisors.ClassGroup
-import ExplicitUnirational.Divisors.NSLattice
-import ExplicitUnirational.Foundation
-import ExplicitUnirational.FunctionField.Dominance
-import ExplicitUnirational.FunctionField.GeometricIntegrality
-import ExplicitUnirational.FunctionField.MonodromyS9
-import ExplicitUnirational.FunctionField.MulThree
-import ExplicitUnirational.FunctionField.MulThreeCert
-import ExplicitUnirational.FunctionField.PencilRationality
-import ExplicitUnirational.FunctionField.ResidualDegree
-import ExplicitUnirational.FunctionField.TangentResidual
-import ExplicitUnirational.FunctionField.TorsorDescent
-import ExplicitUnirational.FunctionField.TowerBProducts
-import ExplicitUnirational.FunctionField.Unirationality
-import ExplicitUnirational.FunctionField.WeierstrassOnCurve
-import ExplicitUnirational.FunctionField.Trivialization
-import ExplicitUnirational.GenericDegree
-import ExplicitUnirational.Weierstrass.Fibres
-import ExplicitUnirational.WeightedProjective.Basic
-import ExplicitUnirational.WeightedProjective.Integrality
-import ExplicitUnirational.WeightedProjective.Jacobian
+module
+
+public import ExplicitUnirational.Cert.AxiomAudit
+public import ExplicitUnirational.Cert.Discriminant
+public import ExplicitUnirational.Cert.Invariants
+public import ExplicitUnirational.Cert.NineCycle
+public import ExplicitUnirational.Cert.NonicF5
+public import ExplicitUnirational.Cert.OcticF7
+public import ExplicitUnirational.Cert.OcticQ
+public import ExplicitUnirational.Cert.QuarticDiscriminants
+public import ExplicitUnirational.Cert.Rabin
+public import ExplicitUnirational.Cert.SexticF5
+public import ExplicitUnirational.CubicPencil.Incidence
+public import ExplicitUnirational.DelPezzo.Surface
+public import ExplicitUnirational.Divisors.Bridge
+public import ExplicitUnirational.Divisors.ClassGroup
+public import ExplicitUnirational.Divisors.NSLattice
+public import ExplicitUnirational.Foundation
+public import ExplicitUnirational.FunctionField.Dominance
+public import ExplicitUnirational.FunctionField.GeometricIntegrality
+public import ExplicitUnirational.FunctionField.MonodromyS9
+public import ExplicitUnirational.FunctionField.MulThree
+public import ExplicitUnirational.FunctionField.MulThreeCert
+public import ExplicitUnirational.FunctionField.PencilRationality
+public import ExplicitUnirational.FunctionField.ResidualDegree
+public import ExplicitUnirational.FunctionField.TangentResidual
+public import ExplicitUnirational.FunctionField.TorsorDescent
+public import ExplicitUnirational.FunctionField.TowerBProducts
+public import ExplicitUnirational.FunctionField.Unirationality
+public import ExplicitUnirational.FunctionField.WeierstrassOnCurve
+public import ExplicitUnirational.FunctionField.Trivialization
+public import ExplicitUnirational.GenericDegree
+public import ExplicitUnirational.Weierstrass.Fibres
+public import ExplicitUnirational.WeightedProjective.Basic
+public import ExplicitUnirational.WeightedProjective.Integrality
+public import ExplicitUnirational.WeightedProjective.Jacobian
 /-!
 # ExplicitUnirational
 Formalization of explicit unirational degree-one del Pezzo surfaces of arithmetic Picard rank one.
