@@ -3,13 +3,11 @@ Copyright (c) 2026 Matthew R. Ballard.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Matthew R. Ballard
 -/
-module
 
-public import ExplicitUnirational.FunctionField.TowerBProducts
-import all ExplicitUnirational.FunctionField.TangentResidual
-public import ExplicitUnirational.FunctionField.PencilRationality
-import all ExplicitUnirational.FunctionField.PencilRationality
-public import Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Basic
+import ExplicitUnirational.FunctionField.TowerBProducts
+import ExplicitUnirational.FunctionField.TangentResidual
+import ExplicitUnirational.FunctionField.PencilRationality
+import Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Basic
 
 /-!
 # Unirationality: the Weierstrass surface acquires a point over `ℚ(x, y)`
@@ -60,7 +58,7 @@ the two models that is not formalized; the theorems here are about the affine
 Weierstrass model of [CLOP §4.1] itself.
 -/
 
-@[expose] public section
+section
 
 set_option maxHeartbeats 1600000
 
@@ -73,49 +71,49 @@ namespace ExplicitUnirational
 /-! ## The affine pencil cubics and the plane function field -/
 
 /-- Dehomogenization of `F₀_rat = YZ² − X³` at `Z = 1`: `f₀ = y − x³`. -/
-public noncomputable def f₀aff : MvPolynomial (Fin 2) ℚ :=
+noncomputable def f₀aff : MvPolynomial (Fin 2) ℚ :=
   X 1 - X 0 ^ 3
 
 /-- Dehomogenization of `F₁_rat = XZ² + Y³ + Y²Z − Z³` at `Z = 1`:
 `f₁ = x + y³ + y² − 1`. -/
-public noncomputable def f₁aff : MvPolynomial (Fin 2) ℚ :=
+noncomputable def f₁aff : MvPolynomial (Fin 2) ℚ :=
   X 0 + X 1 ^ 3 + X 1 ^ 2 - 1
 
 /-- `gAff` is the pencil relation of the affine cubics (the pencil generators of
 [CLOP §4.1] at `Z = 1`). -/
-public theorem pencilRelation_eq_gAff :
+theorem pencilRelation_eq_gAff :
     FunctionField.pencilRelation f₀aff f₁aff = gAff := by
   unfold FunctionField.pencilRelation f₀aff f₁aff gAff
   simp only [map_sub, map_add, map_pow, map_one, rename_X, Fin.castSucc_zero,
     Fin.castSucc_one]
   ring
 
-public theorem f₁aff_ne_zero : f₁aff ≠ 0 := by
+theorem f₁aff_ne_zero : f₁aff ≠ 0 := by
   intro h
   have h1 := congrArg (eval fun _ => (1 : ℚ)) h
   simp [f₁aff] at h1
 
 /-- The plane coordinates and the pencil parameter inside `ℚ(x, y)`. -/
-public noncomputable def planeX : FunctionField.planeField ℚ :=
+noncomputable def planeX : FunctionField.planeField ℚ :=
   algebraMap (MvPolynomial (Fin 2) ℚ) _ (X 0)
 
-public noncomputable def planeY : FunctionField.planeField ℚ :=
+noncomputable def planeY : FunctionField.planeField ℚ :=
   algebraMap (MvPolynomial (Fin 2) ℚ) _ (X 1)
 
 /-- The pencil parameter `ζ = −f₀/f₁` ([CLOP §3, `Y = Bl_Σ ℙ²`]) as a plane rational
 function. -/
-public noncomputable def planeZeta : FunctionField.planeField ℚ :=
+noncomputable def planeZeta : FunctionField.planeField ℚ :=
   FunctionField.pencilParameter f₀aff f₁aff
 
 /-- Evaluation of the ambient ring `ℚ[x, y, z]` into the plane function field:
 `x ↦ x`, `y ↦ y`, `z ↦ ζ`. -/
-public noncomputable def toPlane :
+noncomputable def toPlane :
     MvPolynomial (Fin 3) ℚ →ₐ[ℚ] FunctionField.planeField ℚ :=
   aeval ![planeX, planeY, planeZeta]
 
-public theorem toPlane_X0 : toPlane (X 0) = planeX := by simp [toPlane]
-public theorem toPlane_X1 : toPlane (X 1) = planeY := by simp [toPlane]
-public theorem toPlane_X2 : toPlane (X 2) = planeZeta := by simp [toPlane]
+theorem toPlane_X0 : toPlane (X 0) = planeX := by simp [toPlane]
+theorem toPlane_X1 : toPlane (X 1) = planeY := by simp [toPlane]
+theorem toPlane_X2 : toPlane (X 2) = planeZeta := by simp [toPlane]
 
 /-- On bivariate polynomials (composed with the inclusion of the first two
 variables), `toPlane` is the canonical map to the fraction field. -/
@@ -136,7 +134,7 @@ private theorem toPlane_rename (f : MvPolynomial (Fin 2) ℚ) :
 
 /-- The pencil cubic dies under `toPlane` — rationality of the incidence surface
 ([CLOP §3, `Y = Bl_Σ ℙ²`]) in evaluation form. -/
-public theorem toPlane_gAff : toPlane gAff = 0 := by
+theorem toPlane_gAff : toPlane gAff = 0 := by
   have h31 := (FunctionField.adjoin_pencil_parameter_eq_top f₀aff f₁aff f₁aff_ne_zero).1
   rw [← pencilRelation_eq_gAff]
   unfold FunctionField.pencilRelation
@@ -147,7 +145,7 @@ public theorem toPlane_gAff : toPlane gAff = 0 := by
 
 /-- The cleared Weierstrass identity of [CLOP §4.1] (the equation for `J_η`),
 evaluated in the plane function field along `z ↦ ζ`. -/
-public theorem weierstrass_identity_plane :
+theorem weierstrass_identity_plane :
     toPlane jAff ^ 2 = 4 * toPlane thetaAff ^ 3
       + 4 * toPlane weierstrassA * toPlane thetaAff * toPlane hessAff ^ 4
       + toPlane weierstrassBnum * toPlane hessAff ^ 6 := by
@@ -212,7 +210,7 @@ private theorem hessClear_ne_zero : hessClear ≠ 0 := by
   norm_num at h1
 
 /-- The Hessian covariant does not vanish as a plane rational function. -/
-public theorem toPlane_hessAff_ne_zero : toPlane hessAff ≠ 0 := by
+theorem toPlane_hessAff_ne_zero : toPlane hessAff ≠ 0 := by
   intro hcon
   have hF₁ : algebraMap (MvPolynomial (Fin 2) ℚ) (FunctionField.planeField ℚ) f₁aff ≠ 0 := by
     rw [Ne, IsFractionRing.to_map_eq_zero_iff]
@@ -243,11 +241,11 @@ public theorem toPlane_hessAff_ne_zero : toPlane hessAff ≠ 0 := by
 /-! ## The point of the Weierstrass surface over `ℚ(x, y)` -/
 
 /-- `ξ = Θ/H²` as a plane rational function. -/
-public noncomputable def xiPlane : FunctionField.planeField ℚ :=
+noncomputable def xiPlane : FunctionField.planeField ℚ :=
   toPlane thetaAff / toPlane hessAff ^ 2
 
 /-- `η = J/(2H³)` as a plane rational function. -/
-public noncomputable def etaPlane : FunctionField.planeField ℚ :=
+noncomputable def etaPlane : FunctionField.planeField ℚ :=
   toPlane jAff / (2 * toPlane hessAff ^ 3)
 
 /-- The Weierstrass model of [CLOP §4.1] (the equation for `J_η`) over the plane
@@ -255,7 +253,7 @@ function field, with the
 fibre parameter specialized to the pencil parameter `ζ = −f₀/f₁`.  Its
 coefficients are the defining polynomials of `noteCurveQ` (`a₄ = z²(3 − z)`,
 `a₆ = (z/4)·P(z)`) evaluated at `z = ζ`. -/
-public noncomputable def noteCurvePlane : WeierstrassCurve (FunctionField.planeField ℚ) where
+noncomputable def noteCurvePlane : WeierstrassCurve (FunctionField.planeField ℚ) where
   a₁ := 0
   a₂ := 0
   a₃ := 0
@@ -281,7 +279,7 @@ rational function field `ℚ(x, y)`.  (This is the *point* of the surface over `
 coordinate-ring homomorphism is `surfaceCoordRingToPlane` below.  Its upgrade
 to a field embedding `K(S) ↪ ℚ(x, y)` — dominance — is
 `Dominance.surfaceCoordRingToPlane_injective`.) -/
-public theorem noteCurvePlane_equation :
+theorem noteCurvePlane_equation :
     noteCurvePlane.toAffine.Equation xiPlane etaPlane := by
   haveI : CharZero (FunctionField.planeField ℚ) :=
     Algebra.charZero_of_charZero (R := ℚ) (A := FunctionField.planeField ℚ)
@@ -316,18 +314,18 @@ public theorem noteCurvePlane_equation :
 /-- Affine equation of the elliptic surface of [CLOP §4.1] with denominators
 cleared: `4η² − 4ξ³ − 4z²(3−z)·ξ − z·P(z)`, coordinates `0 ↦ ξ`, `1 ↦ η`,
 `2 ↦ z`. -/
-public noncomputable def weierstrassSurfaceAff : MvPolynomial (Fin 3) ℚ :=
+noncomputable def weierstrassSurfaceAff : MvPolynomial (Fin 3) ℚ :=
   4 * X 1 ^ 2 - 4 * X 0 ^ 3 - 4 * (X 2 ^ 2 * (3 - X 2)) * X 0
     - X 2 * (4 * X 2 ^ 4 - 23 * X 2 ^ 3 - 18 * X 2 ^ 2 + X 2 - 4)
 
 /-- Evaluation of the surface coordinates at the plane point
 `(ξ, η, ζ) ∈ ℚ(x, y)³`. -/
-public noncomputable def surfaceToPlane :
+noncomputable def surfaceToPlane :
     MvPolynomial (Fin 3) ℚ →ₐ[ℚ] FunctionField.planeField ℚ :=
   aeval ![xiPlane, etaPlane, planeZeta]
 
 /-- The surface equation vanishes at the plane point. -/
-public theorem surfaceToPlane_vanishes : surfaceToPlane weierstrassSurfaceAff = 0 := by
+theorem surfaceToPlane_vanishes : surfaceToPlane weierstrassSurfaceAff = 0 := by
   haveI : CharZero (FunctionField.planeField ℚ) :=
     Algebra.charZero_of_charZero (R := ℚ) (A := FunctionField.planeField ℚ)
   have heq := noteCurvePlane_equation
@@ -353,7 +351,7 @@ parameter `z` to the pencil parameter `−f₀/f₁` of
 this map (= dominance of the underlying rational map `𝔸² ⤏ S`, = the field
 embedding `K(S) ↪ ℚ(x, y)`) is proved in
 `ExplicitUnirational.FunctionField.Dominance`. -/
-public noncomputable def surfaceCoordRingToPlane :
+noncomputable def surfaceCoordRingToPlane :
     (MvPolynomial (Fin 3) ℚ ⧸ Ideal.span {weierstrassSurfaceAff})
       →ₐ[ℚ] FunctionField.planeField ℚ :=
   Ideal.Quotient.liftₐ (Ideal.span {weierstrassSurfaceAff}) surfaceToPlane
@@ -368,9 +366,9 @@ public noncomputable def surfaceCoordRingToPlane :
         rw [smul_eq_mul, map_mul, hx, mul_zero])
 
 @[simp]
-public theorem surfaceCoordRingToPlane_mk (p : MvPolynomial (Fin 3) ℚ) :
+theorem surfaceCoordRingToPlane_mk (p : MvPolynomial (Fin 3) ℚ) :
     surfaceCoordRingToPlane (Ideal.Quotient.mk _ p) = surfaceToPlane p := by
-  simp [surfaceCoordRingToPlane]
+  rfl
 
 #print axioms toPlane_gAff
 #print axioms weierstrass_identity_plane

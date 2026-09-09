@@ -3,15 +3,14 @@ Copyright (c) 2026 Matthew R. Ballard.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Matthew R. Ballard
 -/
-module
 
-public import ExplicitUnirational.FunctionField.Unirationality
-import all ExplicitUnirational.FunctionField.TangentResidual
-import all ExplicitUnirational.FunctionField.PencilRationality
-public import Mathlib.RingTheory.AlgebraicIndependent.Defs
-public import Mathlib.RingTheory.IntegralClosure.IntegrallyClosed
-public import Mathlib.RingTheory.Polynomial.UniqueFactorization
-public import Mathlib.FieldTheory.RatFunc.Basic
+import ExplicitUnirational.FunctionField.Unirationality
+import ExplicitUnirational.FunctionField.TangentResidual
+import ExplicitUnirational.FunctionField.PencilRationality
+import Mathlib.RingTheory.AlgebraicIndependent.Defs
+import Mathlib.RingTheory.IntegralClosure.IntegrallyClosed
+import Mathlib.RingTheory.Polynomial.UniqueFactorization
+import Mathlib.FieldTheory.RatFunc.Basic
 
 /-!
 # Dominance of the unirational parametrization
@@ -59,7 +58,7 @@ over `MvPolynomial (Fin 3) ℚ`; no explicit `z`-expansion of the covariants `Θ
   other than `ℚ`.
 -/
 
-@[expose] public section
+section
 
 noncomputable section
 
@@ -74,7 +73,7 @@ instance : IsScalarTower ℚ (MvPolynomial (Fin 2) ℚ) (FunctionField.planeFiel
 
 /-! ## Step 1: the pencil parameter is transcendental over `ℚ` -/
 
-public theorem planeZeta_mul_f₁aff : planeZeta * ι₂ f₁aff = ι₂ (-f₀aff) := by
+theorem planeZeta_mul_f₁aff : planeZeta * ι₂ f₁aff = ι₂ (-f₀aff) := by
   have h : ι₂ f₁aff ≠ 0 := by
     rw [Ne, IsFractionRing.to_map_eq_zero_iff]; exact f₁aff_ne_zero
   show FunctionField.pencilParameter f₀aff f₁aff * _ = _
@@ -82,7 +81,7 @@ public theorem planeZeta_mul_f₁aff : planeZeta * ι₂ f₁aff = ι₂ (-f₀a
   rw [div_mul_cancel₀ _ h, map_neg]
 
 /-- The pencil parameter `ζ = −f₀/f₁` is transcendental over `ℚ`. -/
-public theorem transcendental_planeZeta : Transcendental ℚ planeZeta := by
+theorem transcendental_planeZeta : Transcendental ℚ planeZeta := by
   intro halg
   -- `ζ` is integral over `ℚ`, hence over `ℚ[x, y]`
   have hintQ : IsIntegral ℚ planeZeta := halg.isIntegral
@@ -97,7 +96,7 @@ public theorem transcendental_planeZeta : Transcendental ℚ planeZeta := by
   have h3 := congrArg (eval ![(1 : ℚ), 0]) h2
   simp [f₀aff, f₁aff] at h3
 
-public theorem planeZeta_ne_zero : planeZeta ≠ 0 := by
+theorem planeZeta_ne_zero : planeZeta ≠ 0 := by
   intro h
   have h1 : ι₂ (-f₀aff) = 0 := by rw [← planeZeta_mul_f₁aff, h, zero_mul]
   rw [IsFractionRing.to_map_eq_zero_iff] at h1
@@ -112,39 +111,39 @@ fibre is the "residue" used below; on the generic point of the fibre one has
 `ζ ↦ 0` and `ξ = Θ/H² ↦ 1/(9t²)`, and the latter is transcendental over `ℚ`. -/
 
 /-- Restriction of plane polynomials to the cuspidal fibre: `x ↦ t`, `y ↦ t³`. -/
-public def rhoCurve : MvPolynomial (Fin 2) ℚ →ₐ[ℚ] Polynomial ℚ :=
+def rhoCurve : MvPolynomial (Fin 2) ℚ →ₐ[ℚ] Polynomial ℚ :=
   aeval ![Polynomial.X, Polynomial.X ^ 3]
 
 /-- Evaluation of ambient polynomials at the generic point of the fibre `ζ = 0`:
 `(x, y, z) ↦ (t, t³, 0)`. -/
-public def curveEval : MvPolynomial (Fin 3) ℚ →ₐ[ℚ] Polynomial ℚ :=
+def curveEval : MvPolynomial (Fin 3) ℚ →ₐ[ℚ] Polynomial ℚ :=
   aeval ![Polynomial.X, Polynomial.X ^ 3, 0]
 
-@[simp] public theorem rhoCurve_X0 : rhoCurve (X 0) = Polynomial.X := by simp [rhoCurve]
-@[simp] public theorem rhoCurve_X1 : rhoCurve (X 1) = Polynomial.X ^ 3 := by simp [rhoCurve]
-@[simp] public theorem curveEval_X0 : curveEval (X 0) = Polynomial.X := by simp [curveEval]
-@[simp] public theorem curveEval_X1 : curveEval (X 1) = Polynomial.X ^ 3 := by simp [curveEval]
-@[simp] public theorem curveEval_X2 : curveEval (X 2) = 0 := by simp [curveEval]
+@[simp] theorem rhoCurve_X0 : rhoCurve (X 0) = Polynomial.X := by simp [rhoCurve]
+@[simp] theorem rhoCurve_X1 : rhoCurve (X 1) = Polynomial.X ^ 3 := by simp [rhoCurve]
+@[simp] theorem curveEval_X0 : curveEval (X 0) = Polynomial.X := by simp [curveEval]
+@[simp] theorem curveEval_X1 : curveEval (X 1) = Polynomial.X ^ 3 := by simp [curveEval]
+@[simp] theorem curveEval_X2 : curveEval (X 2) = 0 := by simp [curveEval]
 
-public theorem rhoCurve_f₀aff : rhoCurve f₀aff = 0 := by
+theorem rhoCurve_f₀aff : rhoCurve f₀aff = 0 := by
   simp [f₀aff]
 
-public theorem rhoCurve_f₁aff :
+theorem rhoCurve_f₁aff :
     rhoCurve f₁aff = Polynomial.X ^ 9 + Polynomial.X ^ 6 + Polynomial.X - 1 := by
   simp [f₁aff]; ring
 
-public theorem rhoCurve_f₁aff_ne_zero : rhoCurve f₁aff ≠ 0 := by
+theorem rhoCurve_f₁aff_ne_zero : rhoCurve f₁aff ≠ 0 := by
   intro h
   have h0 : Polynomial.eval 0 (rhoCurve f₁aff) = 0 := by rw [h]; simp
   rw [rhoCurve_f₁aff] at h0
   simp at h0
 
 /-- The Hessian covariant restricted to the fibre `ζ = 0`: `H(t, t³, 0) = 3t`. -/
-public theorem curveEval_hessAff : curveEval hessAff = 3 * Polynomial.X := by
+theorem curveEval_hessAff : curveEval hessAff = 3 * Polynomial.X := by
   simp [hessAff, map_ofNat]
 
 /-- The covariant `Θ` restricted to the fibre `ζ = 0`: `Θ(t, t³, 0) = 1`. -/
-public theorem curveEval_thetaAff : curveEval thetaAff = 1 := by
+theorem curveEval_thetaAff : curveEval thetaAff = 1 := by
   simp [thetaAff, map_ofNat]
 
 /-! ### Clearing denominators along `z ↦ ζ`
@@ -154,7 +153,7 @@ after multiplying by a power of `f₁`, and the same power of `rhoCurve f₁aff`
 the residue of `toPlane p` to `curveEval p`.  This is proved by induction on `p`, so no
 explicit `z`-expansion of the covariants is needed. -/
 
-public theorem exists_clear (p : MvPolynomial (Fin 3) ℚ) :
+theorem exists_clear (p : MvPolynomial (Fin 3) ℚ) :
     ∃ (n : ℕ) (r : MvPolynomial (Fin 2) ℚ),
       toPlane p * ι₂ f₁aff ^ n = ι₂ r ∧
       curveEval p * rhoCurve f₁aff ^ n = rhoCurve r := by
@@ -187,7 +186,7 @@ public theorem exists_clear (p : MvPolynomial (Fin 3) ℚ) :
 
 /-- If a plane rational function built from `x`, `y`, `ζ` vanishes, so does its
 restriction to the fibre `ζ = 0`. -/
-public theorem curveEval_eq_zero_of_toPlane_eq_zero {p : MvPolynomial (Fin 3) ℚ}
+theorem curveEval_eq_zero_of_toPlane_eq_zero {p : MvPolynomial (Fin 3) ℚ}
     (h : toPlane p = 0) : curveEval p = 0 := by
   obtain ⟨n, r, h1, h2⟩ := exists_clear p
   rw [h, zero_mul] at h1
@@ -207,14 +206,14 @@ over `ℚ`. -/
 local notation "rc" => algebraMap (Polynomial ℚ) (RatFunc ℚ)
 
 /-- The value of `ξ` at the generic point of the fibre `ζ = 0`, namely `1/(9t²)`. -/
-public def residueXi : RatFunc ℚ := (rc ((9 : Polynomial ℚ) * Polynomial.X ^ 2))⁻¹
+def residueXi : RatFunc ℚ := (rc ((9 : Polynomial ℚ) * Polynomial.X ^ 2))⁻¹
 
-public theorem nine_X_sq_ne_zero : ((9 : Polynomial ℚ) * Polynomial.X ^ 2) ≠ 0 := by
+theorem nine_X_sq_ne_zero : ((9 : Polynomial ℚ) * Polynomial.X ^ 2) ≠ 0 := by
   intro h
   have := congrArg (Polynomial.coeff · 2) h
   simp at this
 
-public theorem transcendental_residueXi : Transcendental ℚ residueXi := by
+theorem transcendental_residueXi : Transcendental ℚ residueXi := by
   have hinj : Function.Injective (algebraMap (Polynomial ℚ) (RatFunc ℚ)) :=
     IsFractionRing.injective _ _
   have h9 : (9 : ℚ) ≠ 0 := by norm_num
@@ -236,7 +235,7 @@ public theorem transcendental_residueXi : Transcendental ℚ residueXi := by
 
 /-- `ξ` is the quotient of two plane polynomials whose residues on the cuspidal fibre
 are nonzero, with quotient `1/(9t²)`. -/
-public theorem exists_xi_rep :
+theorem exists_xi_rep :
     ∃ a b : MvPolynomial (Fin 2) ℚ,
       xiPlane * ι₂ b = ι₂ a ∧ rhoCurve a ≠ 0 ∧
         rhoCurve b = (9 : Polynomial ℚ) * Polynomial.X ^ 2 * rhoCurve a := by
@@ -258,7 +257,7 @@ public theorem exists_xi_rep :
 
 /-! ### Clearing denominators for a two-variable relation -/
 
-public theorem exists_clear_pair (a b : MvPolynomial (Fin 2) ℚ)
+theorem exists_clear_pair (a b : MvPolynomial (Fin 2) ℚ)
     (hab : xiPlane * ι₂ b = ι₂ a)
     (hres : residueXi * rc (rhoCurve b) = rc (rhoCurve a))
     (P : MvPolynomial (Fin 2) ℚ) :
@@ -297,7 +296,7 @@ public theorem exists_clear_pair (a b : MvPolynomial (Fin 2) ℚ)
         · simp only [map_mul, aeval_X, Matrix.cons_val_one, Matrix.cons_val_zero]
           rw [← h2, ← hres]; ring
 
-public theorem residue_eq_zero {a b : MvPolynomial (Fin 2) ℚ}
+theorem residue_eq_zero {a b : MvPolynomial (Fin 2) ℚ}
     (hab : xiPlane * ι₂ b = ι₂ a)
     (hres : residueXi * rc (rhoCurve b) = rc (rhoCurve a))
     (hb : rhoCurve b ≠ 0)
@@ -322,10 +321,10 @@ public theorem residue_eq_zero {a b : MvPolynomial (Fin 2) ℚ}
 /-! ### From the residue relation to divisibility by `X 0` -/
 
 /-- Setting the first variable to zero. -/
-public def projX0 : MvPolynomial (Fin 2) ℚ →ₐ[ℚ] Polynomial ℚ :=
+def projX0 : MvPolynomial (Fin 2) ℚ →ₐ[ℚ] Polynomial ℚ :=
   aeval ![0, Polynomial.X]
 
-public theorem aeval_residue_eq (P : MvPolynomial (Fin 2) ℚ) :
+theorem aeval_residue_eq (P : MvPolynomial (Fin 2) ℚ) :
     aeval ![(0 : RatFunc ℚ), residueXi] P = Polynomial.aeval residueXi (projX0 P) := by
   have hcomp : (Polynomial.aeval (R := ℚ) residueXi).comp projX0
       = aeval ![(0 : RatFunc ℚ), residueXi] := by
@@ -335,7 +334,7 @@ public theorem aeval_residue_eq (P : MvPolynomial (Fin 2) ℚ) :
     rcases hi with rfl | rfl <;> simp [projX0]
   rw [← hcomp]; rfl
 
-public theorem X0_dvd_sub_emb (P : MvPolynomial (Fin 2) ℚ) :
+theorem X0_dvd_sub_emb (P : MvPolynomial (Fin 2) ℚ) :
     (X 0 : MvPolynomial (Fin 2) ℚ) ∣
       P - Polynomial.aeval (X 1 : MvPolynomial (Fin 2) ℚ) (projX0 P) := by
   induction P using MvPolynomial.induction_on with
@@ -357,7 +356,7 @@ public theorem X0_dvd_sub_emb (P : MvPolynomial (Fin 2) ℚ) :
         have hz : projX0 (p * X 1) = projX0 p * Polynomial.X := by simp [projX0]
         rw [hz, map_mul, Polynomial.aeval_X, ← sub_mul, hc]; ring
 
-public theorem X0_dvd_of_residue {P : MvPolynomial (Fin 2) ℚ}
+theorem X0_dvd_of_residue {P : MvPolynomial (Fin 2) ℚ}
     (h : aeval ![(0 : RatFunc ℚ), residueXi] P = 0) : (X 0 : MvPolynomial (Fin 2) ℚ) ∣ P := by
   rw [aeval_residue_eq] at h
   have hp0 : projX0 P = 0 := by
@@ -371,7 +370,7 @@ public theorem X0_dvd_of_residue {P : MvPolynomial (Fin 2) ℚ}
 
 /-- **The two coordinates `ζ` and `ξ` are algebraically independent over `ℚ`.**
 Equivalently, the rational map `𝔸² ⤏ 𝔸²`, `(x, y) ↦ (ζ, ξ)`, is dominant. -/
-public theorem algebraicIndependent_planeZeta_xiPlane :
+theorem algebraicIndependent_planeZeta_xiPlane :
     AlgebraicIndependent ℚ ![planeZeta, xiPlane] := by
   obtain ⟨a, b, hab, hane, hres0⟩ := exists_xi_rep
   have hb : rhoCurve b ≠ 0 := by
@@ -430,19 +429,19 @@ the Weierstrass equation turns it into a *polynomial* identity in `ℚ[ξ, z]`, 
 argument in `ξ` finishes. -/
 
 /-- The `(ξ, z)`-coordinates inside the ambient `(ξ, η, z)`: `X 0 ↦ X 0`, `X 1 ↦ X 2`. -/
-public def injXiZ : MvPolynomial (Fin 2) ℚ →ₐ[ℚ] MvPolynomial (Fin 3) ℚ :=
+def injXiZ : MvPolynomial (Fin 2) ℚ →ₐ[ℚ] MvPolynomial (Fin 3) ℚ :=
   aeval ![X 0, X 2]
 
-@[simp] public theorem injXiZ_X0 : injXiZ (X 0) = X 0 := by simp [injXiZ]
-@[simp] public theorem injXiZ_X1 : injXiZ (X 1) = X 2 := by simp [injXiZ]
+@[simp] theorem injXiZ_X0 : injXiZ (X 0) = X 0 := by simp [injXiZ]
+@[simp] theorem injXiZ_X1 : injXiZ (X 1) = X 2 := by simp [injXiZ]
 
 /-- The `η`-free part of the affine Weierstrass surface polynomial, in the
 coordinates `X 0 = ξ`, `X 1 = z`. -/
-public def surfaceTail : MvPolynomial (Fin 2) ℚ :=
+def surfaceTail : MvPolynomial (Fin 2) ℚ :=
   -(4 * (X 0) ^ 3) - 4 * ((X 1) ^ 2 * (3 - X 1)) * (X 0)
     - (X 1) * (4 * (X 1) ^ 4 - 23 * (X 1) ^ 3 - 18 * (X 1) ^ 2 + (X 1) - 4)
 
-public theorem weierstrassSurfaceAff_eq_add :
+theorem weierstrassSurfaceAff_eq_add :
     weierstrassSurfaceAff = 4 * (X 1 : MvPolynomial (Fin 3) ℚ) ^ 2 + injXiZ surfaceTail := by
   simp only [weierstrassSurfaceAff, surfaceTail, injXiZ, map_sub, map_neg, map_add, map_mul,
     map_pow, map_ofNat, aeval_X, Matrix.cons_val_zero, Matrix.cons_val_one]
@@ -450,7 +449,7 @@ public theorem weierstrassSurfaceAff_eq_add :
 
 /-- Division with remainder by the surface polynomial in the variable `η`.
 The power of `4` keeps everything integral. -/
-public theorem exists_eta_division (p : MvPolynomial (Fin 3) ℚ) :
+theorem exists_eta_division (p : MvPolynomial (Fin 3) ℚ) :
     ∃ (n : ℕ) (q : MvPolynomial (Fin 3) ℚ) (a b : MvPolynomial (Fin 2) ℚ),
       4 ^ n * p = q * weierstrassSurfaceAff + injXiZ a * X 1 + injXiZ b := by
   induction p using MvPolynomial.induction_on with
@@ -488,7 +487,7 @@ public theorem exists_eta_division (p : MvPolynomial (Fin 3) ℚ) :
 
 /-! ### Independence in the order `(ξ, z)` -/
 
-public theorem injective_aeval_xi_zeta :
+theorem injective_aeval_xi_zeta :
     Function.Injective (aeval ![xiPlane, planeZeta] :
       MvPolynomial (Fin 2) ℚ →ₐ[ℚ] FunctionField.planeField ℚ) := by
   have hswap : Function.Injective
@@ -510,7 +509,7 @@ public theorem injective_aeval_xi_zeta :
   rw [hcomp, hcomp] at hPQ
   exact hswap (algebraicIndependent_planeZeta_xiPlane hPQ)
 
-public theorem surfaceToPlane_injXiZ (a : MvPolynomial (Fin 2) ℚ) :
+theorem surfaceToPlane_injXiZ (a : MvPolynomial (Fin 2) ℚ) :
     surfaceToPlane (injXiZ a) = aeval ![xiPlane, planeZeta] a := by
   have hc : surfaceToPlane.comp injXiZ = aeval ![xiPlane, planeZeta] := by
     apply MvPolynomial.algHom_ext
@@ -520,7 +519,7 @@ public theorem surfaceToPlane_injXiZ (a : MvPolynomial (Fin 2) ℚ) :
   rw [← hc]; rfl
 
 /-- The Weierstrass relation in the form used below. -/
-public theorem four_etaPlane_sq :
+theorem four_etaPlane_sq :
     4 * etaPlane ^ 2 + aeval ![xiPlane, planeZeta] surfaceTail = 0 := by
   have h := surfaceToPlane_vanishes
   rw [weierstrassSurfaceAff_eq_add, map_add, map_mul, map_pow, map_ofNat,
@@ -532,13 +531,13 @@ public theorem four_etaPlane_sq :
 /-! ### Setting `z = 0` in the `(ξ, z)`-plane -/
 
 /-- Setting the second variable (`z`) to zero. -/
-public def projX1 : MvPolynomial (Fin 2) ℚ →ₐ[ℚ] Polynomial ℚ :=
+def projX1 : MvPolynomial (Fin 2) ℚ →ₐ[ℚ] Polynomial ℚ :=
   aeval ![Polynomial.X, 0]
 
-public theorem projX1_surfaceTail : projX1 surfaceTail = -(4 * Polynomial.X ^ 3) := by
+theorem projX1_surfaceTail : projX1 surfaceTail = -(4 * Polynomial.X ^ 3) := by
   simp [projX1, surfaceTail, map_ofNat]
 
-public theorem X1_dvd_sub_emb (P : MvPolynomial (Fin 2) ℚ) :
+theorem X1_dvd_sub_emb (P : MvPolynomial (Fin 2) ℚ) :
     (X 1 : MvPolynomial (Fin 2) ℚ) ∣
       P - Polynomial.aeval (X 0 : MvPolynomial (Fin 2) ℚ) (projX1 P) := by
   induction P using MvPolynomial.induction_on with
@@ -560,7 +559,7 @@ public theorem X1_dvd_sub_emb (P : MvPolynomial (Fin 2) ℚ) :
         have hz : projX1 (p * X 1) = 0 := by simp [projX1]
         rw [hz, map_zero, sub_zero]; ring
 
-public theorem X1_dvd_of_projX1_eq_zero {P : MvPolynomial (Fin 2) ℚ} (h : projX1 P = 0) :
+theorem X1_dvd_of_projX1_eq_zero {P : MvPolynomial (Fin 2) ℚ} (h : projX1 P = 0) :
     (X 1 : MvPolynomial (Fin 2) ℚ) ∣ P := by
   have hd := X1_dvd_sub_emb P
   rwa [h, map_zero, sub_zero] at hd
@@ -671,7 +670,7 @@ private theorem eta_relation_eq_zero : ∀ (N : ℕ) (a b : MvPolynomial (Fin 2)
         exact hab ⟨by rw [ha', ha0, mul_zero], by rw [hb', hb0, mul_zero]⟩
 
 /-- **The kernel of the evaluation is exactly the surface ideal.** -/
-public theorem surfaceToPlane_eq_zero_iff {p : MvPolynomial (Fin 3) ℚ} :
+theorem surfaceToPlane_eq_zero_iff {p : MvPolynomial (Fin 3) ℚ} :
     surfaceToPlane p = 0 ↔ p ∈ Ideal.span {weierstrassSurfaceAff} := by
   constructor
   · intro h
@@ -727,7 +726,7 @@ What this does *not* assert: nothing about the *degree* of the map (the paper's 
 `DelPezzo/Surface.lean` — identifying `K(S)` with the function field of `S_Q` is a
 separate birationality statement that is *not* formalized; and no scheme-theoretic
 statement of unirationality. -/
-public theorem surfaceCoordRingToPlane_injective :
+theorem surfaceCoordRingToPlane_injective :
     Function.Injective surfaceCoordRingToPlane := by
   rw [injective_iff_map_eq_zero]
   intro x hx
@@ -740,23 +739,23 @@ public theorem surfaceCoordRingToPlane_injective :
 
 /-- The affine coordinate ring of the Weierstrass model of [CLOP §4.1] (the equation
 for `J_η`). -/
-public abbrev surfaceCoordRing : Type :=
+abbrev surfaceCoordRing : Type :=
   MvPolynomial (Fin 3) ℚ ⧸ Ideal.span {weierstrassSurfaceAff}
 
 /-- The affine Weierstrass surface is integral: its coordinate ring embeds in a field. -/
-public instance : IsDomain surfaceCoordRing :=
+instance : IsDomain surfaceCoordRing :=
   Function.Injective.isDomain surfaceCoordRingToPlane surfaceCoordRingToPlane_injective
 
 /-- The function field of the Weierstrass model of [CLOP §4.1] (the equation for `J_η`). -/
-public abbrev surfaceFunctionField : Type := FractionRing surfaceCoordRing
+abbrev surfaceFunctionField : Type := FractionRing surfaceCoordRing
 
 /-- The induced map on function fields. -/
-public noncomputable def surfaceFunctionFieldToPlane :
+noncomputable def surfaceFunctionFieldToPlane :
     surfaceFunctionField →+* FunctionField.planeField ℚ :=
   IsFractionRing.lift (g := (surfaceCoordRingToPlane : surfaceCoordRing →+* _))
     surfaceCoordRingToPlane_injective
 
-public theorem surfaceFunctionFieldToPlane_algebraMap (x : surfaceCoordRing) :
+theorem surfaceFunctionFieldToPlane_algebraMap (x : surfaceCoordRing) :
     surfaceFunctionFieldToPlane (algebraMap surfaceCoordRing surfaceFunctionField x)
       = surfaceCoordRingToPlane x :=
   IsFractionRing.lift_algebraMap surfaceCoordRingToPlane_injective x
@@ -778,7 +777,7 @@ is neither used
 nor reproved here — and nothing about the weighted hypersurface `S_Q ⊂ P(1,1,2,3)` of
 `DelPezzo/Surface.lean`: identifying `K(S)` with the function field of `S_Q` is a
 separate birationality statement that is not formalized. -/
-public theorem surfaceFunctionFieldToPlane_injective :
+theorem surfaceFunctionFieldToPlane_injective :
     Function.Injective surfaceFunctionFieldToPlane :=
   surfaceFunctionFieldToPlane.injective
 
