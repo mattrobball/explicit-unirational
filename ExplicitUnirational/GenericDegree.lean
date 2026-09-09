@@ -81,6 +81,9 @@ variable {X Y : Scheme.{u}}
 
 /-! ## The function-field point of a dominant partial / rational map -/
 
+-- `X.functionField` has to unfold to `X.presheaf.stalk (genericPoint X)` for the `change` below
+-- to stay type-correct, as in Mathlib's own `PartialMap.fromSpecStalkOfMem_restrict`.
+set_option backward.isDefEq.respectTransparency false in
 /-- For a dominant partial map of integral schemes, `fromFunctionField` sends the closed point of
 `Spec K(X)` to the generic point of `Y`. -/
 public theorem PartialMap.fromFunctionField_apply_closedPoint [IsIntegral X] [IsIntegral Y]

@@ -167,14 +167,18 @@ variable [IsDomain R] [IsCancelAdd R]
 
 /-- `ℙ(1,1,2,3)_R` is reduced: covered by four integral (hence reduced) affine charts. -/
 public instance instIsReduced : IsReduced (WeightedProjectiveSpace R) := by
-  haveI (i : Fin 4) : IsReduced ((standardAffineOpenCover R).openCover.X i) := by
+  -- The index type of the cover is `Fin 4`, but only up to unfolding `standardAffineOpenCover`,
+  -- so the chart instances are supplied explicitly rather than by synthesis.
+  have hchart : ∀ i : Fin 4, IsReduced ((standardAffineOpenCover R).openCover.X i) := by
+    intro i
     -- openCover.X i = Spec (A_(Xᵢ))₀, and the chart ring is a domain.
     dsimp [Scheme.AffineOpenCover.openCover, Scheme.AffineCover.cover,
       standardAffineOpenCover, Proj.affineOpenCoverOfIrrelevantLESpan]
     haveI : IsDomain (HomogeneousLocalization.Away (delPezzoGraded R) (X i)) :=
       standardChartRing_isDomain R i
     infer_instance
-  exact IsReduced.of_openCover (WeightedProjectiveSpace R) (standardAffineOpenCover R).openCover
+  exact @IsReduced.of_openCover (WeightedProjectiveSpace R)
+    (standardAffineOpenCover R).openCover hchart
 
 /-- `ℙ(1,1,2,3)_R` is irreducible: it has a generic point (the zero ideal). -/
 public instance instIrreducibleSpace : IrreducibleSpace (WeightedProjectiveSpace R) := by

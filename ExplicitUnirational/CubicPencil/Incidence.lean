@@ -94,17 +94,25 @@ public abbrev StandardChartRing (n : ℕ) (R : Type u) [CommRing R] (i : Fin (n 
   HomogeneousLocalization.Away (MvPolynomial.homogeneousSubmodule (Fin (n + 1)) R)
     (MvPolynomial.X i)
 
+/-- Membership form of `MvPolynomial.isHomogeneous_X` (what `Proj.awayι` consumes).  The
+`IsOpenImmersion` instance for `Proj.awayι` is only found when the degree argument is visible
+without unfolding `MvPolynomial.IsHomogeneous`. -/
+theorem mem_homogeneousSubmodule_X (n : ℕ) (R : Type u) [CommRing R] (i : Fin (n + 1)) :
+    (MvPolynomial.X i : MvPolynomial (Fin (n + 1)) R) ∈
+      MvPolynomial.homogeneousSubmodule (Fin (n + 1)) R 1 :=
+  MvPolynomial.isHomogeneous_X R i
+
 /-- Standard open immersion from the `i`-th chart. -/
 public def standardChartι (n : ℕ) (R : Type u) [CommRing R] (i : Fin (n + 1)) :
     Spec (.of (StandardChartRing n R i)) ⟶ ProjectiveSpace n R :=
   Proj.awayι (MvPolynomial.homogeneousSubmodule (Fin (n + 1)) R) (MvPolynomial.X i)
-    (MvPolynomial.isHomogeneous_X R i) zero_lt_one
+    (mem_homogeneousSubmodule_X n R i) zero_lt_one
 
 instance (n : ℕ) (R : Type u) [CommRing R] (i : Fin (n + 1)) :
     IsOpenImmersion (standardChartι n R i) :=
   inferInstanceAs (IsOpenImmersion
     (Proj.awayι (MvPolynomial.homogeneousSubmodule (Fin (n + 1)) R) (MvPolynomial.X i)
-      (MvPolynomial.isHomogeneous_X R i) zero_lt_one))
+      (mem_homogeneousSubmodule_X n R i) zero_lt_one))
 
 theorem irrelevant_le_span_X (n : ℕ) (R : Type u) [CommRing R] :
     (HomogeneousIdeal.irrelevant

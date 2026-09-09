@@ -289,7 +289,7 @@ public def principalDivisorOf (f : X.functionFieldˣ)
     (hf : HasFinitePrincipalSupport (X := X) (f : X.functionField))
     (z : X) (hz : Order.coheight z = 1) :
     Div.coeff (principalDivisorOf f hf) z hz = ord (f : X.functionField) z := by
-  simp [Div.coeff, principalDivisorOf, Finsupp.ofSupportFinite_coe]
+  rfl
 
 public theorem principalDivisorOf_one :
     principalDivisorOf (X := X) (1 : X.functionFieldˣ) hasFinitePrincipalSupport_one = 0 := by

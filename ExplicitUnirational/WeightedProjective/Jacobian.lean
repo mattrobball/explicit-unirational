@@ -612,6 +612,12 @@ public theorem charts_cover :
     ⨆ i : Fin 4, standardBasicOpen R i = ⊤ :=
   iSup_standardBasicOpen_eq_top R
 
+/-- `Smooth` is Zariski-local on the source.  Mathlib's instance for a `HasRingHomProperty`
+takes the ring-hom property as a plain implicit argument, so it is not found by synthesis and
+has to be named. -/
+public instance isZariskiLocalAtSource_smooth : IsZariskiLocalAtSource @Smooth :=
+  HasRingHomProperty.instIsZariskiLocalAtSource (Q := RingHom.Smooth)
+
 /-- Smoothness is local on the source. -/
 public theorem smooth_of_openCover_smooth {X Y : Scheme.{u}} (f : X ⟶ Y)
     (𝒰 : X.OpenCover) (h : ∀ i, Smooth (𝒰.f i ≫ f)) :
