@@ -13,11 +13,11 @@ import Macaulean.PolyDef
 /-!
 # Tower-B product reductions via Macaulean's `algebra_norm_reflect`
 
-The four product-reduction certificates that were blocked on `ring`
-performance (see the congruence-tower table in `TangentResidual`), discharged
-with `algebra_norm_reflect` from [Macaulean](https://github.com/Macaulean/Macaulean):
-a kernel-checked reflection tactic using Kronecker-packed sparse-polynomial
-normal forms (branch `perf/kronecker-algpoly`).  No `native_decide`.
+The five product-reduction certificates of the Tower-B congruence, discharged
+with `algebra_norm_reflect` from [Macaulean](https://github.com/Macaulean/Macaulean)
+(branch `poly-repr-reflect`): a reflection tactic whose whole certificate is
+checked by the Lean kernel, over sparse polynomials whose monomials are packed
+into a single `Nat` key ordered by grevlex.  No `native_decide`.
 
 * `redH3 ^ 2 = quotH3sq * gAff + redH3sq` (raw 755 monomials)
 * `redTheta ^ 2 = quotTheta2 * gAff + redTheta2` (raw 546)
@@ -28,11 +28,19 @@ normal forms (branch `perf/kronecker-algpoly`).  No `native_decide`.
 The sympy-generated quotient/remainder polynomials are defined with
 Macaulean's `poly_def` command (`Macaulean/PolyDef.lean`; monomials encoded
 `a.b.c.k` for `k·X^a·Y^b·z^c`, in sympy's emission order): the definition
-bodies are the same monomial-sum terms that source syntax would produce, but building them as `Expr`s directly avoids the
-roughly one-second-per-monomial cost of elaborating such sums (the ten
-definitions here total ≈ 5200 monomials, i.e. hours of build time in source
-form). Each identity is then verified by one kernel computation, with no
-`native_decide` and no new axioms.
+bodies are the same monomial-sum terms that source syntax would produce, but
+building them as `Expr`s directly avoids the roughly one-second-per-monomial
+cost of elaborating such sums (the ten definitions here total ≈ 5200
+monomials, i.e. hours of build time in source form).  Each identity is then
+verified by one kernel computation, with no `native_decide` and no new axioms.
+
+Measured on this file with `-Dprofiler=true`: the five kernel certificate
+checks take 3.9 / 7.3 / 12.8 / 15.4 / 25.7 s, the whole file 80 s and 12 GB
+peak RSS.
+
+This file is not a `module`: Macaulean's `poly-repr-reflect` branch does not
+use the module system, and a `module` cannot import a non-`module`.  The four
+files above it in the import graph are legacy for the same reason.
 -/
 
 set_option maxHeartbeats 400000000
